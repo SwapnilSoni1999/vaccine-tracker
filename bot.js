@@ -450,7 +450,7 @@ bot.command('unsnooze', async (ctx) => {
 
 bot.command('status', async (ctx) => {
     const user = Users.find({ chatId: ctx.chat.id }).value()
-    return await ctx.reply(`<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${user.pincode || 'No pincode'}\n<b>Tracking Age Group:</b>: ${user.age_group ? user.age_group + '' : 'No age group'}\n\nType /help for more info.`, { parse_mode: 'HTML' })
+    return await ctx.reply(`<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${user.pincode || 'No pincode'}\n<b>Tracking Age Group:</b>: ${user.age_group ? user.age_group + '+' : 'No age group'}\n\nType /help for more info.`, { parse_mode: 'HTML' })
 })
 
 bot.action(/snooze_req--\d+/, async (ctx) => {

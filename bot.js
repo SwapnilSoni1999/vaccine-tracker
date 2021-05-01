@@ -189,7 +189,7 @@ const loginWizard = new Scenes.WizardScene(
                 await ctx.wizard.state.cowin.verifyOtp(otp)
                 Users.find({ chatId: ctx.chat.id }).assign({ token: ctx.wizard.state.cowin.token }).write()
                 await ctx.reply('Login successful!')
-                Users.find({ chatId: ctx.chat.id }).assign({ mobile: ctx.wizard.state.mobile }).write()
+                Users.find({ chatId: ctx.chat.id }).assign({ mobile: ctx.wizard.state.mobile, informedExpiration: false }).write()
                 await ctx.reply('Send /help to know further commands.')
                 return ctx.scene.leave()
             } catch (err) {
@@ -466,7 +466,7 @@ async function trackAndInform() {
     const users = Users.value()
     const userdata = users.reduce((a, v) => {
         if (v.pincode) {
-            a.push({ pincode: v.pincode, token: v.token })
+            a.push({ pincode: v.pincode, token: v.token, chatId: v.chatId })
         }
         return a
     }, [])
@@ -483,6 +483,18 @@ async function trackAndInform() {
             })
             total.push(available)
         } catch (err) {
+            const { retriesCount } = Users.find({ chatId: ud.chatId }).pick('retriesCount').value()
+            if (retriesCount == undefined || retriesCount == null) {
+                Users.find({ chatId: ud.chatId }).assign({ retriesCount: 0 }).write()
+            }
+            Users.find({ chatId: ud.chatId }).assign({ retriesCount: retriesCount + 1 }).write()
+            if (retriesCount % 80 == 0) {
+                const { informedExpiration } = Users.find({ chatId: ud.chatId }).pick('informedExpiration').value()
+                if (!informedExpiration) {
+                    await bot.telegram.sendMessage(ud.chatId, 'Token expired! Please login again!')
+                    Users.find({ chatId: ud.chatId }).assign({ informedExpiration: true }).write()
+                }
+            }
             console.log(err.response.data)
         }
     }

@@ -41,7 +41,7 @@ const _getBeneficiaries = async (token) => {
 
 const getToday = () => {
     const dateObj = new Date()
-    return `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${dateObj.getFullYear()}`
+    return `${String(dateObj.getDate()+1).padStart(2, '0')}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${dateObj.getFullYear()}`
 }
 
 class CoWIN {

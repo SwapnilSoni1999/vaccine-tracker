@@ -484,11 +484,12 @@ async function trackAndInform() {
             total.push(available)
         } catch (err) {
             const { retriesCount } = Users.find({ chatId: ud.chatId }).pick('retriesCount').value()
+            console.log('Retries count', retriesCount)
             if (retriesCount == undefined || retriesCount == null) {
                 Users.find({ chatId: ud.chatId }).assign({ retriesCount: 0 }).write()
             }
             Users.find({ chatId: ud.chatId }).assign({ retriesCount: retriesCount + 1 }).write()
-            if (retriesCount % 80 == 0) {
+            if (retriesCount % 20 == 0) {
                 const { informedExpiration } = Users.find({ chatId: ud.chatId }).pick('informedExpiration').value()
                 if (!informedExpiration) {
                     await bot.telegram.sendMessage(ud.chatId, 'Token expired! Please login again!')

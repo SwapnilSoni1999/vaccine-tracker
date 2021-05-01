@@ -461,6 +461,12 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime }).write()
 })
 
+function sleep(ms) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => resolve(), ms)
+    })
+}
+
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
@@ -474,6 +480,7 @@ async function trackAndInform() {
     for (const ud of userdata) {
         try {
             const centers = await CoWIN.getCenters(ud.pincode, ud.token)
+            await sleep(1000)
             const available = centers.filter(center => { 
                 const sessions = center.sessions.filter(session => session.available_capacity > 0)
                 center.sessions = sessions

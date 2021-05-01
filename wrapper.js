@@ -121,7 +121,7 @@ class CoWIN {
         return res.data.districts
     }
 
-    static async getCenters(pincode, vaccine=null) {
+    static async getCenters(pincode, token, vaccine=null) {
         let params = {
             pincode,
             date: getToday()
@@ -130,13 +130,26 @@ class CoWIN {
             params.vaccine = vaccine
         }
         console.log(params)
-        const res = await axios({
-            method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
-            params: params,
-            headers
-        })
-        return res.data.centers
+        try {
+            const res = await axios({
+                method: 'GET',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
+                params: params,
+                headers: {
+                    ...headers,
+                    authorization: 'Bearer ' + token
+                }
+            })
+            return res.data.centers
+        } catch (err) {
+            const res = await axios({
+                method: 'GET',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
+                params: params,
+                headers
+            })
+            return res.data.centers
+        }
     }
 }
 

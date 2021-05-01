@@ -398,7 +398,7 @@ bot.command('beneficiaries', inviteMiddle, async (ctx) => {
     }
 })
 
-bot.command('track', inviteMiddle, async (ctx) => {
+bot.command('track', inviteMiddle, authMiddle, async (ctx) => {
     try {
         const { pincode } = Users.find({ chatId: ctx.chat.id }).pick('pincode').value()
         if (pincode) {
@@ -464,16 +464,16 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
-    const pincodes = users.reduce((a, v) => {
+    const userdata = users.reduce((a, v) => {
         if (v.pincode) {
-            a.push(v.pincode)
+            a.push({ pincode: v.pincode, token: v.token })
         }
         return a
     }, [])
     const total = []
-    for (const pincode of pincodes) {
+    for (const ud of userdata) {
         try {
-            const centers = await CoWIN.getCenters(pincode)
+            const centers = await CoWIN.getCenters(ud.pincode, ud.token)
             const available = centers.filter(center => { 
                 const sessions = center.sessions.filter(session => session.available_capacity > 0)
                 center.sessions = sessions

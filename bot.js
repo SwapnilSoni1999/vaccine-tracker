@@ -492,8 +492,10 @@ async function trackAndInform() {
     // message all users
     for (const user of users) {
         try {
+            let isUserSnoozed = false
             if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
                 console.log('User is snoozed!')
+                isUserSnoozed = true
                 continue
             } 
             const found18 = plus_18.find(center => (center.pincode == user.pincode) && (center.sessions.find(session => session.min_age_limit == user.age_group)))
@@ -510,7 +512,7 @@ async function trackAndInform() {
                 const currentTime = parseInt(Date.now()/1000)
                 Users.find({ chatId: ctx.chat.id }).assign({ lastAlert: currentTime })
             }
-            if (user.pincode) {
+            if (user.pincode && !isUserSnoozed) {
                 await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?', { reply_markup: {
                     inline_keyboard: [
                         [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]

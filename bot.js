@@ -486,6 +486,7 @@ async function trackAndInform() {
         try {
             const centers = await CoWIN.getCenters(ud.pincode, ud.token)
             await sleep(1000)
+            console.log("PIN:", ud.pincode, "Centers:", centers.length)
             const available = centers.filter(center => { 
                 const sessions = center.sessions.filter(session => session.available_capacity > 0)
                 center.sessions = sessions

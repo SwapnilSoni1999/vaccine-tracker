@@ -1,4 +1,4 @@
-const { Telegraf, Scenes, session } = require('telegraf')
+const { Telegraf, Scenes, session, TelegramError } = require('telegraf')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 const CoWIN = require('./wrapper')
@@ -499,8 +499,17 @@ async function trackAndInform() {
             if (retriesCount % 20 == 0) {
                 const { informedExpiration } = Users.find({ chatId: ud.chatId }).pick('informedExpiration').value()
                 if (!informedExpiration) {
-                    await bot.telegram.sendMessage(ud.chatId, 'Token expired! Please login again!')
-                    Users.find({ chatId: ud.chatId }).assign({ informedExpiration: true }).write()
+                    try {
+                        await bot.telegram.sendMessage(ud.chatId, 'Token expired! Please login again!')
+                        Users.find({ chatId: ud.chatId }).assign({ informedExpiration: true }).write()
+                    } catch (err) {
+                        if (err instanceof TelegramError) {
+                            Users.remove({ chatId: ud.chatId }).write()
+                            console.log('Removed chatId because bot was blocked.')
+                            return
+                        }
+                        console.log(err)
+                    }
                 }
             }
             console.log(err.response.data)
@@ -524,7 +533,7 @@ async function trackAndInform() {
                 const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found18.name}\n<b>Pincode</b>: ${found18.pincode}\n<b>Age group</b>: 18+\n<b>Slots</b>:\n\t${found18.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                 await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                 const currentTime = parseInt(Date.now()/1000)
-                Users.find({ chatId: ctx.chat.id }).assign({ lastAlert: currentTime })
+                Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })
                 informedUser = true
             }
             const found45 = plus_45.find(center => (center.pincode == user.pincode) && (center.sessions.find(session => session.min_age_limit == user.age_group)))
@@ -532,7 +541,7 @@ async function trackAndInform() {
                 const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found45.name}\n<b>Pincode</b>: ${found45.pincode}\n<b>Age group</b>: 18+\n<b>Slots</b>:\n\t${found45.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                 await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                 const currentTime = parseInt(Date.now()/1000)
-                Users.find({ chatId: ctx.chat.id }).assign({ lastAlert: currentTime })
+                Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })
                 informedUser = true
             }
             if (user.pincode && !isUserSnoozed && informedUser) {

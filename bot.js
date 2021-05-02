@@ -691,6 +691,14 @@ bot.command('sendall', async (ctx) => {
     }
 })
 
+bot.command('botstat', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        const users = Users.value()
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.map(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.map(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.map(u => !!u.pincode).length}`
+        return await ctx.reply(txt, { parse_mode: 'HTML' })
+    }
+})
+
 bot.action('yes_booked', async (ctx) => {
     Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ pincode: null }).assign({ age_group: null }).write()
     return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease note that you\'re now untracked. If you want to track for another dose then /track again.', { parse_mode: 'HTML' })

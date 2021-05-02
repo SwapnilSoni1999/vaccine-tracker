@@ -31,6 +31,11 @@ const SNOOZE_LITERALS = [
     { name: '18hr', seconds: 18 * 60 * 60 }
 ]
 
+const THUMBS = {
+    up: ['👍', '👍🏻', '👍🏼', '👍🏽', '👍🏾', '👍🏿'],
+    down: ['👎', '👎🏻', '👎🏼', '👎🏽', '👎🏾', '👎🏿']
+}
+
 const _isAuth = (chatId) => {
     const { token } = Users.find({ chatId }).pick('token').value()
     return !!token 
@@ -275,7 +280,7 @@ const slotWizard = new Scenes.WizardScene(
     async (ctx) => {
         try {
             const confirmed = ctx.message.text
-            if (confirmed == '👍') {
+            if (THUMBS.up.includes(confirmed)) {
                 await ctx.reply('Request accepted!')
                 Users.find({ chatId: ctx.chat.id }).assign({ pincode: ctx.wizard.state.pincode }).write()
                 await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')

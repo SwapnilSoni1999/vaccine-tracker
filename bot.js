@@ -68,7 +68,13 @@ const authMiddle = async (ctx, next) => {
     if (_isAuth(ctx.chat.id)) {
         next()
     } else {
-        return await ctx.reply('Sorry! You\'re not logged in! Please /login first.')
+        try {
+            return await ctx.reply('Sorry! You\'re not logged in! Please /login first.')
+        } catch (err) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id }).write()
+            }
+        }
     }
 }
 
@@ -76,7 +82,13 @@ const inviteMiddle = async (ctx, next) => {
     if(_isInvited(ctx.chat.id)) {
         next()
     } else {
-        return await ctx.reply('Please verify yourself by providing invite code!\nSend /start to invite yourself.')
+        try {
+            return await ctx.reply('Please verify yourself by providing invite code!\nSend /start to invite yourself.')
+        } catch (err) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id }).write()
+            }
+        }
     }
 }
 
@@ -101,6 +113,10 @@ const inviteWizard = new Scenes.WizardScene(
             ctx.reply('Send invitation code to access this bot!')
             return ctx.wizard.next()
         } catch (error) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id })
+                return
+            }    
             console.log(error)
             await ctx.reply('Some error occured please retry again with /start!')
             return ctx.scene.leave()
@@ -124,6 +140,10 @@ const inviteWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
         } catch (error) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id })
+                return
+            }
             console.log(error)
             await ctx.reply('Some error occured please retry again with /start!')
             return ctx.scene.leave()
@@ -138,6 +158,10 @@ const loginWizard = new Scenes.WizardScene(
             ctx.reply('Send your phone number (10 digits only)')
             return ctx.wizard.next()
         } catch (error) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id })
+                return
+            }
             console.log(error)
             await ctx.reply('Some error occured please retry!')
             ctx.scene.leave()
@@ -170,6 +194,10 @@ const loginWizard = new Scenes.WizardScene(
                 Users.find({ chatId: ctx.chat.id }).assign({ lastOtpRequested: parseInt(Date.now()/1000) }).write()
                 Users.find({ chatId: ctx.chat.id }).assign({ txnId: ctx.wizard.state.cowin.txnId }).write()
             } catch (err) {
+                if (err instanceof TelegramError) {
+                    Users.remove({ chatId: ctx.chat.id })
+                    return
+                }
                 console.log(err)
                 await ctx.reply('Error while sending otp!\nPlease try again!')
                 return ctx.scene.leave()
@@ -178,6 +206,10 @@ const loginWizard = new Scenes.WizardScene(
             await ctx.reply('Enter your otp')
             return ctx.wizard.next()
         } catch (error) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id })
+                return
+            }
             console.log(error)
             await ctx.reply('Some error occured please retry!')
             ctx.scene.leave()
@@ -199,11 +231,19 @@ const loginWizard = new Scenes.WizardScene(
                 await ctx.reply('Send /help to know further commands.')
                 return ctx.scene.leave()
             } catch (err) {
+                if (err instanceof TelegramError) {
+                    Users.remove({ chatId: ctx.chat.id })
+                    return
+                }
                 console.log(err)
                 await ctx.reply('Invalid otp!\nYou can try again with /otp <your-otp>')
                 return ctx.scene.leave()
             }
         } catch (error) {
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id })
+                return
+            }
             console.log(error)
             await ctx.reply('Some error occured please retry!')
             ctx.scene.leave()
@@ -344,12 +384,19 @@ bot.use(stage.middleware())
  */
 
 bot.help(inviteMiddle, async (ctx) => {
-    let commands = ``
-    if (_isAuth(ctx.chat.id)) {
-        commands += `/beneficiaries = to list beneficiaries\n/logout = logout from the bot/portal\n`
+    try {
+        let commands = ``
+        if (_isAuth(ctx.chat.id)) {
+            commands += `/beneficiaries = to list beneficiaries\n/logout = logout from the bot/portal\n`
+        }
+        commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again wth /otp command\n/status = check your status`
+        return ctx.reply(commands)
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            Users.remove({ chatId: ctx.chat.id })
+            return
+        }
     }
-    commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again wth /otp command\n/status = check your status`
-    return ctx.reply(commands)
 })
 
 bot.start(async (ctx) => {
@@ -581,7 +628,14 @@ async function trackAndInform() {
             if (found18s.length) {
                 for (const found18 of found18s) {
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found18.name}\n<b>Pincode</b>: ${found18.pincode}\n<b>Age group</b>: 18+\n<b>Slots</b>:\n\t${found18.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
-                    await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                    try {
+                        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                    } catch (err) {
+                        if (err instanceof TelegramError) {
+                            Users.remove({ chatId: ctx.chat.id })
+                            return
+                        }
+                    }
                     const currentTime = parseInt(Date.now()/1000)
                     Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })
                 }
@@ -591,18 +645,32 @@ async function trackAndInform() {
             if (found45s.length) {
                 for (const found45 of found45s) {
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found45.name}\n<b>Pincode</b>: ${found45.pincode}\n<b>Age group</b>: 45+\n<b>Slots</b>:\n\t${found45.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
-                    await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                    try {
+                        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                    } catch (err) {
+                        if (err instanceof TelegramError) {
+                            Users.remove({ chatId: ctx.chat.id })
+                            return
+                        }
+                    }
                     const currentTime = parseInt(Date.now()/1000)
                     Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })
                 }
                 informedUser = true
             }
             if (user.pincode && !isUserSnoozed && informedUser) {
-                await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
-                    inline_keyboard: [
-                        [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
-                    ]
-                } })
+                try {
+                    await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
+                        inline_keyboard: [
+                            [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
+                        ]
+                    } })
+                } catch (err) {
+                    if (err instanceof TelegramError) {
+                        Users.remove({ chatId: ctx.chat.id })
+                        return
+                    }
+                }
             }
         } catch (err) {
             console.log('ERROR WHILE INFORMING!')

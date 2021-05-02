@@ -259,7 +259,12 @@ const slotWizard = new Scenes.WizardScene(
         try {
             const { pincode } = Users.find({ chatId: ctx.chat.id }).pick('pincode').value()
             ctx.wizard.state.pincode = pincode
-            await ctx.reply(`Your provided Information.\n<b>Pincode</b>: ${ctx.wizard.state.pincode}\n<b>Age group</b>: ${(Users.find({ chatId: ctx.chat.id }).pick('age_group').value()).age_group}+\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML' })
+            const { age_group } = Users.find({ chatId: ctx.chat.id }).pick('age_group').value()
+            if (!age_group || !pincode) {
+                await ctx.reply('Please select valid age group and provide valid pincode and try again.')
+                return ctx.scene.leave()
+            }
+            await ctx.reply(`Your provided Information.\n<b>Pincode</b>: ${ctx.wizard.state.pincode}\n<b>Age group</b>: ${age_group}+\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML' })
             return ctx.wizard.next()
         } catch (err) {
             console.log(err)

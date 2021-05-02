@@ -552,6 +552,7 @@ async function trackAndInformNew() {
     const users = Users.value()
     for (const user of users) {
         try {
+            let informedUser = false
             if (!user.pincode) {
                 console.log('No pincode!')
                 continue
@@ -581,6 +582,7 @@ async function trackAndInformNew() {
                 try {
                     await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                     console.log('Informed user!')
+                    informedUser = true
                 } catch (err) {
                     if (err instanceof TelegramError) {
                         Users.remove({ chatId: ud.chatId }).write()
@@ -591,11 +593,13 @@ async function trackAndInformNew() {
                 }
             }
             try {
-                await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
-                    inline_keyboard: [
-                        [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
-                    ]
-                } })
+                if (informedUser) {
+                    await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
+                        inline_keyboard: [
+                            [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
+                        ]
+                    } })
+                }
             } catch (err) {
                 if (err instanceof TelegramError) {
                     Users.remove({ chatId: user.chatId })

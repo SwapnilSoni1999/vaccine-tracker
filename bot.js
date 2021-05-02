@@ -547,6 +547,54 @@ function sleep(ms) {
     })
 }
 
+async function trackAndInformNew() {
+    console.log('Fetching information')
+    const users = Users.value()
+    for (const user of users) {
+        try {
+            if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
+                console.log('User is snoozed!')
+                // skip the user
+                continue
+            }
+            const centers = await CoWIN.getCenters(user.pincode)
+            await sleep(1000)
+            console.log("PIN:", user.pincode, "Centers:", centers.length)
+            const available = centers.reduce((acc, center) => {
+                const tmpCenter = { ...center }
+                const sessions = center.sessions.filter(session => (session.available_capacity > 0))
+                if (sessions.length) {
+                    tmpCenter.sessions = sessions
+                    acc.push(tmpCenter)
+                }
+                return acc
+            }, [])
+            const userCenters = available.filter(center => 
+                (center.pincode == user.pincode) && 
+                (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
+            )
+            for (const uCenter of userCenters) {
+                const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${uCenter.min_age_limit}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+                try {
+                    await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                    console.log('Informed user!')
+                } catch (err) {
+                    if (err instanceof TelegramError) {
+                        Users.remove({ chatId: ud.chatId }).write()
+                        console.log('Removed chatId because bot was blocked.')
+                    } else {
+                        console.log(err)
+                    }
+                }
+            }
+        } catch (err) {
+            console.log('Something wrong!', err)
+        }
+    }
+    await sleep(3000)
+    return await trackAndInformNew()
+}
+
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
@@ -699,5 +747,5 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for <b>${user.pincode}</b> and age group of <b>${user.age_group}+</b>\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setTimeout(trackAndInform, 80 * 1000)
+setTimeout(trackAndInformNew, 80 * 1000)
 bot.launch()

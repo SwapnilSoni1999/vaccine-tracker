@@ -512,9 +512,9 @@ async function trackAndInform() {
                         if (err instanceof TelegramError) {
                             Users.remove({ chatId: ud.chatId }).write()
                             console.log('Removed chatId because bot was blocked.')
-                            return
+                        } else {
+                            console.log(err)
                         }
-                        console.log(err)
                     }
                 }
             }

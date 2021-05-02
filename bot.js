@@ -569,31 +569,15 @@ async function trackAndInform() {
                     return center
                 }
             })
+            console.log('Available:', available.length)
             total.push(available)
         } catch (err) {
-            const { retriesCount } = Users.find({ chatId: ud.chatId }).pick('retriesCount').value()
-            console.log('Retries count', retriesCount)
-            if (retriesCount == undefined || retriesCount == null) {
-                Users.find({ chatId: ud.chatId }).assign({ retriesCount: 0 }).write()
+            if (err instanceof TelegramError) {
+                Users.remove({ chatId: ud.chatId }).write()
+                console.log('Removed chatId because bot was blocked.')
+            } else {
+                console.log(err)
             }
-            Users.find({ chatId: ud.chatId }).assign({ retriesCount: retriesCount + 1 }).write()
-            if (retriesCount % 20 == 0) {
-                const { informedExpiration } = Users.find({ chatId: ud.chatId }).pick('informedExpiration').value()
-                if (!informedExpiration) {
-                    try {
-                        await bot.telegram.sendMessage(ud.chatId, 'Token expired! Please login again!')
-                        Users.find({ chatId: ud.chatId }).assign({ informedExpiration: true }).write()
-                    } catch (err) {
-                        if (err instanceof TelegramError) {
-                            Users.remove({ chatId: ud.chatId }).write()
-                            console.log('Removed chatId because bot was blocked.')
-                        } else {
-                            console.log(err)
-                        }
-                    }
-                }
-            }
-            console.log(err.response.data)
         }
     }
     const plus_18 = total.flat(1).reduce((acc, center) => {

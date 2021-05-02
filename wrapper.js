@@ -133,7 +133,7 @@ class CoWIN {
         try {
             const res = await axios({
                 method: 'GET',
-                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params: params,
                 headers: {
                     ...headers,
@@ -142,23 +142,8 @@ class CoWIN {
             })
             return res.data.centers
         } catch (err) {
-            try {
-                const res = await axios({
-                    method: 'GET',
-                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
-                    params: params,
-                    headers
-                })
-                return res.data.centers
-            } catch (err) {
-                const res = await axios({
-                    method: 'GET',
-                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
-                    params: params,
-                    headers
-                })
-                return res.data.centers
-            }
+            const centers = []
+            return centers
         }
     }
 }

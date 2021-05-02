@@ -113,7 +113,7 @@ const inviteWizard = new Scenes.WizardScene(
             ctx.reply('Send invitation code to access this bot!')
             return ctx.wizard.next()
         } catch (error) {
-            if (err instanceof TelegramError) {
+            if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id })
                 return
             }    
@@ -140,7 +140,7 @@ const inviteWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
         } catch (error) {
-            if (err instanceof TelegramError) {
+            if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id })
                 return
             }
@@ -158,7 +158,7 @@ const loginWizard = new Scenes.WizardScene(
             ctx.reply('Send your phone number (10 digits only)')
             return ctx.wizard.next()
         } catch (error) {
-            if (err instanceof TelegramError) {
+            if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id })
                 return
             }
@@ -206,7 +206,7 @@ const loginWizard = new Scenes.WizardScene(
             await ctx.reply('Enter your otp')
             return ctx.wizard.next()
         } catch (error) {
-            if (err instanceof TelegramError) {
+            if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id })
                 return
             }
@@ -240,7 +240,7 @@ const loginWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
         } catch (error) {
-            if (err instanceof TelegramError) {
+            if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id })
                 return
             }

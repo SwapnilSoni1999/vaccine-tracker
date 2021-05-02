@@ -522,7 +522,7 @@ async function trackAndInform() {
     }
     const plus_18 = total.flat(1).reduce((acc, center) => {
         const tmpCenter = { ...center }
-        const sessions = center.sessions.filter(session => (session.min_age_limit == 18) && session.available_capacity > 0)
+        const sessions = center.sessions.filter(session => (session.min_age_limit == 18) && (session.available_capacity > 0))
         if (sessions.length) {
             tmpCenter.sessions = sessions
             acc.push(tmpCenter)
@@ -530,7 +530,7 @@ async function trackAndInform() {
     }, [])
     const plus_45 = total.flat(1).reduce((acc, center) => { 
         const tmpCenter = { ...center }
-        const sessions = center.sessions.filter(session => session.min_age_limit == 45 && session.available_capacity > 0)
+        const sessions = center.sessions.filter(session => (session.min_age_limit == 45) && (session.available_capacity > 0))
         if (sessions.length) {
             tmpCenter.session = sessions
             acc.push(tmpCenter)

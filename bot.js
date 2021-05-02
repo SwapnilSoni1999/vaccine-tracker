@@ -606,8 +606,6 @@ async function trackAndInformNew() {
             console.log('Something wrong!', err)
         }
     }
-    await sleep(3000)
-    return await trackAndInformNew()
 }
 
 bot.command('sendall', async (ctx) => {
@@ -636,5 +634,5 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for <b>${user.pincode}</b> and age group of <b>${user.age_group}+</b>\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setTimeout(trackAndInformNew, 80 * 1000)
+setInterval(trackAndInformNew, 80 * 1000)
 bot.launch()

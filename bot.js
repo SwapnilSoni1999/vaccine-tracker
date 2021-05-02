@@ -536,7 +536,7 @@ async function trackAndInform() {
                 informedUser = true
             }
             if (user.pincode && !isUserSnoozed && informedUser) {
-                await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?', { reply_markup: {
+                await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
                     inline_keyboard: [
                         [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
                     ]

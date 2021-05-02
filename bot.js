@@ -611,7 +611,7 @@ async function trackAndInform() {
     trackAndInform()
 }
 
-bot.command('sendall', async () => {
+bot.command('sendall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         ctx.scene.enter('send-all')
     } else {

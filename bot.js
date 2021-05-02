@@ -694,7 +694,7 @@ bot.command('sendall', async (ctx) => {
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         const users = Users.value()
-        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.map(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.map(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.map(u => !!u.pincode).length}`
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.map(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.map(u => u.allowed == false).length}\n<b>Total pincodes in tracking</b>: ${users.map(u => !!u.pincode).length}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
 })

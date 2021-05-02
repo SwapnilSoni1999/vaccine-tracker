@@ -552,6 +552,10 @@ async function trackAndInformNew() {
     const users = Users.value()
     for (const user of users) {
         try {
+            if (!user.pincode) {
+                console.log('No pincode!')
+                continue
+            }
             if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
                 console.log('User is snoozed!')
                 // skip the user
@@ -593,132 +597,6 @@ async function trackAndInformNew() {
     }
     await sleep(3000)
     return await trackAndInformNew()
-}
-
-async function trackAndInform() {
-    console.log('Fetching information')
-    const users = Users.value()
-    const userdata = users.reduce((a, v) => {
-        if (v.pincode) {
-            a.push({ pincode: v.pincode, token: v.token, chatId: v.chatId })
-        }
-        return a
-    }, [])
-    const total = []
-    for (const ud of userdata) {
-        try {
-            const centers = await CoWIN.getCenters(ud.pincode, ud.token)
-            await sleep(1000)
-            console.log("PIN:", ud.pincode, "Centers:", centers.length)
-            const available = centers.filter(center => { 
-                const sessions = center.sessions.filter(session => session.available_capacity > 0)
-                center.sessions = sessions
-                if (center.sessions.length) {
-                    return center
-                }
-            })
-            console.log('Available:', available.length)
-            total.push(available)
-        } catch (err) {
-            if (err instanceof TelegramError) {
-                Users.remove({ chatId: ud.chatId }).write()
-                console.log('Removed chatId because bot was blocked.')
-            } else {
-                console.log(err)
-            }
-        }
-    }
-    const plus_18 = total.flat(1).reduce((acc, center) => {
-        const tmpCenter = { ...center }
-        const sessions = center.sessions.filter(session => (session.min_age_limit == 18) && (session.available_capacity > 0))
-        if (sessions.length) {
-            tmpCenter.sessions = sessions
-            acc.push(tmpCenter)
-        }
-        return acc
-    }, [])
-    console.log('Avaialbe Centers 18+ =', plus_18.length)
-    const plus_45 = total.flat(1).reduce((acc, center) => { 
-        const tmpCenter = { ...center }
-        const sessions = center.sessions.filter(session => (session.min_age_limit == 45) && (session.available_capacity > 0))
-        if (sessions.length) {
-            tmpCenter.session = sessions
-            acc.push(tmpCenter)
-        }
-        return acc
-    }, [])
-    console.log('Available Centers 45+ =', plus_45.length)
-    // message all users
-    for (const user of users) {
-        try {
-            let isUserSnoozed = false
-            let informedUser = false
-            if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
-                console.log('User is snoozed!')
-                isUserSnoozed = true
-                continue
-            } 
-            const found18s = plus_18.filter(center => 
-                (center.pincode == user.pincode) && 
-                (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
-            )
-            if (found18s.length) {
-                for (const found18 of found18s) {
-                    const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found18.name}\n<b>Pincode</b>: ${found18.pincode}\n<b>Age group</b>: 18+\n<b>Slots</b>:\n\t${found18.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
-                    try {
-                        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-                    } catch (err) {
-                        if (err instanceof TelegramError) {
-                            Users.remove({ chatId: ctx.chat.id })
-                            return
-                        }
-                    }
-                    const currentTime = parseInt(Date.now()/1000)
-                    Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })
-                }
-                informedUser = true
-            }
-            const found45s = plus_45.filter(center => 
-                (center.pincode == user.pincode) && 
-                (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
-            )
-            if (found45s.length) {
-                for (const found45 of found45s) {
-                    const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found45.name}\n<b>Pincode</b>: ${found45.pincode}\n<b>Age group</b>: 45+\n<b>Slots</b>:\n\t${found45.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
-                    try {
-                        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-                    } catch (err) {
-                        if (err instanceof TelegramError) {
-                            Users.remove({ chatId: ctx.chat.id })
-                            return
-                        }
-                    }
-                    const currentTime = parseInt(Date.now()/1000)
-                    Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })
-                }
-                informedUser = true
-            }
-            if (user.pincode && !isUserSnoozed && informedUser) {
-                try {
-                    await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
-                        inline_keyboard: [
-                            [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
-                        ]
-                    } })
-                } catch (err) {
-                    if (err instanceof TelegramError) {
-                        Users.remove({ chatId: ctx.chat.id })
-                        return
-                    }
-                }
-            }
-        } catch (err) {
-            console.log('ERROR WHILE INFORMING!')
-            console.log(err)
-        }
-    }
-    await sleep(4*1000)
-    trackAndInform()
 }
 
 bot.command('sendall', async (ctx) => {

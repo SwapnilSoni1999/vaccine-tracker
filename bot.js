@@ -527,6 +527,7 @@ async function trackAndInform() {
             tmpCenter.sessions = sessions
             acc.push(tmpCenter)
         }
+        return acc
     }, [])
     const plus_45 = total.flat(1).reduce((acc, center) => { 
         const tmpCenter = { ...center }
@@ -535,6 +536,7 @@ async function trackAndInform() {
             tmpCenter.session = sessions
             acc.push(tmpCenter)
         }
+        return acc
     }, [])
 
     // message all users

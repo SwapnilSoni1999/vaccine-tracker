@@ -538,7 +538,7 @@ async function trackAndInform() {
             }
             const found45 = plus_45.find(center => (center.pincode == user.pincode) && (center.sessions.find(session => session.min_age_limit == user.age_group)))
             if (found45) {
-                const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found45.name}\n<b>Pincode</b>: ${found45.pincode}\n<b>Age group</b>: 18+\n<b>Slots</b>:\n\t${found45.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+                const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found45.name}\n<b>Pincode</b>: ${found45.pincode}\n<b>Age group</b>: 45+\n<b>Slots</b>:\n\t${found45.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                 await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                 const currentTime = parseInt(Date.now()/1000)
                 Users.find({ chatId: user.chatId }).assign({ lastAlert: currentTime })

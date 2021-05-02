@@ -530,6 +530,7 @@ async function trackAndInform() {
         }
         return acc
     }, [])
+    console.log('Avaialbe Centers 18+ =', plus_18.length)
     const plus_45 = total.flat(1).reduce((acc, center) => { 
         const tmpCenter = { ...center }
         const sessions = center.sessions.filter(session => (session.min_age_limit == 45) && (session.available_capacity > 0))
@@ -539,7 +540,7 @@ async function trackAndInform() {
         }
         return acc
     }, [])
-
+    console.log('Available Centers 45+ =', plus_45.length)
     // message all users
     for (const user of users) {
         try {
@@ -594,5 +595,5 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for <b>${user.pincode}</b> and age group of <b>${user.age_group}+</b>\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInform, 60 * 1000)
+setInterval(trackAndInform, 80 * 1000)
 bot.launch()

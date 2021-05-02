@@ -445,8 +445,8 @@ bot.command('logout', inviteMiddle, async (ctx) => {
     if (user.txnId) {
         Users.find({ chatId: ctx.chat.id }).assign({ txnId: null }).write()
     }
-    Users.find({ chatId: ctx.chat.id }).assign({ token: null }).write()
-    return await ctx.reply('Logged out! Send /login to login.')
+    Users.find({ chatId: ctx.chat.id }).assign({ token: null, txnId: null, pincode: null, age_group: null }).write()
+    return await ctx.reply('Logged out! Send /login to login. You\'re also opted out from tracking service. Consider login again to /track your pincode.')
 })
 
 function expandAppointments(appointments) {

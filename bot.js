@@ -626,7 +626,10 @@ async function trackAndInform() {
                 isUserSnoozed = true
                 continue
             } 
-            const found18s = plus_18.filter(center => (center.pincode == user.pincode) && (center.sessions.filter(session => session.min_age_limit == user.age_group)).length)
+            const found18s = plus_18.filter(center => 
+                (center.pincode == user.pincode) && 
+                (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
+            )
             if (found18s.length) {
                 for (const found18 of found18s) {
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found18.name}\n<b>Pincode</b>: ${found18.pincode}\n<b>Age group</b>: 18+\n<b>Slots</b>:\n\t${found18.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
@@ -643,7 +646,10 @@ async function trackAndInform() {
                 }
                 informedUser = true
             }
-            const found45s = plus_45.filter(center => (center.pincode == user.pincode) && (center.sessions.filter(session => session.min_age_limit == user.age_group)).length)
+            const found45s = plus_45.filter(center => 
+                (center.pincode == user.pincode) && 
+                (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
+            )
             if (found45s.length) {
                 for (const found45 of found45s) {
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${found45.name}\n<b>Pincode</b>: ${found45.pincode}\n<b>Age group</b>: 45+\n<b>Slots</b>:\n\t${found45.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`

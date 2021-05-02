@@ -562,7 +562,6 @@ async function trackAndInformNew() {
                 continue
             }
             const centers = await CoWIN.getCenters(user.pincode)
-            await sleep(1000)
             console.log("PIN:", user.pincode, "Centers:", centers.length)
             const available = centers.reduce((acc, center) => {
                 const tmpCenter = { ...center }
@@ -578,7 +577,7 @@ async function trackAndInformNew() {
                 (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
             )
             for (const uCenter of userCenters) {
-                const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${uCenter.min_age_limit}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+                const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${user.pincode}\n<b>Age group</b>: ${uCenter.min_age_limit}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                 try {
                     await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                     console.log('Informed user!')
@@ -589,6 +588,18 @@ async function trackAndInformNew() {
                     } else {
                         console.log(err)
                     }
+                }
+            }
+            try {
+                await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
+                    inline_keyboard: [
+                        [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
+                    ]
+                } })
+            } catch (err) {
+                if (err instanceof TelegramError) {
+                    Users.remove({ chatId: ctx.chat.id })
+                    return
                 }
             }
         } catch (err) {

@@ -362,12 +362,14 @@ const sendToAll = new Scenes.WizardScene(
     async (ctx) => {
         const msg = ctx.message.text
         const entities = ctx.message.entities
-        const users = Users.find({ allowed: true }).value()
+        const users = Users.value()
         await ctx.reply(`Broadcasting the message to ${users.length} people.`)
         await ctx.scene.leave()
         for (const user of users) {
             try {
-                await bot.telegram.sendMessage(user.chatId, msg, { entities })
+                if (user.allowed) {
+                    await bot.telegram.sendMessage(user.chatId, msg, { entities })
+                }
             } catch (err) {}
         }
     }

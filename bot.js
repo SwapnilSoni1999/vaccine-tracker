@@ -6,6 +6,7 @@ const CoWIN = require('./wrapper')
 const BOT_TOKEN = '1707560756:AAGklCxSVVtfEtPBYEmOCZW6of4nEzffhx0'
 const bot = new Telegraf(BOT_TOKEN)
 const INVITE_KEY = "C0WiNbotSwapnil"
+const SWAPNIL = 317890515
 
 const adapter = new FileSync('db.json')
 const db = low(adapter)
@@ -312,7 +313,25 @@ bot.action('45_plus', async (ctx) => {
     // return ctx.scene.enter('track-pt2')
 })
 
-const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard])
+const sendToAll = new Scenes.WizardScene(
+    'send-all',
+    async (ctx) => {
+        await ctx.reply('Send the message which you want to convey to all.')
+        return ctx.wizard.next()
+    },
+    async (ctx) => {
+        const msg = ctx.message.text
+        const entities = ctx.message.entities
+        const users = Users.value()
+        await ctx.reply(`Broadcasting the message to ${users.length} people.`)
+        await ctx.scene.leave()
+        for (const user of users) {
+            await bot.telegram.sendMessage(user.chatId, msg, { entities })
+        }
+    }
+)
+
+const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
 
 bot.use(session())
 bot.use(groupDetection)
@@ -591,6 +610,14 @@ async function trackAndInform() {
     await sleep(4*1000)
     trackAndInform()
 }
+
+bot.command('sendall', async () => {
+    if (ctx.chat.id == SWAPNIL) {
+        ctx.scene.enter('send-all')
+    } else {
+        return await ctx.reply('Sorry this command is for admin only!')
+    }
+})
 
 bot.action('yes_booked', async (ctx) => {
     Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ pincode: null }).assign({ age_group: null }).write()

@@ -598,7 +598,7 @@ async function trackAndInformNew() {
                 } })
             } catch (err) {
                 if (err instanceof TelegramError) {
-                    Users.remove({ chatId: ctx.chat.id })
+                    Users.remove({ chatId: user.chatId })
                     return
                 }
             }

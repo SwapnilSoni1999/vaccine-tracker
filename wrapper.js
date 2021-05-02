@@ -133,7 +133,7 @@ class CoWIN {
         try {
             const res = await axios({
                 method: 'GET',
-                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
                 params: params,
                 headers: {
                     ...headers,

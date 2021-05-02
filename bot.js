@@ -351,7 +351,7 @@ bot.command('otp', inviteMiddle, async (ctx) => {
 
     try {
         const token = await CoWIN.verifyOtpStatic(ctx.message.text.split(' ')[1], user.txnId)
-        User.find({ chatId: ctx.chat.id }).assign({ token: token }).write()
+        Users.find({ chatId: ctx.chat.id }).assign({ token: token }).write()
         return await ctx.reply('Login successful!')
     } catch (err) {
         console.log(err)

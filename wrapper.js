@@ -121,7 +121,7 @@ class CoWIN {
         return res.data.districts
     }
 
-    static async getCenters(pincode, token, vaccine=null) {
+    static async getCenters(pincode, vaccine=null) {
         let params = {
             pincode,
             date: getToday()
@@ -135,10 +135,7 @@ class CoWIN {
                 method: 'GET',
                 url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params: params,
-                headers: {
-                    ...headers,
-                    authorization: 'Bearer ' + token
-                }
+                headers
             })
             return res.data.centers
         } catch (err) {

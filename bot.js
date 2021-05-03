@@ -579,13 +579,13 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime }).write()
 })
 
-async function trackAndInformNew() {
+async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
     for (const user of users) {
         try {
             let informedUser = false
-            if (!user.pincode) {
+            if (!user.tracking.length) {
                 console.log('No pincode!')
                 continue
             }
@@ -594,33 +594,40 @@ async function trackAndInformNew() {
                 // skip the user
                 continue
             }
-            const centers = await CoWIN.getCenters(user.pincode)
-            console.log("PIN:", user.pincode, "Centers:", centers.length)
-            const available = centers.reduce((acc, center) => {
-                const tmpCenter = { ...center }
-                const sessions = center.sessions.filter(session => (session.available_capacity > 0))
-                if (sessions.length) {
-                    tmpCenter.sessions = sessions
-                    acc.push(tmpCenter)
-                }
-                return acc
-            }, [])
-            const userCenters = available.filter(center => 
-                (center.pincode == user.pincode) && 
-                (center.sessions.filter(session => session.min_age_limit == user.age_group).length)
-            )
-            for (const uCenter of userCenters) {
-                const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${user.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
-                try {
-                    await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-                    console.log('Informed user!')
-                    informedUser = true
-                } catch (err) {
-                    if (err instanceof TelegramError) {
-                        Users.remove({ chatId: user.chatId }).write()
-                        console.log('Removed chatId because bot was blocked.')
-                    } else {
-                        console.log(err)
+            let informedUser = false
+            for (const trc of user.tracking) {
+                const userdata = { pincode: trc.pincode, age_group: trc.age_group }
+                const centers = await CoWIN.getCenters(userdata.pincode)
+                console.log("PIN:", userdata.pincode, "Centers:", centers.length)
+                
+                const available = centers.reduce((acc, center) => {
+                    const tmpCenter = { ...center }
+                    const sessions = center.sessions.filter(session => (session.available_capacity > 0))
+                    if (sessions.length) {
+                        tmpCenter.sessions = sessions
+                        acc.push(tmpCenter)
+                    }
+                    return acc
+                }, [])
+
+                const userCenters = available.filter(center => 
+                    (center.pincode == userdata.pincode) && 
+                    (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
+                )
+
+                for (const uCenter of userCenters) {
+                    const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+                    try {
+                        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                        console.log('Informed user!')
+                        informedUser = true
+                    } catch (err) {
+                        if (err instanceof TelegramError) {
+                            Users.remove({ chatId: user.chatId }).write()
+                            console.log('Removed chatId because bot was blocked.')
+                        } else {
+                            console.log(err)
+                        }
                     }
                 }
             }
@@ -670,5 +677,6 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for <b>${user.pincode}</b> and age group of <b>${user.age_group}+</b>\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInformNew, 80 * 1000)
+setInterval(trackAndInform, 200 * 1000)
+trackAndInform()
 bot.launch()

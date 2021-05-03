@@ -512,6 +512,7 @@ bot.command('track', inviteMiddle, async (ctx) => {
         return ctx.scene.enter('slot-booking')
     } catch (err) {
         console.log(err)
+        await bot.sendMessage(SWAPNIL, 'Err occured for user ' + ctx.chat.id)
         return await ctx.reply('Something went wrong please try again later!')
     }
 })

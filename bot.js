@@ -601,7 +601,7 @@ async function trackAndInform() {
     for (const user of users) {
         try {
             let informedUser = false
-            if (!user.tracking.length) {
+            if (!Array.isArray(user.tracking) || !user.tracking.length) {
                 console.log('No pincode!')
                 continue
             }

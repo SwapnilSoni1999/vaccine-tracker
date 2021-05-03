@@ -341,7 +341,7 @@ const slotWizard = new Scenes.WizardScene(
                 Users.find({ chatId: ctx.chat.id }).unset('tmpPincode').write()
                 Users.find({ chatId: ctx.chat.id }).unset('tmp_age_group').write()
                 await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
-                await ctx.reply(`You can track multiple pins. Max tracking pin limit is `)
+                await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}`)
                 return ctx.scene.leave()
             } else {
                 await ctx.reply('Request declined!')

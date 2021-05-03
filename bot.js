@@ -626,7 +626,6 @@ async function trackAndInform() {
                         await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                         console.log('Informed user!')
                         informedUser = true
-                        console.log(userCenters[userCenters.length - 1].center_id, uCenter.center_id)
                     } catch (err) {
                         if (err instanceof TelegramError) {
                             Users.remove({ chatId: user.chatId }).write()

@@ -572,8 +572,13 @@ function expandTracking(tracking) {
 }
 
 bot.command('status', inviteMiddle, async (ctx) => {
-    const user = Users.find({ chatId: ctx.chat.id }).value()
-    return await ctx.reply(`<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n\nType /help for more info.`, { parse_mode: 'HTML' })
+    try {
+        const user = Users.find({ chatId: ctx.chat.id }).value()
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${user.tracking.length > 0 ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n\nType /help for more info.`
+        return await ctx.reply(txt, { parse_mode: 'HTML' })
+    } catch (err) {
+        console.log(err)
+    }
 })
 
 bot.action(/snooze_req--\d+/, async (ctx) => {

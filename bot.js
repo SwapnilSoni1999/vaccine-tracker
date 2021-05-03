@@ -505,6 +505,9 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
 bot.command('track', inviteMiddle, async (ctx) => {
     try {
         const { tracking } = Users.find({ chatId: ctx.chat.id }).pick('tracking').value()
+        if (!tracking) {
+            Users.find({ chatId: ctx.chat.id }).assign({ tracking: [] }).write()
+        }
         if (Array.isArray(tracking) && tracking.length >= MAX_TRACKING_ALLOWED) {
             return await ctx.reply(`Sorry you can track maximum ${MAX_TRACKING_ALLOWED} pincodes. send /untrack to remove one of the pincode.`)
         }

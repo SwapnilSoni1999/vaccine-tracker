@@ -341,6 +341,7 @@ const slotWizard = new Scenes.WizardScene(
                 Users.find({ chatId: ctx.chat.id }).unset('tmpPincode').write()
                 Users.find({ chatId: ctx.chat.id }).unset('tmp_age_group').write()
                 await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
+                await ctx.reply(`You can track multiple pins. Max tracking pin limit is `)
                 return ctx.scene.leave()
             } else {
                 await ctx.reply('Request declined!')
@@ -566,9 +567,13 @@ bot.command('unsnooze', inviteMiddle, async (ctx) => {
     return await ctx.reply('Unsoozed! You can /snooze your messages if they\'re annoying.')
 })
 
+function expandTracking(tracking) {
+    return tracking.map(t => `\t<b>Pincode</b>: ${t.pincode} | <b>Age Group</b>: ${t.age_group}`).join('\n')
+}
+
 bot.command('status', inviteMiddle, async (ctx) => {
     const user = Users.find({ chatId: ctx.chat.id }).value()
-    return await ctx.reply(`<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${user.pincode || 'No pincode'}\n<b>Tracking Age Group:</b>: ${user.age_group ? user.age_group + '+' : 'No age group'}\n\nType /help for more info.`, { parse_mode: 'HTML' })
+    return await ctx.reply(`<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n\nType /help for more info.`, { parse_mode: 'HTML' })
 })
 
 bot.action(/snooze_req--\d+/, async (ctx) => {
@@ -594,9 +599,8 @@ async function trackAndInform() {
                 // skip the user
                 continue
             }
-            let informedUser = false
             for (const trc of user.tracking) {
-                const userdata = { pincode: trc.pincode, age_group: trc.age_group }
+                const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
@@ -616,11 +620,13 @@ async function trackAndInform() {
                 )
 
                 for (const uCenter of userCenters) {
+                    let isLast = false
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                     try {
                         await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                         console.log('Informed user!')
                         informedUser = true
+                        console.log(userCenters[userCenters.length - 1].center_id, uCenter.center_id)
                     } catch (err) {
                         if (err instanceof TelegramError) {
                             Users.remove({ chatId: user.chatId }).write()
@@ -630,21 +636,24 @@ async function trackAndInform() {
                         }
                     }
                 }
-            }
-            try {
-                if (informedUser) {
-                    await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
-                        inline_keyboard: [
-                            [ { text: 'Yes 👍', callback_data: 'yes_booked' }, { text: 'No 👎', callback_data: 'not_booked' } ]
-                        ]
-                    } })
+                try {
+                    if (informedUser) {
+                        await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
+                            inline_keyboard: [
+                                [ { text: 'Yes 👍', callback_data: `yes_booked` }, { text: 'No 👎', callback_data: 'not_booked' } ]
+                            ]
+                        } })
+                    }
+                } catch (err) {
+                    if (err instanceof TelegramError) {
+                        Users.remove({ chatId: user.chatId }).write()
+                        return
+                    } else {
+                        console.log(err)
+                    }
                 }
-            } catch (err) {
-                if (err instanceof TelegramError) {
-                    Users.remove({ chatId: user.chatId }).write()
-                    return
-                }
             }
+            
         } catch (err) {
             console.log('Something wrong!', err)
         }
@@ -662,19 +671,19 @@ bot.command('sendall', async (ctx) => {
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         const users = Users.value()
-        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.pincode).length}`
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
 })
 
 bot.action('yes_booked', async (ctx) => {
-    Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ pincode: null }).assign({ age_group: null }).write()
-    return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease note that you\'re now untracked. If you want to track for another dose then /track again.', { parse_mode: 'HTML' })
+    // Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
+    return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
 })
 
 bot.action('not_booked', async (ctx) => {
     const user = Users.find({ chatId: ctx.chat.id }).value()
-    return await ctx.editMessageText(`No worries! You\'re still tracked for <b>${user.pincode}</b> and age group of <b>${user.age_group}+</b>\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
+    return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
 setInterval(trackAndInform, 200 * 1000)

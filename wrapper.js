@@ -57,9 +57,9 @@ const _getBeneficiaries = async (token) => {
     return res.data.beneficiaries
 }
 
-const getToday = (pad=0) => {
+const getToday = () => {
     const dateObj = new Date()
-    return `${String(dateObj.getDate()+pad).padStart(2, '0')}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${dateObj.getFullYear()}`
+    return `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${dateObj.getFullYear()}`
 }
 
 class CoWIN {
@@ -122,31 +122,26 @@ class CoWIN {
     }
 
     static async getCenters(pincode, vaccine=null) {
-        const centers = []
-        for (let i=0; i<8; i++) {
-            let params = {
-                pincode,
-                date: getToday()
-            }
-            if (vaccine) {
-                params.vaccine = vaccine
-            }
-            console.log(params)
-            try {
-                const res = await axios({
-                    method: 'GET',
-                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
-                    params: params,
-                    headers
-                })
-                if (res.data.centers.length) {
-                    centers.push(res.data.centers)
-                }
-            } catch (err) {
-                // skip
-            }
+        let params = {
+            pincode,
+            date: getToday()
         }
-        return centers.flat(1)
+        if (vaccine) {
+            params.vaccine = vaccine
+        }
+        console.log(params)
+        try {
+            const res = await axios({
+                method: 'GET',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                params: params,
+                headers
+            })
+            return res.data.centers
+        } catch (err) {
+            const centers = []
+            return centers
+        }
     }
 }
 

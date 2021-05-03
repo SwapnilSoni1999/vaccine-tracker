@@ -610,6 +610,11 @@ async function trackAndInform() {
                 // skip the user
                 continue
             }
+            if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
+                console.log('Snooze timeout for user!')
+                Users.find({ chatId: user.chatId }).assign({ snoozeTime: null }).write()
+                await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
+            }
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode)

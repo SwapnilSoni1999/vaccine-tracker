@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "lowdb": "^1.0.0",
+    "nanoid": "^3.1.22",
     "telegraf": "^4.3.0"
   },
   "devDependencies": {

@@ -538,10 +538,16 @@ bot.command('untrack', inviteMiddle, async (ctx) => {
     }
 })
 bot.action(/remove-pin--.*/, async (ctx) => {
-    const trackingId = ctx.update.callback_query.data.split('remove-pin--')[1]
-    const { pincode, age_group } = Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').find({ id: trackingId }).value()
-    Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
-    return await ctx.editMessageText(`Removed ${pincode}|${age_group} from your tracking list.`)
+    try {
+        const trackingId = ctx.update.callback_query.data.split('remove-pin--')[1]
+        console.log(Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').find({ id: trackingId }).value())
+        const { pincode, age_group } = Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').find({ id: trackingId }).value()
+        Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
+        return await ctx.editMessageText(`Removed ${pincode}|${age_group} from your tracking list.`)
+    } catch (err) {
+        console.log(err)
+        await ctx.reply('Some error occured!')
+    }
 })
 
 bot.command('snooze', inviteMiddle, async (ctx) => {

@@ -154,7 +154,7 @@ const inviteWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
         } catch (error) {
-            if (error instanceof TelegramError) {
+            if ((error instanceof TelegramError) || (error.response.error_code == 403)) {
                 Users.remove({ chatId: ctx.chat.id }).write()
                 return
             }

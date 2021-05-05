@@ -132,7 +132,11 @@ const inviteWizard = new Scenes.WizardScene(
                 return
             }    
             console.log(error)
-            await ctx.reply('Some error occured please retry again with /start!')
+            try {
+                await ctx.reply('Some error occured please retry again with /start!')
+            } catch (err) { 
+                Users.remove({ chatId: ctx.chat.id }).write()
+            }
             return ctx.scene.leave()
         }
     },
@@ -159,7 +163,11 @@ const inviteWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             console.log(error)
-            await ctx.reply('Some error occured please retry again with /start!')
+            try {
+                await ctx.reply('Some error occured please retry again with /start!')
+            } catch (err) {
+                Users.remove({ chatId: ctx.chat.id }).write()
+            }
             return ctx.scene.leave()
         }
     }

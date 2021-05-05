@@ -1,0 +1,10 @@
+209.127.191.180:9279:yygtpiqz-dest:mu2j2xtfubbw
+45.95.96.132:8691:yygtpiqz-dest:mu2j2xtfubbw
+45.95.96.187:8746:yygtpiqz-dest:mu2j2xtfubbw
+45.95.96.237:8796:yygtpiqz-dest:mu2j2xtfubbw
+45.136.228.154:6209:yygtpiqz-dest:mu2j2xtfubbw
+45.94.47.66:8110:yygtpiqz-dest:mu2j2xtfubbw
+45.94.47.108:8152:yygtpiqz-dest:mu2j2xtfubbw
+193.8.56.119:9183:yygtpiqz-dest:mu2j2xtfubbw
+45.95.99.226:7786:yygtpiqz-dest:mu2j2xtfubbw
+45.95.99.20:7580:yygtpiqz-dest:mu2j2xtfubbw

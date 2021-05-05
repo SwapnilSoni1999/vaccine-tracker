@@ -1,6 +1,5 @@
 const { default: axios } = require('axios')
 const crypto = require('crypto')
-const { trackerHandler, trackAndInform } = require('./bot')
 
 const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"
@@ -20,6 +19,19 @@ const headers = {
     'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8',
     'if-none-match': 'W/"14c7-xM9aYt9EVsqHGvfnQctm12OVYZE"',
 }
+
+const proxies = [
+    { ip: '209.127.191.180', port: '9279' },
+    { ip: '45.95.96.132', port: '8691' },
+    { ip: '45.95.96.187', port: '8746' },
+    { ip: '45.95.96.237', port: '8796' },
+    { ip: '45.136.228.154', port: '6209' },
+    { ip: '45.94.47.66', port: '8110' },
+    { ip: '45.94.47.108', port: '8152' },
+    { ip: '193.8.56.119', port: '9183' },
+    { ip: '45.95.99.226', port: '7786' },
+    { ip: '45.95.99.20', port: '7580' }
+]
 
 const sha256 = (data) => {
     return crypto.createHash('sha256').update(data).digest('hex')
@@ -138,22 +150,31 @@ class CoWIN {
         }
         console.log(params)
         try {
+            const random = Math.floor(Math.random() * proxies.length)
+            const { ip, port } = proxies[random]
             const res = await axios({
                 method: 'GET',
                 url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params: params,
                 headers,
-
+                // proxy: {
+                //     host: ip,
+                //     port: port,
+                //     auth: {
+                //         username: 'yygtpiqz-dest',
+                //         password: 'mu2j2xtfubbw'
+                //     }
+                // }
             })
             return res.data.centers
         } catch (err) {
-            if (err.response.status == 403) {
-                clearInterval(trackerHandler)
-                console.log("Rate limit exceeded! Waiting for 10 minutes...")
-                await sleep(10* 60 * 1000)
-                trackerHandler = setInterval(trackAndInform, 500 * 1000)
-                // return this.getCenters(pincode, vaccine)
-            }
+            console.log(err)
+            // if (err.response.status == 403) {
+            //     console.log("Rate limit exceeded! Waiting for 10 minutes...")
+            //     await sleep(10* 60 * 1000)
+            //     // trackerHandler = setInterval(trackAndInform, 500 * 1000)
+            //     // return this.getCenters(pincode, vaccine)
+            // }
             const centers = []
             return centers
         }

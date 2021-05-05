@@ -370,6 +370,11 @@ const slotWizard = new Scenes.WizardScene(
     }
 )
 
+slotWizard.command('cancel', async (ctx) => {
+    await ctx.scene.leave()
+    return await ctx.reply('Operation cancelled!')
+})
+
 bot.action('18_plus', async (ctx) => {
     const chatId = ctx.update.callback_query.from.id
     Users.find({ chatId }).assign({ tmp_age_group: 18 }).write()
@@ -405,6 +410,11 @@ const sendToAll = new Scenes.WizardScene(
         }
     }
 )
+
+sendToAll.command('cancel', async (ctx) => {
+    await ctx.scene.leave()
+    return await ctx.reply('Operation cancelled!')
+})
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
 
@@ -722,5 +732,3 @@ bot.action('not_booked', async (ctx) => {
 let trackerHandler = setInterval(trackAndInform, 500 * 1000)
 trackAndInform()
 bot.launch()
-
-module.exports = { bot, trackerHandler, trackAndInform }

@@ -719,6 +719,6 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInform, 800 * 1000)
+setInterval(trackAndInform, 500 * 1000)
 trackAndInform()
 bot.launch()

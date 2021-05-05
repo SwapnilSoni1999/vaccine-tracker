@@ -135,10 +135,16 @@ class CoWIN {
                 method: 'GET',
                 url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params: params,
-                headers
+                headers,
+
             })
             return res.data.centers
         } catch (err) {
+            if (err.response.status == 403) {
+                await sleep(10* 60 * 1000)
+                console.log("Rate limit exceeded! Waiting for 10 minutes...")
+                return this.getCenters(pincode, vaccine)
+            }
             const centers = []
             return centers
         }

@@ -60,6 +60,12 @@ function secondsToHms(d) {
     return hDisplay + mDisplay + sDisplay; 
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), ms)
+    })
+}
+
 
 /**
  * Middlewares
@@ -621,6 +627,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode)
+                await sleep(1500)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {
@@ -639,8 +646,7 @@ async function trackAndInform() {
                 )
 
                 for (const uCenter of userCenters) {
-                    let isLast = false
-                    const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+                    const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                     try {
                         await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                         console.log('Informed user!')
@@ -676,6 +682,7 @@ async function trackAndInform() {
             console.log('Something wrong!', err)
         }
     }
+    await sleep(10*1000)
 }
 
 bot.command('sendall', async (ctx) => {
@@ -704,6 +711,6 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInform, 200 * 1000)
+setInterval(trackAndInform, 800 * 1000)
 trackAndInform()
 bot.launch()

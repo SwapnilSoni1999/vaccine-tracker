@@ -154,9 +154,9 @@ const inviteWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
         } catch (error) {
-            if ((error instanceof TelegramError) || (error.response.error_code == 403)) {
+            if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id }).write()
-                return
+                return ctx.scene.leave()
             }
             console.log(error)
             await ctx.reply('Some error occured please retry again with /start!')
@@ -174,11 +174,11 @@ const loginWizard = new Scenes.WizardScene(
         } catch (error) {
             if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id }).write()
-                return
+                return ctx.scene.leave()
             }
             console.log(error)
             await ctx.reply('Some error occured please retry!')
-            ctx.scene.leave()
+            return ctx.scene.leave()
         }
     },
     async (ctx) => {
@@ -210,7 +210,7 @@ const loginWizard = new Scenes.WizardScene(
             } catch (err) {
                 if (err instanceof TelegramError) {
                     Users.remove({ chatId: ctx.chat.id }).write()
-                    return
+                    return ctx.scene.leave()
                 }
                 console.log(err)
                 await ctx.reply('Error while sending otp!\nPlease try again!')
@@ -222,11 +222,11 @@ const loginWizard = new Scenes.WizardScene(
         } catch (error) {
             if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id }).write()
-                return
+                return ctx.scene.leave()
             }
             console.log(error)
             await ctx.reply('Some error occured please retry!')
-            ctx.scene.leave()
+            return ctx.scene.leave()
         }
     },
     async (ctx) => {
@@ -247,7 +247,7 @@ const loginWizard = new Scenes.WizardScene(
             } catch (err) {
                 if (err instanceof TelegramError) {
                     Users.remove({ chatId: ctx.chat.id }).write()
-                    return
+                    return ctx.scene.leave()
                 }
                 console.log(err)
                 await ctx.reply('Invalid otp!\nYou can try again with /otp <your-otp>')
@@ -256,11 +256,11 @@ const loginWizard = new Scenes.WizardScene(
         } catch (error) {
             if (error instanceof TelegramError) {
                 Users.remove({ chatId: ctx.chat.id }).write()
-                return
+                return ctx.scene.leave()
             }
             console.log(error)
             await ctx.reply('Some error occured please retry!')
-            ctx.scene.leave()
+            return ctx.scene.leave()
         }
     }
 )

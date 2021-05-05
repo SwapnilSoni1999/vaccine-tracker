@@ -1,5 +1,6 @@
 const { default: axios } = require('axios')
 const crypto = require('crypto')
+const { trackerHandler, trackAndInform } = require('./bot')
 
 const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"
@@ -147,9 +148,11 @@ class CoWIN {
             return res.data.centers
         } catch (err) {
             if (err.response.status == 403) {
-                await sleep(10* 60 * 1000)
+                clearInterval(trackerHandler)
                 console.log("Rate limit exceeded! Waiting for 10 minutes...")
-                return this.getCenters(pincode, vaccine)
+                await sleep(10* 60 * 1000)
+                trackerHandler = setInterval(trackAndInform, 500 * 1000)
+                // return this.getCenters(pincode, vaccine)
             }
             const centers = []
             return centers

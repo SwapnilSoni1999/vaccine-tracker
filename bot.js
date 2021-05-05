@@ -142,7 +142,7 @@ const inviteWizard = new Scenes.WizardScene(
     },
     async (ctx) => {
         try {
-            const code = ctx.message.text.trim()
+            const code = ctx.message.text
             if (!Users.find({ chatId: ctx.chat.id }).value()) {
                 Users.push({ chatId: ctx.chat.id }).write()
             }
@@ -719,6 +719,8 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInform, 500 * 1000)
+let trackerHandler = setInterval(trackAndInform, 500 * 1000)
 trackAndInform()
 bot.launch()
+
+module.exports = { trackerHandler, trackAndInform }

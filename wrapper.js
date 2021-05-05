@@ -44,6 +44,12 @@ const verifyOtp = async (otp, txnId) => {
     }
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), ms)
+    })
+}
+
 const _getBeneficiaries = async (token) => {
     const res = await axios({
         method: 'GET',

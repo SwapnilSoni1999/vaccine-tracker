@@ -408,7 +408,7 @@ const sendToAll = new Scenes.WizardScene(
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
 
-// bot.use(botUnderMaintain)
+bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())
@@ -723,4 +723,4 @@ let trackerHandler = setInterval(trackAndInform, 500 * 1000)
 trackAndInform()
 bot.launch()
 
-module.exports = { trackerHandler, trackAndInform }
+module.exports = { bot, trackerHandler, trackAndInform }

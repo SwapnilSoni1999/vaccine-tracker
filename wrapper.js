@@ -154,29 +154,46 @@ class CoWIN {
                 // proxy: currentProxy
             })
             if (!res.data.centers.length) {
-                throw new Error('Try again with public api!')
+                throw new Error('Try again without token!')
             }
             return res.data.centers
-        } catch (error) {            
+        } catch (error) {
             try {
                 const res = await axios({
                     method: 'GET',
-                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin',
                     params: params,
-                    headers,
+                    headers: {
+                        ...headers,
+                        authorization: 'Bearer ' + token
+                    },
+                    // proxy: currentProxy
                 })
+                if (!res.data.centers.length) {
+                    throw new Error('Try again with public api!')
+                }
                 return res.data.centers
             } catch (err) {
-                console.log(err)
-                if (err.response.status == 403) {
-                    console.log("Rate limit exceeded! Waiting for 10 minutes...")
-                    await sleep(10* 60 * 1000)
-                    // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
-                    return this.getCenters(pincode, vaccine)
+                try {
+                    const res = await axios({
+                        method: 'GET',
+                        url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                        params: params,
+                        headers,
+                    })
+                    return res.data.centers
+                } catch (err) {
+                    console.log(err)
+                    if (err.response.status == 403) {
+                        console.log("Rate limit exceeded! Waiting for 10 minutes...")
+                        await sleep(10* 60 * 1000)
+                        // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
+                        return this.getCenters(pincode, vaccine)
+                    }
+                    const centers = []
+                    return centers
                 }
-                const centers = []
-                return centers
-            }
+            }  
         }
     }
 }

@@ -1,6 +1,8 @@
 const { default: axios } = require('axios')
 const crypto = require('crypto')
-const fs = require('fs')
+// const fs = require('fs')
+
+axios.defaults.proxy = { host: '103.25.170.72', port: '9898' }
 
 const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"
@@ -69,8 +71,8 @@ const getToday = () => {
     return `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${dateObj.getFullYear()}`
 }
 
-const proxies = fs.readFileSync('proxies.txt').toString('ascii').split('\n').map(line =>  ({ host: line.split(':')[0], port: line.split(':')[1] }))
-let currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
+// const proxies = fs.readFileSync('proxies.txt').toString('ascii').split('\n').map(line =>  ({ host: line.split(':')[0], port: line.split(':')[1] }))
+// let currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
 
 class CoWIN {
     constructor(mobileNumber) {
@@ -149,7 +151,7 @@ class CoWIN {
                     ...headers,
                     authorization: 'Bearer ' + token
                 },
-                proxy: currentProxy
+                // proxy: currentProxy
             })
             if (!res.data.centers.length) {
                 throw new Error('Try again with public api!')
@@ -162,7 +164,6 @@ class CoWIN {
                     url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                     params: params,
                     headers,
-                    proxy: currentProxy
                 })
                 return res.data.centers
             } catch (err) {
@@ -170,7 +171,7 @@ class CoWIN {
                 if (err.response.status == 403) {
                     console.log("Rate limit exceeded! Waiting for 10 minutes...")
                     await sleep(10* 60 * 1000)
-                    currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
+                    // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
                     return this.getCenters(pincode, vaccine)
                 }
                 const centers = []

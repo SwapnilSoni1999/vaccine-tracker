@@ -420,7 +420,7 @@ sendToAll.command('cancel', async (ctx) => {
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
 
-bot.use(botUnderMaintain)
+// bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())
@@ -656,7 +656,7 @@ async function trackAndInform() {
             }
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
-                const centers = await CoWIN.getCenters(userdata.pincode)
+                const centers = await CoWIN.getCenters(userdata.pincode, user.token)
                 await sleep(1500)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
@@ -741,6 +741,6 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-// setInterval(trackAndInform, 500 * 1000)
-// trackAndInform()
+setInterval(trackAndInform, 500 * 1000)
+trackAndInform()
 bot.launch()

@@ -113,7 +113,9 @@ const botUnderMaintain = async (ctx, next) => {
     if (ctx.chat.id == SWAPNIL) {
         return next()
     }
-    return await ctx.reply('Bot is under maintenance. Please try after few minutes.')
+    try {
+        return await ctx.reply('Bot is under maintenance. Reason: The server\'s IP got banned on cowin api. So you have to wait until I find some indian proxies. If you can help then dm @SoniSins')
+    } catch (err) { }
 }
 
 /**
@@ -526,7 +528,7 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
     }
 })
 
-bot.command('track', inviteMiddle, async (ctx) => {
+bot.command('track', inviteMiddle, authMiddle, async (ctx) => {
     try {
         const { tracking } = Users.find({ chatId: ctx.chat.id }).pick('tracking').value()
         if (!tracking) {
@@ -628,6 +630,16 @@ async function trackAndInform() {
     for (const user of users) {
         try {
             let informedUser = false
+            if (!user.allowed) {
+                continue
+            }
+            if (!user.token) {
+                console.log('No token!')
+                try {
+                    await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.')    
+                } catch (err) {}
+                continue
+            }
             if (!Array.isArray(user.tracking) || !user.tracking.length) {
                 console.log('No pincode!')
                 continue
@@ -729,6 +741,6 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-let trackerHandler = setInterval(trackAndInform, 500 * 1000)
-trackAndInform()
+// setInterval(trackAndInform, 500 * 1000)
+// trackAndInform()
 bot.launch()

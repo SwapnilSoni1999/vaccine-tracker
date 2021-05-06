@@ -668,7 +668,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode, user.token)
-                await sleep(1500)
+                await sleep(2000)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {
@@ -752,6 +752,6 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInform, 900 * 1000)
+setInterval(trackAndInform, 10 * 60 * 1000)
 trackAndInform()
 bot.launch()

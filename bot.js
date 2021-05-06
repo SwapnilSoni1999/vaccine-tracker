@@ -752,6 +752,13 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-setInterval(trackAndInform, 10 * 60 * 1000)
+const totalPincodes = (Users.value()).reduce((acc, val) => {
+    if (Array.isArray(val.tracking) && val.tracking.length) {
+        acc += val.tracking.length
+    }
+    return acc
+}, 0)
+console.log('Setting interval timeout for', totalPincodes *2, 'seconds!')
+setInterval(trackAndInform, totalPincodes * 2 * 1000)
 trackAndInform()
 bot.launch()

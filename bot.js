@@ -616,6 +616,14 @@ bot.command('status', inviteMiddle, async (ctx) => {
     }
 })
 
+bot.command('revokeall', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        await ctx.reply('Revoking everyone\'s token!')
+        Users.assign({ token: null })
+        return await ctx.reply(`Revoked every user\'s token!`)
+    }
+})
+
 bot.action(/snooze_req--\d+/, async (ctx) => {
     const seconds = ctx.update.callback_query.data.split('snooze_req--')[1]
     const lit = SNOOZE_LITERALS.find(v => v.seconds === parseInt(seconds))

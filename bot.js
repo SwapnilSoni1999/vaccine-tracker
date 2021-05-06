@@ -420,7 +420,7 @@ sendToAll.command('cancel', async (ctx) => {
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
 
-// bot.use(botUnderMaintain)
+bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())

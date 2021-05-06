@@ -619,7 +619,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        Users.assign({ token: null })
+        Users.assign({ token: null }).write()
         return await ctx.reply(`Revoked every user\'s token!`)
     }
 })

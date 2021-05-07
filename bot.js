@@ -416,7 +416,7 @@ const sendToAll = new Scenes.WizardScene(
         const entities = ctx.message.entities
         const users = (Users.value()).filter(u => u.allowed && u.chatId)
         await ctx.reply(`Broadcasting the message to ${users.length} people.`)
-        const msg = await ctx.reply('Status...')
+        const mesg = await ctx.reply('Status...')
         
         await ctx.scene.leave()
         let counter = 1
@@ -434,7 +434,7 @@ const sendToAll = new Scenes.WizardScene(
                     }
                 }
             }
-            await ctx.telegram.editMessageText(SWAPNIL, msg.message_id, `Notified to ${counter}/${users.length} people.`)
+            await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, `Notified to ${counter}/${users.length} people.`)
             counter += 1
         }
     }

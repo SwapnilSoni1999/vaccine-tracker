@@ -425,6 +425,11 @@ const sendToAll = new Scenes.WizardScene(
                 }
             } catch (err) {
                 console.log("Broadcast error!", err)
+                if (err instanceof TelegramError) {
+                    if (err.response.error_code == 403) {
+                        Users.remove({ chatId: user.chatId }).write()
+                    }
+                }
             }
         }
     }

@@ -414,7 +414,7 @@ const sendToAll = new Scenes.WizardScene(
     async (ctx) => {
         const msg = ctx.message.text
         const entities = ctx.message.entities
-        const users = (Users.value()).map(u => u.allowed && u.chatId)
+        const users = (Users.value()).filter(u => u.allowed && u.chatId)
         await ctx.reply(`Broadcasting the message to ${users.length} people.`)
         await ctx.scene.leave()
         for (const user of users) {
@@ -633,9 +633,11 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        const users = (Users.value()).map(u => u.allowed && u.token && u.chatId && Array.isArray(u.tracking) && u.tracking.length)
+        const users = (Users.value()).filter(u => u.allowed && u.token && !!u.chatId && Array.isArray(u.tracking) && u.tracking.length)
         for (const user of users) {
-            Users.find({ chatId: user.chatId }).assign({ token: null }).write()
+            if (user.chatId) {
+                Users.find({ chatId: user.chatId }).assign({ token: null }).write()
+            }
         }
         return await ctx.reply(`Revoked ${users.length} user\'s token!`)
     }

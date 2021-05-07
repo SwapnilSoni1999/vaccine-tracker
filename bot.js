@@ -417,6 +417,7 @@ const sendToAll = new Scenes.WizardScene(
         const users = (Users.value()).filter(u => u.allowed && u.chatId)
         await ctx.reply(`Broadcasting the message to ${users.length} people.`)
         await ctx.scene.leave()
+        let counter = 1
         for (const user of users) {
             try {
                 if (user.allowed) {
@@ -431,6 +432,8 @@ const sendToAll = new Scenes.WizardScene(
                     }
                 }
             }
+            await ctx.editMessageText(`Notified to ${counter}/${users.length} people.`)
+            counter += 1
         }
     }
 )

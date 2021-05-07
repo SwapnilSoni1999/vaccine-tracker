@@ -534,7 +534,7 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
         }
         return
     } catch (err) {
-        if(err.response.status == 401) {
+        if(err instanceof TelegramError && err.response.status == 401) {
             Users.find({ chatId: ctx.chat.id }).assign({ token: null }).assign({ txnId: null }).write()
             return await ctx.reply('Token expired! Please /login again.')
         }

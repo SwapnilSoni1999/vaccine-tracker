@@ -668,7 +668,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode, user.token)
-                await sleep(1000)
+                // await sleep(1000)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {
@@ -723,7 +723,7 @@ async function trackAndInform() {
             console.log('Something wrong!', err)
         }
     }
-    await sleep(10*1000)
+    // await sleep(10*1000)
 }
 
 bot.command('sendall', async (ctx) => {

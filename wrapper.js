@@ -1,8 +1,5 @@
 const { default: axios } = require('axios')
 const crypto = require('crypto')
-// const fs = require('fs')
-
-// axios.defaults.proxy = { host: '103.25.170.72', port: '9898' }
 
 const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"

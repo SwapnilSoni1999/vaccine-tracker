@@ -421,7 +421,7 @@ const sendToAll = new Scenes.WizardScene(
             try {
                 if (user.allowed) {
                     await bot.telegram.sendMessage(user.chatId, msg, { entities })
-                    await sleep(500)
+                    await sleep(200)
                 }
             } catch (err) {
                 console.log("Broadcast error!", err)

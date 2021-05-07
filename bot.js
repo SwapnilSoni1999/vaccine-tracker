@@ -421,6 +421,7 @@ const sendToAll = new Scenes.WizardScene(
             try {
                 if (user.allowed) {
                     await bot.telegram.sendMessage(user.chatId, msg, { entities })
+                    await sleep(500)
                 }
             } catch (err) {
                 console.log("Broadcast error!", err)
@@ -776,7 +777,7 @@ const totalPincodes = (Users.value()).reduce((acc, val) => {
     }
     return acc
 }, 0)
-console.log('Setting interval timeout for', totalPincodes , 'seconds!')
-setInterval(trackAndInform, totalPincodes * 1000)
-trackAndInform()
+// console.log('Setting interval timeout for', totalPincodes , 'seconds!')
+// setInterval(trackAndInform, totalPincodes * 1000)
+// trackAndInform()
 bot.launch()

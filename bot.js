@@ -422,7 +422,9 @@ const sendToAll = new Scenes.WizardScene(
                 if (user.allowed) {
                     await bot.telegram.sendMessage(user.chatId, msg, { entities })
                 }
-            } catch (err) {}
+            } catch (err) {
+                console.log("Broadcast error!", err)
+            }
         }
     }
 )

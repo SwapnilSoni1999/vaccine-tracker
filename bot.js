@@ -697,7 +697,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode, user.token)
-                // await sleep(1000)
+                await sleep(1000)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {
@@ -787,7 +787,7 @@ const totalPincodes = (Users.value()).reduce((acc, val) => {
     }
     return acc
 }, 0)
-// console.log('Setting interval timeout for', totalPincodes , 'seconds!')
-// setInterval(trackAndInform, totalPincodes * 1000)
-// trackAndInform()
+console.log('Setting interval timeout for', totalPincodes , 'seconds!')
+setInterval(trackAndInform, totalPincodes * 1000)
+trackAndInform()
 bot.launch()

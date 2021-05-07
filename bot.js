@@ -623,7 +623,7 @@ function expandTracking(tracking) {
 bot.command('status', inviteMiddle, async (ctx) => {
     try {
         const user = Users.find({ chatId: ctx.chat.id }).value()
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n\nType /help for more info.`
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)

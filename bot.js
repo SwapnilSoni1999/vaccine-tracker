@@ -434,7 +434,7 @@ const sendToAll = new Scenes.WizardScene(
                     }
                 }
             }
-            await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, `Notified to ${counter}/${users.length} people.`)
+            await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, null, `Notified to ${counter}/${users.length} people.`)
             counter += 1
         }
     }

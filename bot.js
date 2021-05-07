@@ -187,7 +187,9 @@ const loginWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             console.log(error)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) { }
             return ctx.scene.leave()
         }
     },
@@ -235,7 +237,9 @@ const loginWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             console.log(error)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) {}
             return ctx.scene.leave()
         }
     },
@@ -269,7 +273,9 @@ const loginWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             console.log(error)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) { }
             return ctx.scene.leave()
         }
     }
@@ -288,7 +294,9 @@ const slotWizard = new Scenes.WizardScene(
             return ctx.wizard.next()
         } catch (error) {
             console.log(error)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) { }
             return ctx.scene.leave()
         }
     },
@@ -321,7 +329,9 @@ const slotWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             console.log(err)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) { }
             return ctx.scene.leave()
         }
     },
@@ -344,7 +354,9 @@ const slotWizard = new Scenes.WizardScene(
             return ctx.wizard.next()
         } catch (err) {
             console.log(err)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) { }
             return ctx.scene.leave()
         }
     },
@@ -366,7 +378,9 @@ const slotWizard = new Scenes.WizardScene(
             }
         } catch (error) {
             console.log(error)
-            await ctx.reply('Some error occured please retry!')
+            try {
+                await ctx.reply('Some error occured please retry!')
+            } catch (err) { }
             return ctx.scene.leave()
         }
     }

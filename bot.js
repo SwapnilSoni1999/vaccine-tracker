@@ -414,7 +414,7 @@ const sendToAll = new Scenes.WizardScene(
     async (ctx) => {
         const msg = ctx.message.text
         const entities = ctx.message.entities
-        const users = Users.value()
+        const users = (Users.value()).map(u => u.allowed && u.chatId)
         await ctx.reply(`Broadcasting the message to ${users.length} people.`)
         await ctx.scene.leave()
         for (const user of users) {

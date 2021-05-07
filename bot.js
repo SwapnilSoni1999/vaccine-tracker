@@ -644,7 +644,12 @@ async function trackAndInform() {
             if (!user.allowed) {
                 continue
             }
-            if (!user.token) {
+            if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
+                console.log('User is snoozed!')
+                // skip the user
+                continue
+            }
+            if (!user.token && (Array.isArray(user.tracking) && user.tracking.length)) {
                 console.log('No token!')
                 try {
                     await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.')    
@@ -653,11 +658,6 @@ async function trackAndInform() {
             }
             if (!Array.isArray(user.tracking) || !user.tracking.length) {
                 console.log('No pincode!')
-                continue
-            }
-            if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
-                console.log('User is snoozed!')
-                // skip the user
                 continue
             }
             if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
@@ -758,7 +758,7 @@ const totalPincodes = (Users.value()).reduce((acc, val) => {
     }
     return acc
 }, 0)
-console.log('Setting interval timeout for', totalPincodes *2, 'seconds!')
-setInterval(trackAndInform, totalPincodes * 2 * 1000)
+console.log('Setting interval timeout for', totalPincodes , 'seconds!')
+setInterval(trackAndInform, totalPincodes * 1000)
 trackAndInform()
 bot.launch()

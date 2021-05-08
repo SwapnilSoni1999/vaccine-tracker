@@ -575,7 +575,7 @@ bot.command('track', inviteMiddle, authMiddle, async (ctx) => {
 bot.command('untrack', inviteMiddle, async (ctx) => {
     try {
         const { tracking } = Users.find({ chatId: ctx.chat.id }).pick('tracking').value()
-        if (!Array.isArray(tracking) && !tracking.length) {
+        if (!Array.isArray(tracking) || !tracking.length) {
             return await ctx.reply('You aren\'t tracking any pincode. send /track to start tracking.')
         }
         const markupButton = []

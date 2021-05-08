@@ -781,6 +781,7 @@ bot.command('sync', async (ctx) => {
             trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
             await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
         } catch (err) {
+            console.log(err)
             return await ctx.reply('Please provide /sync <yes|no> for token check.')
         }
     }

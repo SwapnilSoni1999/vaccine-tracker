@@ -681,7 +681,7 @@ async function trackAndInform() {
             if (!user.token && (Array.isArray(user.tracking) && user.tracking.length)) {
                 console.log('No token!')
                 try {
-                    await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.')    
+                    await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.')
                 } catch (err) {}
                 continue
             }
@@ -771,6 +771,17 @@ bot.command('botstat', async (ctx) => {
     }
 })
 
+bot.command('sync', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
+        await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
+        const totalPincodes = getTotalPincodes(withToken)
+        clearInterval(trackerHandle)
+        trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+        await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
+    }
+})
+
 bot.action('yes_booked', async (ctx) => {
     // Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
     return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
@@ -781,13 +792,19 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-const totalPincodes = (Users.value()).reduce((acc, val) => {
-    if (Array.isArray(val.tracking) && val.tracking.length) {
-        acc += val.tracking.length
-    }
-    return acc
-}, 0)
+function getTotalPincodes (withToken) {
+    const totalPincodes = (Users.value()).reduce((acc, val) => {
+        if (Array.isArray(val.tracking) && val.tracking.length) {
+            if (withToken ? !!user.token : true) {
+                acc += val.tracking.length
+            }
+        }
+        return acc
+    }, 0)
+    return totalPincodes
+}
+const totalPincodes = getTotalPincodes(false)
 console.log('Setting interval timeout for', totalPincodes , 'seconds!')
-setInterval(trackAndInform, totalPincodes * 1000)
+var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
 trackAndInform()
 bot.launch()

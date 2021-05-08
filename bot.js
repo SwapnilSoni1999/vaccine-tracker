@@ -773,12 +773,16 @@ bot.command('botstat', async (ctx) => {
 
 bot.command('sync', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
-        const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
-        await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
-        const totalPincodes = getTotalPincodes(withToken)
-        clearInterval(trackerHandle)
-        trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
-        await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
+        try {
+            const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
+            await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
+            const totalPincodes = getTotalPincodes(withToken)
+            clearInterval(trackerHandle)
+            trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+            await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
+        } catch (err) {
+            return await ctx.reply('Please provide /sync <yes|no> for token check.')
+        }
     }
 })
 

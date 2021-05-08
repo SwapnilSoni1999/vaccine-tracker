@@ -702,7 +702,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode, user.token)
-                await sleep(1200)
+                await sleep(1250)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {

@@ -800,7 +800,7 @@ bot.action('not_booked', async (ctx) => {
 function getTotalPincodes (withToken) {
     const totalPincodes = (Users.value()).reduce((acc, val) => {
         if (Array.isArray(val.tracking) && val.tracking.length) {
-            if (withToken ? !!user.token : true) {
+            if (withToken ? !!val.token : true) {
                 acc += val.tracking.length
             }
         }

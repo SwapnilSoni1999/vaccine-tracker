@@ -412,30 +412,35 @@ const sendToAll = new Scenes.WizardScene(
         return ctx.wizard.next()
     },
     async (ctx) => {
-        const msg = ctx.message.text
-        const entities = ctx.message.entities
-        const users = (Users.value()).filter(u => u.allowed && u.chatId)
-        await ctx.reply(`Broadcasting the message to ${users.length} people.`)
-        const mesg = await ctx.reply('Status...')
-        
-        await ctx.scene.leave()
-        let counter = 1
-        for (const user of users) {
-            try {
-                if (user.allowed) {
-                    await bot.telegram.sendMessage(user.chatId, msg, { entities })
-                    await sleep(200)
-                }
-            } catch (err) {
-                console.log("Broadcast error!", err)
-                if (err instanceof TelegramError) {
-                    if (err.response.error_code == 403) {
-                        Users.remove({ chatId: user.chatId }).write()
+        try {
+            ctx.scene.leave()
+            const msg = ctx.message.text
+            const entities = ctx.message.entities
+            const users = (Users.value()).filter(u => u.allowed && u.chatId)
+            await ctx.reply(`Broadcasting the message to ${users.length} people.`)
+            const mesg = await ctx.reply('Status...')
+            
+            await ctx.scene.leave()
+            let counter = 1
+            for (const user of users) {
+                try {
+                    if (user.allowed) {
+                        await bot.telegram.sendMessage(user.chatId, msg, { entities })
+                        await sleep(200)
+                    }
+                } catch (err) {
+                    console.log("Broadcast error!", err)
+                    if (err instanceof TelegramError) {
+                        if (err.response.error_code == 403) {
+                            Users.remove({ chatId: user.chatId }).write()
+                        }
                     }
                 }
+                await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, null, `Notified to ${counter}/${users.length} people.`)
+                counter += 1
             }
-            await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, null, `Notified to ${counter}/${users.length} people.`)
-            counter += 1
+        } catch (err) {
+            await ctx.reply('Some error occured!')
         }
     }
 )

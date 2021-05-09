@@ -669,6 +669,7 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime }).write()
 })
 
+var TRACKER_ALIVE = false
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
@@ -702,6 +703,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode)
+                TRACKER_ALIVE = true
                 await sleep(300)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
@@ -802,6 +804,15 @@ function getTotalPincodes (withToken) {
 // console.log('Setting interval timeout for', totalPincodes , 'seconds!')
 // var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
 trackAndInform()
+// set false and wait for 5mins if tracker updates the flag or not
+setInterval(() => {
+    TRACKER_ALIVE = false
+}, 1 * 60 * 1000)
+setInterval(() => {
+    if (!TRACKER_ALIVE) {
+        bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
+    }
+}, 5 * 60 * 1000)
 
 // bot.command('sync', async (ctx) => {
 //     if (ctx.chat.id == SWAPNIL) {

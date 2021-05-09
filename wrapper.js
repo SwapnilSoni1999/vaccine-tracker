@@ -135,10 +135,10 @@ class CoWIN {
             params.vaccine = vaccine
         }
         console.log(params)
-        const agent = httpsOverHttp({ proxy: proxies[requestCount] })
-        console.log('Request Count:', requestCount)
-        console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
         try {
+            const agent = httpsOverHttp({ proxy: proxies[requestCount] })
+            console.log('Request Count:', requestCount)
+            console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
             const axiosConfig = {
                 method: 'GET',
                 url: 'http://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
@@ -146,7 +146,7 @@ class CoWIN {
                 headers,
                 httpsAgent: agent
             }
-            if (requestCount == (proxies.length-1)) {
+            if (requestCount == proxies.length) {
                 delete axiosConfig.httpsAgent
                 requestCount = 0
             }

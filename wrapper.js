@@ -1,6 +1,8 @@
 const { default: axios } = require('axios')
 const crypto = require('crypto')
 const { EventEmitter } = require('events')
+const { httpsOverHttp } = require('tunnel')
+const fs = require('fs')
 
 const em = new EventEmitter()
 
@@ -8,6 +10,7 @@ const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"
 
 var requestCount = 0
+const proxies = fs.readFileSync('proxies.txt').toString().split('\n').map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
 
 const headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0',
@@ -132,17 +135,20 @@ class CoWIN {
             params.vaccine = vaccine
         }
         console.log(params)
+        const agent = httpsOverHttp({ proxy: proxies[requestCount] })
+        console.log('Request Count:', requestCount)
         try {
             const axiosConfig = {
                 method: 'GET',
                 url: 'http://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params,
-                headers
+                headers,
+                httpsAgent: agent
             }
-            // if (requestCount % 2 == 0) {
-            //     console.log('Attaching proxy')
-            //     axiosConfig.proxy = { host: '103.25.170.72', port: 9898, protocol: 'http' }
-            // }
+            if (requestCount == (proxies.length-1)) {
+                delete axiosConfig.httpsAgent
+                requestCount = 0
+            }
             const res = await axios(axiosConfig)
             requestCount++
             return res.data.centers

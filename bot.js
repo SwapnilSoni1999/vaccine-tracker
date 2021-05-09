@@ -838,7 +838,7 @@ setInterval(() => {
 // })
 
 em.on('rate-limit', () => {
-    clearInterval(trackerHandle)
+    // clearInterval(trackerHandle)
     setTimeout(() => {
         console.log('Starting tracker again...')
         trackAndInform()

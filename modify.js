@@ -7,7 +7,10 @@ const newData = {
 }
 
 for (const user of users) {
-    const newUser = { ...user, token: null }
+    const newUser = { ...user }
+    if (Array.isArray(newUser.tracking) && newUser.tracking.length > 2) {
+        newUser.tracking.splice(2, newUser.tracking.length)
+    }
     newData.users.push(newUser)
 }
 

@@ -18,7 +18,7 @@ const Users = db.get('users')
 /**
  * Helper methods
  */
-const MAX_TRACKING_ALLOWED = 4
+const MAX_TRACKING_ALLOWED = 2
 const SNOOZE_LITERALS = [
     { name: '10min', seconds: 10 * 60 },
     { name: '20min', seconds: 20 * 60 },

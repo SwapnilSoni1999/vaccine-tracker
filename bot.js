@@ -670,97 +670,118 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 })
 
 var TRACKER_ALIVE = false
+
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
-    for (const user of users) {
+    const districtIds = users.map(u => u.districtId)
+    for (const districtId of districtIds) {
         try {
-            let informedUser = false
-            if (!user.allowed) {
-                continue
-            }
-            if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
-                console.log('User is snoozed!')
-                // skip the user
-                continue
-            }
-            if (!user.token && (Array.isArray(user.tracking) && user.tracking.length)) {
-                console.log('No token!')
-                try {
-                    await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.\nYou\'re getting this message because you\'re tracking some pincode(s). To stop this spam either login and keep tracking the pincode or just /logout or /untrack pincode(s)')
-                } catch (err) {}
-                continue
-            }
-            if (!Array.isArray(user.tracking) || !user.tracking.length) {
-                console.log('No pincode!')
-                continue
-            }
-            if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
-                console.log('Snooze timeout for user!')
-                Users.find({ chatId: user.chatId }).assign({ snoozeTime: null }).write()
-                await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
-            }
-            for (const trc of user.tracking) {
-                const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
-                const centers = await CoWIN.getCenters(userdata.pincode)
-                TRACKER_ALIVE = true
-                await sleep(1500)
-                console.log("PIN:", userdata.pincode, "Centers:", centers.length)
-                
-                const available = centers.reduce((acc, center) => {
-                    const tmpCenter = { ...center }
-                    const sessions = center.sessions.filter(session => (session.available_capacity > 0))
-                    if (sessions.length) {
-                        tmpCenter.sessions = sessions
-                        acc.push(tmpCenter)
-                    }
-                    return acc
-                }, [])
+            const centers = await CoWIN.getCentersByDist(districtId)
+            const available = centers.reduce((acc, center) => {
+                const tmpCenter = { ...center }
+                const sessions = center.sessions.filter(session => (session.available_capacity > 0))
+                if (sessions.length) {
+                    tmpCenter.sessions = sessions
+                    acc.push(tmpCenter)
+                }
+                return acc
+            }, [])
 
-                const userCenters = available.filter(center => 
-                    (center.pincode == userdata.pincode) && 
-                    (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
-                )
-                
-                for (const uCenter of userCenters) {
-                    const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+            const validUsers = users.reduce((valid, userdata) => {
+                if (userdata.allowed && Array.isArray(userdata.tracking) && userdata.tracking.length) {
+                    const tracking = userdata.tracking.filter(t => 
+                        (available.filter(center => 
+                            (center.pincode == t.pincode) &&
+                            (center.sessions.filter(session => session.min_age_limit == t.age_group).length)
+                        )).length
+                    )
+                    if (tracking.length) {
+                        userdata.tracking = tracking
+                        valid.push(userdata)
+                    }
+                }
+                return valid
+            }, [])
+
+            for (const user of validUsers) {
+                let informedUser = false
+                //double check
+                if (!user.allowed) {
+                    continue
+                }
+                if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
+                    console.log('User is snoozed!')
+                    // skip the user
+                    continue
+                }
+                if (!user.token) {
+                    console.log('No token!')
                     try {
-                        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-                        console.log('Informed user!')
-                        informedUser = true
+                        await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.\nYou\'re getting this message because you\'re tracking some pincode(s). To stop this spam either login and keep tracking the pincode or just /logout or /untrack pincode(s)')
+                    } catch (err) {}
+                    continue
+                }
+                if (!user.districtId) {
+                    console.log('No district id! Please send /district to set your prefered district.')
+                    try {
+                        await bot.telegram.sendMessage(user.chatId, 'No district id! Please send /district to set your prefered district.')
+                    } catch (err) {}
+                    continue
+                }
+
+                if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
+                    console.log('Snooze timeout for user!')
+                    Users.find({ chatId: user.chatId }).assign({ snoozeTime: null }).write()
+                    await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
+                }
+
+                for (const trc of user.tracking) {
+                    const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
+                    TRACKER_ALIVE = true
+
+                    const userCenters = available.filter(center => 
+                        (center.pincode == userdata.pincode) && 
+                        (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
+                    )
+
+                    for (const uCenter of userCenters) {
+                        const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
+                        try {
+                            await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                            console.log('Informed user!')
+                            informedUser = true
+                        } catch (err) {
+                            if (err instanceof TelegramError) {
+                                Users.remove({ chatId: user.chatId }).write()
+                                console.log('Removed chatId because bot was blocked.')
+                            } else {
+                                console.log(err)
+                            }
+                        }
+                    }
+                    try {
+                        if (informedUser) {
+                            await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
+                                inline_keyboard: [
+                                    [ { text: 'Yes 👍', callback_data: `yes_booked` }, { text: 'No 👎', callback_data: 'not_booked' } ]
+                                ]
+                            } })
+                        }
                     } catch (err) {
                         if (err instanceof TelegramError) {
                             Users.remove({ chatId: user.chatId }).write()
-                            console.log('Removed chatId because bot was blocked.')
+                            return
                         } else {
                             console.log(err)
                         }
                     }
                 }
-                try {
-                    if (informedUser) {
-                        await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
-                            inline_keyboard: [
-                                [ { text: 'Yes 👍', callback_data: `yes_booked` }, { text: 'No 👎', callback_data: 'not_booked' } ]
-                            ]
-                        } })
-                    }
-                } catch (err) {
-                    if (err instanceof TelegramError) {
-                        Users.remove({ chatId: user.chatId }).write()
-                        return
-                    } else {
-                        console.log(err)
-                    }
-                }
             }
-            
-        } catch (err) {
-            console.log('Something wrong!', err)
+        } catch (error) {
+            console.log('Something wrong!', error)
         }
     }
-    await sleep(10*1000)
-    trackAndInform()
 }
 
 bot.command('sendall', async (ctx) => {
@@ -789,20 +810,7 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-function getTotalPincodes (withToken) {
-    const totalPincodes = (Users.value()).reduce((acc, val) => {
-        if (Array.isArray(val.tracking) && val.tracking.length) {
-            if (withToken ? !!val.token : true) {
-                acc += val.tracking.length
-            }
-        }
-        return acc
-    }, 0)
-    return totalPincodes
-}
-// const totalPincodes = getTotalPincodes(false)
-// console.log('Setting interval timeout for', totalPincodes , 'seconds!')
-// var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+
 trackAndInform()
 // set false and wait for 5mins if tracker updates the flag or not
 setInterval(() => {
@@ -811,32 +819,11 @@ setInterval(() => {
 setInterval(() => {
     if (!TRACKER_ALIVE) {
         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
+        setTimeout(() => {
+            console.log('Starting tracker again...')
+            trackAndInform()
+        }, 4 * 60 * 1000)
     }
 }, 5 * 60 * 1000)
-
-// bot.command('sync', async (ctx) => {
-//     if (ctx.chat.id == SWAPNIL) {
-//         try {
-//             const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
-//             await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
-//             const totalPincodes = getTotalPincodes(withToken)
-//             clearInterval(trackerHandle)
-//             trackAndInform()
-//             await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
-//         } catch (err) {
-//             console.log(err)
-//             return await ctx.reply('Please provide /sync <yes|no> for token check.')
-//         }
-//     }
-// })
-
-em.on('rate-limit', () => {
-    // clearInterval(trackerHandle)
-    bot.telegram.sendMessage(SWAPNIL, 'Rate limit exceeded...')
-    setTimeout(() => {
-        console.log('Starting tracker again...')
-        trackAndInform()
-    }, 10 * 60 * 1000)
-})
 
 bot.launch()

@@ -141,7 +141,7 @@ class CoWIN {
             }
             if (requestCount % 2 == 0) {
                 console.log('Attaching proxy')
-                axiosConfig.proxy = { host: '103.25.170.72', port: '9898' }
+                axiosConfig.proxy = { host: '103.25.170.72', port: '9898', protocol: 'http' }
             }
             const res = await axios(axiosConfig)
             requestCount++

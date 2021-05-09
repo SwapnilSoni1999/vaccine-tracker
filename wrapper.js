@@ -137,6 +137,7 @@ class CoWIN {
         console.log(params)
         const agent = httpsOverHttp({ proxy: proxies[requestCount] })
         console.log('Request Count:', requestCount)
+        console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
         try {
             const axiosConfig = {
                 method: 'GET',

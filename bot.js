@@ -702,7 +702,7 @@ async function trackAndInform() {
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode)
-                await sleep(1500)
+                await sleep(300)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {
@@ -757,7 +757,8 @@ async function trackAndInform() {
             console.log('Something wrong!', err)
         }
     }
-    // await sleep(10*1000)
+    await sleep(10*1000)
+    trackAndInform()
 }
 
 bot.command('sendall', async (ctx) => {
@@ -797,26 +798,26 @@ function getTotalPincodes (withToken) {
     }, 0)
     return totalPincodes
 }
-const totalPincodes = getTotalPincodes(false)
-console.log('Setting interval timeout for', totalPincodes , 'seconds!')
-var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+// const totalPincodes = getTotalPincodes(false)
+// console.log('Setting interval timeout for', totalPincodes , 'seconds!')
+// var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
 trackAndInform()
 
-bot.command('sync', async (ctx) => {
-    if (ctx.chat.id == SWAPNIL) {
-        try {
-            const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
-            await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
-            const totalPincodes = getTotalPincodes(withToken)
-            clearInterval(trackerHandle)
-            trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
-            await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
-        } catch (err) {
-            console.log(err)
-            return await ctx.reply('Please provide /sync <yes|no> for token check.')
-        }
-    }
-})
+// bot.command('sync', async (ctx) => {
+//     if (ctx.chat.id == SWAPNIL) {
+//         try {
+//             const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
+//             await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
+//             const totalPincodes = getTotalPincodes(withToken)
+//             clearInterval(trackerHandle)
+//             trackAndInform()
+//             await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
+//         } catch (err) {
+//             console.log(err)
+//             return await ctx.reply('Please provide /sync <yes|no> for token check.')
+//         }
+//     }
+// })
 
 em.on('rate-limit', () => {
     clearInterval(trackerHandle)

@@ -842,13 +842,13 @@ async function trackAndInform() {
                     // skip the user
                     continue
                 }
-                if (!user.token) {
-                    console.log('No token!')
-                    try {
-                        await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.\nYou\'re getting this message because you\'re tracking some pincode(s). To stop this spam either login and keep tracking the pincode or just /logout or /untrack pincode(s)')
-                    } catch (err) {}
-                    continue
-                }
+                // if (!user.token) {
+                //     console.log('No token!')
+                //     try {
+                //         await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.\nYou\'re getting this message because you\'re tracking some pincode(s). To stop this spam either login and keep tracking the pincode or just /logout or /untrack pincode(s)')
+                //     } catch (err) {}
+                //     continue
+                // }
                 if (!user.districtId) {
                     console.log('No district id! Please send /district to set your prefered district.')
                     try {

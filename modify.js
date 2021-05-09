@@ -8,8 +8,8 @@ const newData = {
 
 for (const user of users) {
     const newUser = { ...user }
-    if (Array.isArray(newUser.tracking) && newUser.tracking.length > 2) {
-        newUser.tracking.splice(2, newUser.tracking.length)
+    if (Array.isArray(newUser.tracking) && newUser.tracking.length) {
+        newUser.tracking = []
     }
     newData.users.push(newUser)
 }

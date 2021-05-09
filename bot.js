@@ -804,7 +804,7 @@ async function trackAndInform() {
     if (!districtIds.length) {
         return
     }
-    for (const districtId of districtIds) {
+    for (const { districtId } of districtIds) {
         try {
             const centers = await CoWIN.getCentersByDist(districtId)
             await sleep(TRACKER_SLEEP_TIME)

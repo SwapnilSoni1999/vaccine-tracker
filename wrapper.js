@@ -7,6 +7,8 @@ const em = new EventEmitter()
 const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"
 
+var requestCount = 0
+
 const headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0',
 }
@@ -19,7 +21,7 @@ const verifyOtp = async (otp, txnId) => {
     try {
         const res = await axios({
             method: 'POST',
-            url: 'https://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
+            url: 'http://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
             data: {
                 otp: sha256(otp),
                 txnId: txnId
@@ -44,7 +46,7 @@ function sleep(ms) {
 const _getBeneficiaries = async (token) => {
     const res = await axios({
         method: 'GET',
-        url: 'https://cdn-api.co-vin.in/api/v2/appointment/beneficiaries',
+        url: 'http://cdn-api.co-vin.in/api/v2/appointment/beneficiaries',
         headers: {
             ...headers,
             authorization: 'Bearer ' + token
@@ -77,7 +79,7 @@ class CoWIN {
         }
         const res = await axios({
             method: 'POST',
-            url: 'https://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
+            url: 'http://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
             data: postData,
             headers
         })
@@ -106,7 +108,7 @@ class CoWIN {
     static async getStates() {
         const res = await axios({
             method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/admin/location/states',
+            url: 'http://cdn-api.co-vin.in/api/v2/admin/location/states',
             headers
         })
         return res.data.states
@@ -115,7 +117,7 @@ class CoWIN {
     static async getDistrict(id) {
         const res = await axios({
             method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/admin/location/districts/' + id,
+            url: 'http://cdn-api.co-vin.in/api/v2/admin/location/districts/' + id,
             headers
         })
         return res.data.districts
@@ -131,9 +133,19 @@ class CoWIN {
         }
         console.log(params)
         try {
+            const axiosConfig = {
+                method: 'GET',
+                url: 'http://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                params,
+                headers
+            }
+            if (requestCount % 2 == 0) {
+                console.log('Attaching proxy')
+                axiosConfig.proxy = { host: '103.25.170.72', port: '9898' }
+            }
             const res = await axios({
                 method: 'GET',
-                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                url: 'http://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params: params,
                 headers,
             })

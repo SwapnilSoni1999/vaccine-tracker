@@ -926,7 +926,7 @@ bot.command('sendall', async (ctx) => {
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         const users = Users.value()
-        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts</b>: ${[...new Set(users.map(u => u.districtId))].length}`
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts</b>: ${[...new Set(users.filter(u => u.districtId).map(u => u.districtId))].length}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
 })

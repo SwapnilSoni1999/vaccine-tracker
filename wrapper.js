@@ -146,7 +146,7 @@ class CoWIN {
                 headers,
                 httpsAgent: agent
             }
-            if (requestCount == proxies.length) {
+            if (requestCount >= proxies.length) {
                 delete axiosConfig.httpsAgent
                 requestCount = 0
             }

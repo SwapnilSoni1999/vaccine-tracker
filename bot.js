@@ -1,7 +1,7 @@
 const { Telegraf, Scenes, session, TelegramError } = require('telegraf')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
-const CoWIN = require('./wrapper')
+const { CoWIN, em } = require('./wrapper')
 const { nanoid }  = require('nanoid')
 
 const BOT_TOKEN = '1707560756:AAGklCxSVVtfEtPBYEmOCZW6of4nEzffhx0'
@@ -686,7 +686,7 @@ async function trackAndInform() {
             if (!user.token && (Array.isArray(user.tracking) && user.tracking.length)) {
                 console.log('No token!')
                 try {
-                    await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.')
+                    await bot.telegram.sendMessage(user.chatId, 'Please /login your token has been expired or you haven\'t logged in yet.\nYou\'re getting this message because you\'re tracking some pincode(s). To stop this spam either login and keep tracking the pincode or just /logout or /untrack pincode(s)')
                 } catch (err) {}
                 continue
             }
@@ -701,7 +701,7 @@ async function trackAndInform() {
             }
             for (const trc of user.tracking) {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
-                const centers = await CoWIN.getCenters(userdata.pincode, user.token)
+                const centers = await CoWIN.getCenters(userdata.pincode)
                 await sleep(1250)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
@@ -719,7 +719,10 @@ async function trackAndInform() {
                     (center.pincode == userdata.pincode) && 
                     (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
                 )
-
+                
+                const pinUsers = users.filter(u =>
+                    (u.tracking.filter(t => userCenters.filter(c => c.pincode == t.pincode)))
+                )
                 for (const uCenter of userCenters) {
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
                     try {
@@ -817,4 +820,13 @@ const totalPincodes = getTotalPincodes(false)
 console.log('Setting interval timeout for', totalPincodes , 'seconds!')
 var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
 trackAndInform()
+
+em.on('rate-limit', () => {
+    clearInterval(trackerHandle)
+    setTimeout(() => {
+        const totalPincodes = getTotalPincodes(false)
+        trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+    }, 10 * 60 * 1000)
+})
+
 bot.launch()

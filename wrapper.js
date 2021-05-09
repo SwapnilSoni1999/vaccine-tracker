@@ -153,7 +153,7 @@ class CoWIN {
                 await sleep(10* 60 * 1000)
                 em.emit('rate-limit')
                 // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
-                return this.getCenters(pincode, vaccine)
+                return
             }
             const centers = []
             requestCount++

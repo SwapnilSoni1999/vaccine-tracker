@@ -117,10 +117,10 @@ class CoWIN {
         return res.data.states
     }
 
-    static async getDistrict(id) {
+    static async getDistrict(stateId) {
         const res = await axios({
             method: 'GET',
-            url: 'http://cdn-api.co-vin.in/api/v2/admin/location/districts/' + id,
+            url: 'http://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
             headers
         })
         return res.data.districts

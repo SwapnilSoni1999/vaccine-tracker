@@ -143,12 +143,7 @@ class CoWIN {
                 console.log('Attaching proxy')
                 axiosConfig.proxy = { host: '103.25.170.72', port: '9898' }
             }
-            const res = await axios({
-                method: 'GET',
-                url: 'http://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
-                params: params,
-                headers,
-            })
+            const res = await axios(axiosConfig)
             requestCount++
             return res.data.centers
         } catch (err) {

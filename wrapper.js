@@ -149,6 +149,7 @@ class CoWIN {
                 params: params,
                 headers,
             })
+            requestCount++
             return res.data.centers
         } catch (err) {
             console.log(err)
@@ -160,6 +161,7 @@ class CoWIN {
                 return this.getCenters(pincode, vaccine)
             }
             const centers = []
+            requestCount++
             return centers
         }
     }  

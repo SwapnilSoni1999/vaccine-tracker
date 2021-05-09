@@ -704,7 +704,7 @@ async function trackAndInform() {
                 const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
                 const centers = await CoWIN.getCenters(userdata.pincode)
                 TRACKER_ALIVE = true
-                await sleep(100)
+                await sleep(300)
                 console.log("PIN:", userdata.pincode, "Centers:", centers.length)
                 
                 const available = centers.reduce((acc, center) => {
@@ -721,6 +721,13 @@ async function trackAndInform() {
                     (center.pincode == userdata.pincode) && 
                     (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
                 )
+
+                // const usersWithSamePincode = users.map(u => {
+                //     //pincode: 380061
+                //     if (Array.isArray(u.tracking) && u.tracking.length) {
+                        
+                //     }
+                // })
                 
                 for (const uCenter of userCenters) {
                     const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>`
@@ -833,8 +840,8 @@ setInterval(() => {
 em.on('rate-limit', () => {
     clearInterval(trackerHandle)
     setTimeout(() => {
-        const totalPincodes = getTotalPincodes(false)
-        trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+        console.log('Starting tracker again...')
+        trackAndInform()
     }, 10 * 60 * 1000)
 })
 

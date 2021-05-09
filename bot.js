@@ -18,7 +18,7 @@ const Users = db.get('users')
 /**
  * Helper methods
  */
-var TRACKER_SLEEP_TIME = 2500
+var TRACKER_SLEEP_TIME = 5000
 const MAX_TRACKING_ALLOWED = 4
 const SNOOZE_LITERALS = [
     { name: '10min', seconds: 10 * 60 },
@@ -488,7 +488,7 @@ sendToAll.command('cancel', async (ctx) => {
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
 
-bot.use(botUnderMaintain)
+// bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())
@@ -747,7 +747,11 @@ function expandTracking(tracking) {
 bot.command('status', inviteMiddle, async (ctx) => {
     try {
         const user = Users.find({ chatId: ctx.chat.id }).value()
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n\nType /help for more info.`
+        const { stateId } = Users.find({ chatId: ctx.chat.id }).pick('stateId').value()
+        const { districtId } = Users.find({ chatId: ctx.chat.id }).pick('districtId').value()
+        const districts = await CoWIN.getDistrict(stateId)
+        const { district_name } = districts.find(d => d.district_id == districtId)
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)
@@ -792,7 +796,11 @@ var TRACKER_ALIVE = false
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
-    const districtIds = users.map(u => u.districtId)
+    const districtIds = users.filter(u => u.districtId)
+    console.log(districtIds)
+    if (!districtIds.length) {
+        return
+    }
     for (const districtId of districtIds) {
         try {
             const centers = await CoWIN.getCentersByDist(districtId)
@@ -930,19 +938,19 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-// trackAndInform()
-// // set false and wait for 5mins if tracker updates the flag or not
-// setInterval(() => {
-//     TRACKER_ALIVE = false
-// }, 1 * 60 * 1000)
-// setInterval(() => {
-//     if (!TRACKER_ALIVE) {
-//         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
-//         setTimeout(() => {
-//             console.log('Starting tracker again...')
-//             trackAndInform()
-//         }, 4 * 60 * 1000)
-//     }
-// }, 5 * 60 * 1000)
+trackAndInform()
+// set false and wait for 5mins if tracker updates the flag or not
+setInterval(() => {
+    TRACKER_ALIVE = false
+}, 1 * 60 * 1000)
+setInterval(() => {
+    if (!TRACKER_ALIVE) {
+        bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
+        setTimeout(() => {
+            console.log('Starting tracker again...')
+            trackAndInform()
+        }, 4 * 60 * 1000)
+    }
+}, 5 * 60 * 1000)
 
 bot.launch()

@@ -126,6 +126,9 @@ class CoWIN {
         return res.data.districts
     }
 
+    /**
+     * @deprecated
+     */
     static async getCenters(pincode, token, vaccine=null) {
         let params = {
             pincode,
@@ -166,7 +169,46 @@ class CoWIN {
             requestCount++
             return centers
         }
-    }  
+    }
+
+    static async getCentersByDist(districtId) {
+        const params = {
+            district_id: districtId,
+            date: getToday()
+        }
+        console.log(params)
+        try {
+            const agent = httpsOverHttp({ proxy: proxies[requestCount] })
+            console.log('Request Count:', requestCount)
+            console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
+            const axiosConfig = {
+                method: 'GET',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+                params,
+                headers,
+                httpsAgent: agent
+            }
+            if (requestCount >= proxies.length) {
+                delete axiosConfig.httpsAgent
+                requestCount = 0
+            }
+            const res = await axios(axiosConfig)
+            requestCount++
+            return res.data.centers
+        } catch (err) {
+            console.log(err)
+            if (err.response.status == 403) {
+                console.log("Rate limit exceeded! Waiting for 10 minutes...")
+                await sleep(10* 60 * 1000)
+                em.emit('rate-limit')
+                // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
+                return
+            }
+            const centers = []
+            requestCount++
+            return centers
+        }
+    }
 }
 
 module.exports = { CoWIN, em }

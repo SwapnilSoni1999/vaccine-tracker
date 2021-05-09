@@ -749,9 +749,12 @@ bot.command('status', inviteMiddle, async (ctx) => {
         const user = Users.find({ chatId: ctx.chat.id }).value()
         const { stateId } = Users.find({ chatId: ctx.chat.id }).pick('stateId').value()
         const { districtId } = Users.find({ chatId: ctx.chat.id }).pick('districtId').value()
-        const districts = await CoWIN.getDistrict(stateId)
-        const { district_name } = districts.find(d => d.district_id == districtId)
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name}\n\nType /help for more info.`
+        let district_name = null
+        if (districtId) {
+            const districts = await CoWIN.getDistrict(stateId)
+            district_name = districts.find(d => d.district_id == districtId).district_name
+        }
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)

@@ -797,7 +797,7 @@ async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
     const districtIds = users.filter(u => u.districtId)
-    console.log(districtIds)
+    // console.log(districtIds)
     if (!districtIds.length) {
         return
     }

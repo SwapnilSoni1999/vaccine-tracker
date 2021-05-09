@@ -72,8 +72,12 @@ function sleep(ms) {
  * Middlewares
  */
 
-const districtHandler = async (ctx) => {
+const districtHandler = async (ctx, next) => {
     try {
+        const { districtId } = Users.find({ chatId: ctx.chat.id }).pick('districtId').value()
+        if (districtId) {
+            return next()
+        }
         const states = await CoWIN.getStates()
         const markupButton = []
         const row = []
@@ -90,6 +94,8 @@ const districtHandler = async (ctx) => {
         } })
         if (ctx.wizard) {
             return ctx.wizard.leave()
+        } else {
+            return next()
         }
     } catch (error) {
         console.log(error)
@@ -354,7 +360,7 @@ const slotWizard = new Scenes.WizardScene(
 
             return ctx.wizard.next()
         } catch(err) {
-            if (err.response.status == 401) {
+            if (err instanceof TelegramError && err.response.status == 401) {
                 await ctx.reply('No slots available for this pin!')
                 return ctx.scene.leave()
             }
@@ -497,7 +503,7 @@ bot.help(inviteMiddle, async (ctx) => {
         if (_isAuth(ctx.chat.id)) {
             commands += `/beneficiaries = to list beneficiaries\n/logout = logout from the bot/portal\n`
         }
-        commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status`
+        commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.`
         return await ctx.reply(commands)
     } catch (err) {
         if (err instanceof TelegramError) {
@@ -592,6 +598,10 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
 
 bot.command('track', inviteMiddle, async (ctx) => {
     try {
+        const { districtId } = Users.find({ chatId: ctx.chat.id }).pick('districtId').value()
+        if (!districtId) {
+            return await ctx.reply('You haven\'t selected your prefered district. Please select your /district first.')
+        }
         const { tracking } = Users.find({ chatId: ctx.chat.id }).pick('tracking').value()
         if (!tracking) {
             Users.find({ chatId: ctx.chat.id }).assign({ tracking: [] }).write()
@@ -641,7 +651,31 @@ bot.action(/remove-pin--.*/, async (ctx) => {
     }
 })
 
-bot.command('district', inviteMiddle, districtHandler)
+bot.command('district', inviteMiddle, async (ctx) => {
+    try {
+        const states = await CoWIN.getStates()
+        const markupButton = []
+        const row = []
+        for (let i=0; i<states.length; i++) {
+            const { state_id, state_name } = states[i]
+            row.push({ text: state_name, callback_data: `state-id--${state_id}` })
+            if (i % 3 === 0) {
+                markupButton.push(row.slice())
+                row.splice(0, row.length)
+            }
+        }
+        await ctx.reply('Choose your prefered district. Make sure you choose the distrcit whichever\'s pincode you wanna track.', { reply_markup: {
+            inline_keyboard: markupButton
+        } })
+    } catch (error) {
+        console.log(error)
+        await ctx.reply('Something went wrong! try again.')
+        if (err instanceof TelegramError) {
+            Users.remove({ chatId: ctx.chat.id }).write()
+            return
+        }
+    }
+})
 
 bot.action(/state-id--\d+/, async (ctx) => {
     try {
@@ -676,7 +710,7 @@ bot.action(/district-id--\d+/, async (ctx) => {
         const { stateId } = Users.find({ chatId: ctx.update.callback_query.from.id }).pick('stateId').value()
         const districts = await CoWIN.getDistrict(stateId)
         await ctx.editMessageText(`You've chosen ${districts.find(d => d.district_id == districtId).district_name}.`)
-        return await ctx.reply('Now you will be tracked with your desired pincode. <u>Note</u>: I hope you\ve entered the correct district whichever\'s pincode(s) you\'re tracking to.')
+        return await ctx.reply('Now you will be tracked with your desired pincode.\n<u>Note</u>: I hope you\ve entered the correct district whichever\'s pincode(s) you\'re tracking to.\nAlso, You can change your current district anytime you want by sending /district', { parse_mode: 'HTML' })
     } catch (error) {
         console.log(err)
         return await ctx.reply('Something went wrong please try again!')

@@ -776,22 +776,6 @@ bot.command('botstat', async (ctx) => {
     }
 })
 
-bot.command('sync', async (ctx) => {
-    if (ctx.chat.id == SWAPNIL) {
-        try {
-            const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
-            await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
-            const totalPincodes = getTotalPincodes(withToken)
-            clearInterval(trackerHandle)
-            trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
-            await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
-        } catch (err) {
-            console.log(err)
-            return await ctx.reply('Please provide /sync <yes|no> for token check.')
-        }
-    }
-})
-
 bot.action('yes_booked', async (ctx) => {
     // Users.find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
     return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
@@ -817,6 +801,22 @@ const totalPincodes = getTotalPincodes(false)
 console.log('Setting interval timeout for', totalPincodes , 'seconds!')
 var trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
 trackAndInform()
+
+bot.command('sync', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        try {
+            const withToken = (ctx.message.text.split(' ')[1].toLowerCase() === 'yes' ? true : false)
+            await ctx.reply(`Updating the handler with${withToken ? '' : 'out'} token...`)
+            const totalPincodes = getTotalPincodes(withToken)
+            clearInterval(trackerHandle)
+            trackerHandle = setInterval(trackAndInform, totalPincodes * 1000)
+            await ctx.reply(`Updated handler with ${totalPincodes} pincodes.`)
+        } catch (err) {
+            console.log(err)
+            return await ctx.reply('Please provide /sync <yes|no> for token check.')
+        }
+    }
+})
 
 em.on('rate-limit', () => {
     clearInterval(trackerHandle)

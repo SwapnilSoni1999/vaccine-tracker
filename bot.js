@@ -145,23 +145,22 @@ const inviteWizard = new Scenes.WizardScene(
     },
     async (ctx) => {
         try {
-            if (!('text' in ctx.message)) {
-                return
-            }
-            const code = ctx.message.text
-            if (!Users.find({ chatId: ctx.chat.id }).value()) {
-                Users.push({ chatId: ctx.chat.id }).write()
-            }
-            if (code == INVITE_KEY) {
-                Users.find({ chatId: ctx.chat.id }).assign({ allowed: true }).write()
-                await ctx.reply('Invitation accepted!')
-                const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
-                await ctx.reply(msg, { parse_mode: 'HTML' })
-                return ctx.scene.leave()
-            } else {
-                Users.find({ chatId: ctx.chat.id }).assign({ allowed: false }).write()
-                await ctx.reply('Wrong invitation code. Please try again with /start if you wish to.')
-                return ctx.scene.leave()
+            if ('text' in ctx.message) {
+                const code = ctx.message.text
+                if (!Users.find({ chatId: ctx.chat.id }).value()) {
+                    Users.push({ chatId: ctx.chat.id }).write()
+                }
+                if (code == INVITE_KEY) {
+                    Users.find({ chatId: ctx.chat.id }).assign({ allowed: true }).write()
+                    await ctx.reply('Invitation accepted!')
+                    const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
+                    await ctx.reply(msg, { parse_mode: 'HTML' })
+                    return ctx.scene.leave()
+                } else {
+                    Users.find({ chatId: ctx.chat.id }).assign({ allowed: false }).write()
+                    await ctx.reply('Wrong invitation code. Please try again with /start if you wish to.')
+                    return ctx.scene.leave()
+                }
             }
         } catch (error) {
             if (error instanceof TelegramError) {

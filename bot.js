@@ -457,16 +457,11 @@ const districtSelection = new Scenes.WizardScene(
         try {
             const states = await CoWIN.getStates()
             ctx.wizard.state.states = states
-            const markupButton = []
-            const row = []
-            for (let i=0; i<states.length; i++) {
-                const { state_id, state_name } = states[i]
-                row.push({ text: state_name })
-                if (i % 3 === 0) {
-                    markupButton.push(row.slice())
-                    row.splice(0, row.length)
-                }
-            }            
+            const markupButton = states.reduce((result, value, index, array) => {
+                if (index % 2 === 0)
+                    result.push(array.slice(index, index + 2))
+                return result
+            }, [])        
             
             await ctx.reply('Choose your prefered district. Make sure you choose the district whichever\'s pincode you wanna track.', { reply_markup: {
                 keyboard: markupButton,
@@ -493,17 +488,11 @@ const districtSelection = new Scenes.WizardScene(
             Users.find({ chatId: ctx.chat.id }).assign({ stateId: state_id }).write()
             const districts = await CoWIN.getDistrict(state_id)
             ctx.wizard.state.districts = districts
-            const markupButton = []
-            const row = []
-            for (let i=0; i<districts.length; i++) {
-                const { district_id, district_name } = districts[i]
-                row.push({ text: district_name, callback_data: `district-id--${district_id}` })
-                if (i % 3 === 0) {
-                    markupButton.push(row.slice())
-                    row.splice(0, row.length)
-                }
-            }
-
+            const markupButton = districts.reduce((result, value, index, array) => {
+                if (index % 2 === 0)
+                    result.push(array.slice(index, index + 2))
+                return result
+            }, [])
             await ctx.reply(`You\'ve selected ${state_name}. Please choose your district.`, {
                 reply_markup: {
                     keyboard: markupButton,
@@ -676,11 +665,7 @@ bot.command('untrack', inviteMiddle, async (ctx) => {
         if (!Array.isArray(tracking) || !tracking.length) {
             return await ctx.reply('You aren\'t tracking any pincode. send /track to start tracking.')
         }
-        const markupButton = []
-        for (let i=0; i<tracking.length; i++) {
-            const { id, pincode, age_group } = tracking[i]
-            markupButton.push([{ text: `Pin: ${pincode} | Age: ${age_group}`, callback_data: `remove-pin--${id}` }])
-        }
+        const markupButton = tracking.map((t) => ({ text: `Pin: ${t.pincode} | Age: ${t.age_group}`, callback_data: `remove-pin--${t.id}` }))
         return await ctx.reply('Choose which pincode to remove.', { reply_markup: { inline_keyboard: markupButton } })
     } catch (error) {
         if (error instanceof TelegramError) {
@@ -718,18 +703,12 @@ bot.command('district', inviteMiddle, async (ctx) => {
 })
 
 bot.command('snooze', inviteMiddle, async (ctx) => {
-    const markupButton = []
-    const row = []
-    for (let i=0; i<SNOOZE_LITERALS.length; i++) {
-        const lit = SNOOZE_LITERALS[i]
-        const buttonMarkup = { text: lit.name, callback_data: `snooze_req--${lit.seconds}` }
-        row.push(buttonMarkup)
-        // console.log(row)
-        if (row.length == 2) {
-            markupButton.push(row.slice())
-            row.splice(0, row.length)
-        }
-    }
+    const markupButton = SNOOZE_LITERALS.reduce((result, value, index, array) => {
+        if (index % 2 === 0)
+            result.push(array.slice(index, index + 2))
+        return result
+    }, [])
+    
     return await ctx.reply('Choose a time to snooze.', { reply_markup: {
         inline_keyboard: markupButton
     } })

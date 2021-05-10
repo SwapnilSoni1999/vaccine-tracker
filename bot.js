@@ -710,7 +710,7 @@ bot.action(/district-id--\d+/, async (ctx) => {
         const { stateId } = Users.find({ chatId: ctx.update.callback_query.from.id }).pick('stateId').value()
         const districts = await CoWIN.getDistrict(stateId)
         await ctx.editMessageText(`You've chosen ${districts.find(d => d.district_id == districtId).district_name}.`)
-        return await ctx.reply('Now you will be tracked with your desired pincode.\n<u>Note</u>: I hope you\ve entered the correct district whichever\'s pincode(s) you\'re tracking to.\nAlso, You can change your current district anytime you want by sending /district', { parse_mode: 'HTML' })
+        return await ctx.reply('Now you will be tracked with your desired pincode.\n<u>Note</u>: I hope you\ve entered the correct district whichever\'s pincode(s) you\'re tracking to.\nAlso, You can change your current district anytime you want by sending /district\nYou can now be able to /track pincodes within your selected district.', { parse_mode: 'HTML' })
     } catch (error) {
         console.log(err)
         return await ctx.reply('Something went wrong please try again!')

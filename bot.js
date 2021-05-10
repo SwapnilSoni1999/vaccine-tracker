@@ -115,7 +115,7 @@ const botUnderMaintain = async (ctx, next) => {
         return next()
     }
     try {
-        return await ctx.reply('Bot is under maintenance. Reason: The server\'s IP got banned on cowin api. So you have to wait until I find some indian proxies. If you can help then dm @SoniSins')
+        return await ctx.reply('Bot is under maintenance. Please try again after few minutes.')
     } catch (err) { }
 }
 

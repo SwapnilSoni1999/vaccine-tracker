@@ -659,7 +659,7 @@ bot.command('district', inviteMiddle, async (ctx) => {
         for (let i=0; i<states.length; i++) {
             const { state_id, state_name } = states[i]
             row.push({ text: state_name, callback_data: `state-id--${state_id}` })
-            if (i % 3 === 0) {
+            if (i % 4 === 0) {
                 markupButton.push(row.slice())
                 row.splice(0, row.length)
             }
@@ -689,7 +689,7 @@ bot.action(/state-id--\d+/, async (ctx) => {
         for (let i=0; i<districts.length; i++) {
             const { district_id, district_name } = districts[i]
             row.push({ text: district_name, callback_data: `district-id--${district_id}` })
-            if (i % 2 === 0) {
+            if (i % 5 === 0) {
                 markupButton.push(row.slice())
                 row.splice(0, row.length)
             }

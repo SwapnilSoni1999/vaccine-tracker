@@ -145,6 +145,9 @@ const inviteWizard = new Scenes.WizardScene(
     },
     async (ctx) => {
         try {
+            if (!('text' in ctx.message)) {
+                return
+            }
             const code = ctx.message.text
             if (!Users.find({ chatId: ctx.chat.id }).value()) {
                 Users.push({ chatId: ctx.chat.id }).write()

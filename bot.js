@@ -1,4 +1,4 @@
-const { Telegraf, Scenes, session, TelegramError } = require('telegraf')
+const { Telegraf, Scenes, session, TelegramError, Markup } = require('telegraf')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 const { CoWIN, em } = require('./wrapper')
@@ -71,41 +71,6 @@ function sleep(ms) {
 /**
  * Middlewares
  */
-
-const districtHandler = async (ctx, next) => {
-    try {
-        const { districtId } = Users.find({ chatId: ctx.chat.id }).pick('districtId').value()
-        if (districtId) {
-            return next()
-        }
-        const states = await CoWIN.getStates()
-        const markupButton = []
-        const row = []
-        for (let i=0; i<states.length; i++) {
-            const { state_id, state_name } = states[i]
-            row.push({ text: state_name, callback_data: `state-id--${state_id}` })
-            if (i % 3 === 0) {
-                markupButton.push(row.slice())
-                row.splice(0, row.length)
-            }
-        }
-        await ctx.reply('Choose your prefered district. Make sure you choose the distrcit whichever\'s pincode you wanna track.', { reply_markup: {
-            inline_keyboard: markupButton
-        } })
-        if (ctx.wizard) {
-            return ctx.wizard.leave()
-        } else {
-            return next()
-        }
-    } catch (error) {
-        console.log(error)
-        await ctx.reply('Something went wrong! try again.')
-        if (err instanceof TelegramError) {
-            Users.remove({ chatId: ctx.chat.id }).write()
-            return
-        }
-    }
-}
 
 const authMiddle = async (ctx, next) => {
     if (_isAuth(ctx.chat.id)) {
@@ -486,9 +451,96 @@ sendToAll.command('cancel', async (ctx) => {
     return await ctx.reply('Operation cancelled!')
 })
 
-const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll])
+const districtSelection = new Scenes.WizardScene(
+    'district',
+    async (ctx) => {
+        try {
+            const states = await CoWIN.getStates()
+            ctx.wizard.state.states = states
+            const markupButton = []
+            const row = []
+            for (let i=0; i<states.length; i++) {
+                const { state_id, state_name } = states[i]
+                row.push({ text: state_name })
+                if (i % 3 === 0) {
+                    markupButton.push(row.slice())
+                    row.splice(0, row.length)
+                }
+            }            
+            
+            await ctx.reply('Choose your prefered district. Make sure you choose the distrcit whichever\'s pincode you wanna track.', { reply_markup: {
+                keyboard: markupButton,
+                remove_keyboard: true
+            } })
+            return ctx.wizard.next()
+        } catch (error) {
+            console.log(error)
+            await ctx.reply('Something went wrong! try again.')
+            if (error instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id }).write()
+                return ctx.scene.leave()
+            }
+        }
+    },
+    async (ctx) => {
+        try {
+            const state_nam = ctx.message.text
+            const { state_id, state_name } = ctx.wizard.state.states.find(s => s.state_name == state_nam)
+            if (!state_id) {
+                await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid state.', { reply_markup: { remove_keyboard: true } })
+                return ctx.scene.leave()
+            }
+            Users.find({ chatId: ctx.chat.id }).assign({ stateId: state_id }).write()
+            const districts = await CoWIN.getDistrict(state_id)
+            ctx.wizard.state.districts = districts
+            const markupButton = []
+            const row = []
+            for (let i=0; i<districts.length; i++) {
+                const { district_id, district_name } = districts[i]
+                row.push({ text: district_name, callback_data: `district-id--${district_id}` })
+                if (i % 3 === 0) {
+                    markupButton.push(row.slice())
+                    row.splice(0, row.length)
+                }
+            }
 
-// bot.use(botUnderMaintain)
+            await ctx.reply(`You\'ve selected ${state_name}. Please choose your district.`, {
+                reply_markup: {
+                    keyboard: markupButton,
+                    remove_keyboard: true
+                }
+            })
+            return ctx.wizard.next()
+        } catch (error) {
+            if (error instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id }).write()
+                return ctx.scene.leave()
+            }
+        }
+    },
+    async (ctx) => {
+        try {
+            const district_nam = ctx.message.text
+            const { district_id, district_name } = ctx.wizard.state.districts.find(d => d.district_name == district_nam)
+            if (!district_id) {
+                await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid district.', { reply_markup: { remove_keyboard: true } })
+                return ctx.scene.leave()
+            }
+            Users.find({ chatId: ctx.chat.id }).assign({ districtId: district_id }).write()
+            await ctx.reply(`You\'ve selected ${district_name}.`, { reply_markup: { remove_keyboard: true } })
+            return ctx.scene.leave()
+        } catch (error) {
+            if (error instanceof TelegramError) {
+                Users.remove({ chatId: ctx.chat.id }).write()
+                return ctx.scene.leave()
+            }
+        }
+    }
+)
+
+const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll, districtSelection])
+
+bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())
@@ -653,20 +705,7 @@ bot.action(/remove-pin--.*/, async (ctx) => {
 
 bot.command('district', inviteMiddle, async (ctx) => {
     try {
-        const states = await CoWIN.getStates()
-        const markupButton = []
-        const row = []
-        for (let i=0; i<states.length; i++) {
-            const { state_id, state_name } = states[i]
-            row.push({ text: state_name, callback_data: `state-id--${state_id}` })
-            if (i % 4 === 0) {
-                markupButton.push(row.slice())
-                row.splice(0, row.length)
-            }
-        }
-        await ctx.reply('Choose your prefered district. Make sure you choose the distrcit whichever\'s pincode you wanna track.', { reply_markup: {
-            inline_keyboard: markupButton
-        } })
+        ctx.scene.enter('district')
     } catch (error) {
         console.log(error)
         await ctx.reply('Something went wrong! try again.')
@@ -674,46 +713,6 @@ bot.command('district', inviteMiddle, async (ctx) => {
             Users.remove({ chatId: ctx.chat.id }).write()
             return
         }
-    }
-})
-
-bot.action(/state-id--\d+/, async (ctx) => {
-    try {
-        const stateId = ctx.update.callback_query.data.split('state-id--')[1]
-        Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ stateId }).write()
-        const states = await CoWIN.getStates()
-        await ctx.editMessageText(`You've chosen ${states.find(s => s.state_id == stateId).state_name}.`)
-        const districts = await CoWIN.getDistrict(stateId)
-        const markupButton = []
-        const row = []
-        for (let i=0; i<districts.length; i++) {
-            const { district_id, district_name } = districts[i]
-            row.push({ text: district_name, callback_data: `district-id--${district_id}` })
-            if (i % 5 === 0) {
-                markupButton.push(row.slice())
-                row.splice(0, row.length)
-            }
-        }
-        await ctx.reply(`Now choose the district.`, { reply_markup: {
-            inline_keyboard: markupButton
-        } })
-    } catch (err) {
-        console.log(err)
-        return await ctx.reply('Something went wrong please try again!')
-    }
-})
-
-bot.action(/district-id--\d+/, async (ctx) => {
-    try {
-        const districtId = ctx.update.callback_query.data.split('district-id--')[1]
-        Users.find({ chatId: ctx.update.callback_query.from.id }).assign({ districtId }).write()
-        const { stateId } = Users.find({ chatId: ctx.update.callback_query.from.id }).pick('stateId').value()
-        const districts = await CoWIN.getDistrict(stateId)
-        await ctx.editMessageText(`You've chosen ${districts.find(d => d.district_id == districtId).district_name}.`)
-        return await ctx.reply('Now you will be tracked with your desired pincode.\n<u>Note</u>: I hope you\ve entered the correct district whichever\'s pincode(s) you\'re tracking to.\nAlso, You can change your current district anytime you want by sending /district\nYou can now be able to /track pincodes within your selected district.', { parse_mode: 'HTML' })
-    } catch (error) {
-        console.log(err)
-        return await ctx.reply('Something went wrong please try again!')
     }
 })
 

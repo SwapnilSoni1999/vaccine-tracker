@@ -808,6 +808,7 @@ async function trackAndInform() {
         try {
             const centers = await CoWIN.getCentersByDist(districtId)
             await sleep(TRACKER_SLEEP_TIME)
+            console.log('Centers:', centers.length, 'District:', districtId)
             const available = centers.reduce((acc, center) => {
                 const tmpCenter = { ...center }
                 const sessions = center.sessions.filter(session => (session.available_capacity > 0))

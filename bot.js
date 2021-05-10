@@ -18,7 +18,7 @@ const Users = db.get('users')
 /**
  * Helper methods
  */
-var TRACKER_SLEEP_TIME = 5000
+var TRACKER_SLEEP_TIME = 3000
 const MAX_TRACKING_ALLOWED = 4
 const SNOOZE_LITERALS = [
     { name: '10min', seconds: 10 * 60 },

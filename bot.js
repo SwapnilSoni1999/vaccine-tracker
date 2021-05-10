@@ -812,6 +812,7 @@ async function trackAndInform() {
         try {
             const centers = await CoWIN.getCentersByDist(districtId)
             await sleep(TRACKER_SLEEP_TIME)
+            TRACKER_ALIVE = true
             console.log('Centers:', centers.length, 'District:', districtId)
             const available = centers.reduce((acc, center) => {
                 const tmpCenter = { ...center }
@@ -873,7 +874,6 @@ async function trackAndInform() {
 
                 for (const trc of user.tracking) {
                     const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
-                    TRACKER_ALIVE = true
 
                     const userCenters = available.filter(center => 
                         (center.pincode == userdata.pincode) && 

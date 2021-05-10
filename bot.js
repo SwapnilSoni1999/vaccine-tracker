@@ -458,8 +458,9 @@ const districtSelection = new Scenes.WizardScene(
             const states = await CoWIN.getStates()
             ctx.wizard.state.states = states
             const markupButton = states.reduce((result, value, index, array) => {
+                const buttonMap = array.slice(index, index+2)
                 if (index % 2 === 0)
-                    result.push(array.slice(index, index + 2))
+                    result.push(buttonMap.map(v => ({ text: v.state_name })))
                 return result
             }, [])        
             
@@ -489,8 +490,9 @@ const districtSelection = new Scenes.WizardScene(
             const districts = await CoWIN.getDistrict(state_id)
             ctx.wizard.state.districts = districts
             const markupButton = districts.reduce((result, value, index, array) => {
+                const buttonMap = array.slice(index, index+2)
                 if (index % 2 === 0)
-                    result.push(array.slice(index, index + 2))
+                    result.push(buttonMap.map(v => ({ text: v.district_name })))
                 return result
             }, [])
             await ctx.reply(`You\'ve selected ${state_name}. Please choose your district.`, {
@@ -704,8 +706,9 @@ bot.command('district', inviteMiddle, async (ctx) => {
 
 bot.command('snooze', inviteMiddle, async (ctx) => {
     const markupButton = SNOOZE_LITERALS.reduce((result, value, index, array) => {
+        const buttonMap = array.slice(index, index + 2)
         if (index % 2 === 0)
-            result.push(array.slice(index, index + 2))
+            result.push(buttonMap.map(v => ({ text: v.name, callback_data: `snooze_req--${v.seconds}` })))
         return result
     }, [])
     

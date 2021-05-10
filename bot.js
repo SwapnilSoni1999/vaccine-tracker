@@ -468,7 +468,7 @@ const districtSelection = new Scenes.WizardScene(
                 }
             }            
             
-            await ctx.reply('Choose your prefered district. Make sure you choose the distrcit whichever\'s pincode you wanna track.', { reply_markup: {
+            await ctx.reply('Choose your prefered district. Make sure you choose the district whichever\'s pincode you wanna track.', { reply_markup: {
                 keyboard: markupButton,
                 remove_keyboard: true
             } })

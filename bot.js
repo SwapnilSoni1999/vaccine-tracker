@@ -778,6 +778,9 @@ bot.command('sleeptime', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
             const ms = ctx.message.text.split(' ')[1]
+            if (!ms) {
+                throw new Error('bhay ms to pass karo')
+            }
             TRACKER_SLEEP_TIME = parseInt(ms)
             return await ctx.reply('Sleep time updated for tracker.')
         } catch(err) {

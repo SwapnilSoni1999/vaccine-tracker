@@ -959,6 +959,6 @@ setInterval(() => {
             trackAndInform()
         }, 4 * 60 * 1000)
     }
-}, 5 * 60 * 1000)
+}, 10 * 60 * 1000)
 
 bot.launch()

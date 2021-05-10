@@ -803,12 +803,12 @@ var TRACKER_ALIVE = false
 async function trackAndInform() {
     console.log('Fetching information')
     const users = Users.value()
-    const districtIds = users.filter(u => u.districtId)
+    const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
     // console.log(districtIds)
     if (!districtIds.length) {
         return
     }
-    for (const { districtId } of districtIds) {
+    for (const districtId of districtIds) {
         try {
             const centers = await CoWIN.getCentersByDist(districtId)
             await sleep(TRACKER_SLEEP_TIME)

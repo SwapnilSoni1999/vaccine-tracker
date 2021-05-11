@@ -945,36 +945,27 @@ bot.command('locations', async (ctx) => {
             }
             const districts = await CoWIN.getDistrict(state_id)
             const districtIds = [...new Set(users.filter(u => u.districtId && u.stateId == state_id).map(u => u.districtId))]
-            const districtMap = districtIds.map((districtId) => {
+            const districtMap = districtIds.reduce((result, districtId) => {
                 const { district_name } = districts.find(v => v.district_id == districtId)
                 const totalUsers = (users.filter(v => v.districtId == districtId )).length
-                if(totalUsers) {
-                    return { district_name, totalUsers }
+                if(totalUsers && !(result.find(v => v.district_name == district_name))) {
+                    result.push({ district_name, totalUsers })
                 }
-            })
-            const sortedMap = districtMap.sort((a, b) => {
-                if (a.totalUsers < b.totalUsers) return -1
-                else if (a.totalUsers > b.totalUsers) return 1
-                else return 0
-            })
-            const txt = sortedMap.map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
+            }, []).sort((a, b) => a.totalUsers - b.totalUsers)
+            const txt = districtMap.map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
 
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         } catch (error) {
             const stateIds = [...new Set(users.filter(u => u.stateId).map(u => u.stateId))]
-            const stateMap = stateIds.map((stateId) => {
+            const stateMap = stateIds.reduce((result, stateId) => {
                 const { state_name } = states.find(v => v.state_id == stateId)
                 const totalUsers = (users.filter(v => v.stateId == stateId )).length
-                if (totalUsers) {
-                    return {state_name, totalUsers}
+                if (totalUsers && !(result.find(v => v.state_name == state_name))) {
+                    result.push({ state_name, totalUsers })
                 }
-            })
-            const sortedMap = stateMap.sort((a, b) => {
-                if (a.totalUsers < b.totalUsers) return -1
-                else if (a.totalUsers > b.totalUsers) return 1
-                else return 0
-            })
-            const txt = sortedMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
+            }, []).sort((a, b) => a.totalUsers - b.totalUsers)
+            const txt = stateMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
+            
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         }
     }

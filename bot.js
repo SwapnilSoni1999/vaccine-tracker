@@ -972,7 +972,7 @@ bot.command('locations', async (ctx) => {
                 if (a.totalUsers < b.totalUsers) return -1
                 else if (a.totalUsers > b.totalUsers) return 1
                 else return 0
-            }).map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`)
+            }).map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         }
     }

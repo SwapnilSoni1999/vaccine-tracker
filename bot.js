@@ -966,7 +966,7 @@ bot.command('locations', inviteMiddle, async (ctx) => {
                 }
                 return result
             }, []).sort((a, b) => b.totalUsers - a.totalUsers)
-            const txt = stateMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
+            const txt = stateMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n') + "\n\n You can send /locations <state name> to get more info.\neg. /locations Gujarat"
 
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         }

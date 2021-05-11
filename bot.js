@@ -952,7 +952,7 @@ bot.command('locations', async (ctx) => {
                     result.push({ district_name, totalUsers })
                 }
                 return result
-            }, []).sort((a, b) => a.totalUsers - b.totalUsers)
+            }, []).sort((a, b) => b.totalUsers - a.totalUsers)
             const txt = districtMap.map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
 
             return await ctx.reply(txt, { parse_mode: 'HTML' })
@@ -965,7 +965,7 @@ bot.command('locations', async (ctx) => {
                     result.push({ state_name, totalUsers })
                 }
                 return result
-            }, []).sort((a, b) => a.totalUsers - b.totalUsers)
+            }, []).sort((a, b) => b.totalUsers - a.totalUsers)
             const txt = stateMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
 
             return await ctx.reply(txt, { parse_mode: 'HTML' })

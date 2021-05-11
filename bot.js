@@ -944,7 +944,7 @@ bot.command('locations', async (ctx) => {
                 throw new Error('Display all states.')
             }
             const districts = await CoWIN.getDistrict(state_id)
-            const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
+            const districtIds = [...new Set(users.filter(u => u.districtId && u.stateId == state_id).map(u => u.districtId))]
             const districtMap = districtIds.map((districtId) => {
                 const { district_name } = districts.find(v => v.district_id == districtId)
                 const totalUsers = (users.filter(v => v.districtId == districtId )).length

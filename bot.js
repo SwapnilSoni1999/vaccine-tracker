@@ -552,6 +552,9 @@ bot.help(inviteMiddle, async (ctx) => {
             commands += `/beneficiaries = to list beneficiaries\n/logout = logout from the bot/portal\n`
         }
         commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.`
+        if (ctx.chat.id == SWAPNIL) {
+            commands += `\nAdmin commands:\n/location | /location <stateName>\n/sleeptime | /sleeptime <ms>\n/sendall\n/botstat\n/revokeall`
+        }
         return await ctx.reply(commands)
     } catch (err) {
         if (err instanceof TelegramError) {

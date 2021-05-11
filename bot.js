@@ -946,7 +946,7 @@ bot.command('locations', async (ctx) => {
             const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
             const districtMap = districtIds.map((districtId) => {
                 const { district_name } = districts.find(v => v.district_id == districtId)
-                const totalUsers = (Users.find({ districtId })).length
+                const totalUsers = (users.filter(v => v.districtId == districtId )).length
                 if(totalUsers) {
                     return `<b>${district_name}</b>: ${totalUsers}`
                 }
@@ -956,7 +956,7 @@ bot.command('locations', async (ctx) => {
             const stateIds = [...new Set(users.filter(u => u.stateId).map(u => u.stateId))]
             const stateMap = stateIds.map((stateId) => {
                 const { state_name } = states.find(v => v.state_id == stateId)
-                const totalUsers = (Users.find({ stateId: stateId })).length
+                const totalUsers = (users.filter(v => v.stateId == stateId )).length
                 if (totalUsers) {
                     return `<b>${state_name}</b>: ${totalUsers}`
                 }

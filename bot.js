@@ -127,7 +127,7 @@ const inviteWizard = new Scenes.WizardScene(
     'invite',
     async (ctx) => {
         try {
-            await ctx.reply('Send invitation code to access this bot!\n<b>Why this bot has invite system?</b>\n<b>Ans:</b> It is because I have very limited resources (servers and proxies) to run this bot. So I\'m limiting this bot to certain people only. :)')
+            await ctx.reply('Send invitation code to access this bot!\n<b>Why this bot has invite system?</b>\n<b>Ans:</b> It is because I have very limited resources (servers and proxies) to run this bot. So I\'m limiting this bot to certain people only. :)', { parse_mode: 'HTML' })
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {

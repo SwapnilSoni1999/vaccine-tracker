@@ -927,6 +927,42 @@ bot.action('yes_booked', async (ctx) => {
     return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
 })
 
+bot.command('locations', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        const users = Users.value()
+        const states = await CoWIN.getStates()
+        try {
+            const stateName = ctx.message.text.split(' ')[1]
+            if (!stateName) throw new Error('Display all states.')
+            const { state_name, state_id } = states.find(v => v.state_name == stateName)
+            if (!state_name) {
+                await ctx.reply('State name not found!')
+                throw new Error('Display all states.')
+            }
+            const districts = await CoWIN.getDistrict(state_id)
+            const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
+            const districtMap = districtIds.map((districtId) => {
+                const { district_name } = districts.find(v => v.district_id == districtId)
+                const totalUsers = (Users.find({ districtId })).length
+                if(totalUsers) {
+                    return `<b>${district_name}</b>: ${totalUsers}`
+                }
+            })
+            return await ctx.reply(districtMap.join('\n'), { parse_mode: 'HTML' })
+        } catch (error) {
+            const stateIds = [...new Set(users.filter(u => u.stateId).map(u => u.stateId))]
+            const stateMap = stateIds.map((stateId) => {
+                const { state_name } = states.find(v => v.state_id == stateId)
+                const totalUsers = (Users.find({ stateId: stateId })).length
+                if (totalUsers) {
+                    return `<b>${state_name}</b>: ${totalUsers}`
+                }
+            })
+            return await ctx.reply(stateMap.join('\n'), { parse_mode: 'HTML' })
+        }
+    }
+})
+
 bot.action('not_booked', async (ctx) => {
     const user = Users.find({ chatId: ctx.chat.id }).value()
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })

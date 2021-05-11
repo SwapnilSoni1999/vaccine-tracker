@@ -551,9 +551,9 @@ bot.help(inviteMiddle, async (ctx) => {
         if (_isAuth(ctx.chat.id)) {
             commands += `/beneficiaries = to list beneficiaries\n/logout = logout from the bot/portal\n`
         }
-        commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.`
+        commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.\n/locations = Usage: /locations <State Name> -> to get number of users in your state/area who are active on this bot.`
         if (ctx.chat.id == SWAPNIL) {
-            commands += `\nAdmin commands:\n/locations | /locations <stateName>\n/sleeptime | /sleeptime <ms>\n/sendall\n/botstat\n/revokeall`
+            commands += `\nAdmin commands:\n/sleeptime | /sleeptime <ms>\n/sendall\n/botstat\n/revokeall`
         }
         return await ctx.reply(commands)
     } catch (err) {
@@ -930,8 +930,8 @@ bot.action('yes_booked', async (ctx) => {
     return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
 })
 
-bot.command('locations', async (ctx) => {
-    if (ctx.chat.id == SWAPNIL) {
+bot.command('locations', inviteMiddle, async (ctx) => {
+    try {
         const users = Users.value()
         const states = await CoWIN.getStates()
         try {
@@ -970,6 +970,8 @@ bot.command('locations', async (ctx) => {
 
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         }
+    } catch (error) {
+        console.log(error)
     }
 })
 

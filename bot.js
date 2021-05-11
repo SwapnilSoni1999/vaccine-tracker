@@ -935,7 +935,7 @@ bot.command('locations', async (ctx) => {
         const users = Users.value()
         const states = await CoWIN.getStates()
         try {
-            const stateName = ctx.message.text.split(' ')[1]
+            const stateName = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')
             if (!stateName) throw new Error('Display all states.')
             const { state_name, state_id } = states.find(v => v.state_name == stateName.trim())
             console.log(state_name, stateName.trim())
@@ -949,19 +949,30 @@ bot.command('locations', async (ctx) => {
                 const { district_name } = districts.find(v => v.district_id == districtId)
                 const totalUsers = (users.filter(v => v.districtId == districtId )).length
                 if(totalUsers) {
-                    return `<b>${district_name}</b>: ${totalUsers}`
+                    return { district_name, totalUsers }
                 }
             })
-            return await ctx.reply(districtMap.join('\n'), { parse_mode: 'HTML' })
+            const txt = districtMap.sort((a, b) => {
+                if (a.totalUsers < b.totalUsers) return -1
+                else if (a.totalUsers > b.totalUsers) return 1
+                else return 0
+            }).map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
+
+            return await ctx.reply(txt, { parse_mode: 'HTML' })
         } catch (error) {
             const stateIds = [...new Set(users.filter(u => u.stateId).map(u => u.stateId))]
             const stateMap = stateIds.map((stateId) => {
                 const { state_name } = states.find(v => v.state_id == stateId)
                 const totalUsers = (users.filter(v => v.stateId == stateId )).length
                 if (totalUsers) {
-                    return `<b>${state_name}</b>: ${totalUsers}`
+                    return {state_name, totalUsers}
                 }
             })
+            const txt = stateMap.sort((a, b) => {
+                if (a.totalUsers < b.totalUsers) return -1
+                else if (a.totalUsers > b.totalUsers) return 1
+                else return 0
+            }).map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`)
             return await ctx.reply(stateMap.join('\n'), { parse_mode: 'HTML' })
         }
     }

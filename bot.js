@@ -951,6 +951,7 @@ bot.command('locations', async (ctx) => {
                 if(totalUsers && !(result.find(v => v.district_name == district_name))) {
                     result.push({ district_name, totalUsers })
                 }
+                return result
             }, []).sort((a, b) => a.totalUsers - b.totalUsers)
             const txt = districtMap.map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
 
@@ -963,9 +964,10 @@ bot.command('locations', async (ctx) => {
                 if (totalUsers && !(result.find(v => v.state_name == state_name))) {
                     result.push({ state_name, totalUsers })
                 }
+                return result
             }, []).sort((a, b) => a.totalUsers - b.totalUsers)
             const txt = stateMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
-            
+
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         }
     }

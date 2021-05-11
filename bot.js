@@ -952,11 +952,12 @@ bot.command('locations', async (ctx) => {
                     return { district_name, totalUsers }
                 }
             })
-            const txt = districtMap.sort((a, b) => {
+            const sortedMap = districtMap.sort((a, b) => {
                 if (a.totalUsers < b.totalUsers) return -1
                 else if (a.totalUsers > b.totalUsers) return 1
                 else return 0
-            }).map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
+            })
+            const txt = sortedMap.map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
 
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         } catch (error) {
@@ -968,11 +969,12 @@ bot.command('locations', async (ctx) => {
                     return {state_name, totalUsers}
                 }
             })
-            const txt = stateMap.sort((a, b) => {
+            const sortedMap = stateMap.sort((a, b) => {
                 if (a.totalUsers < b.totalUsers) return -1
                 else if (a.totalUsers > b.totalUsers) return 1
                 else return 0
-            }).map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
+            })
+            const txt = sortedMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')
             return await ctx.reply(txt, { parse_mode: 'HTML' })
         }
     }

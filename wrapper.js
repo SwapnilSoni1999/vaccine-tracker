@@ -190,7 +190,7 @@ class CoWIN {
             }
             if (requestCount >= proxies.length) {
                 delete axiosConfig.httpsAgent
-                requestCount = 0
+                requestCount = -1
             }
             const res = await axios(axiosConfig)
             requestCount++

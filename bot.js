@@ -937,7 +937,8 @@ bot.command('locations', async (ctx) => {
         try {
             const stateName = ctx.message.text.split(' ')[1]
             if (!stateName) throw new Error('Display all states.')
-            const { state_name, state_id } = states.find(v => v.state_name == stateName)
+            const { state_name, state_id } = states.find(v => v.state_name == stateName.trim())
+            console.log(state_name, stateName.trim())
             if (!state_name) {
                 await ctx.reply('State name not found!')
                 throw new Error('Display all states.')

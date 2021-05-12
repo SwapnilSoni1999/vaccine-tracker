@@ -939,7 +939,7 @@ bot.command('locations', inviteMiddle, async (ctx) => {
             if (!stateName) throw new Error('Display all states.')
             const { state_name, state_id } = states.find(v => v.state_name == stateName.trim())
             console.log(state_name, stateName.trim())
-            if (state_name != stateName) {
+            if (!state_name) {
                 await ctx.reply('State name not found!')
                 throw new Error('Display all states.')
             }

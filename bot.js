@@ -1,3 +1,4 @@
+'use strict';
 const { Telegraf, Scenes, session, TelegramError, Markup } = require('telegraf')
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
@@ -829,6 +830,11 @@ async function trackAndInform() {
                 return valid
             }, [])
 
+            const sapnil = validUsers.find(v => v.chatId == SWAPNIL)
+            if (sapnil) {
+                await bot.telegram.sendMessage(SWAPNIL, `Before: ${JSON.stringify(user)}`)
+            }
+
             for (const user of validUsers) {
                 let informedUser = false
                 //double check
@@ -876,6 +882,9 @@ async function trackAndInform() {
                             console.log('Informed user!')
                             informedUser = true
                         } catch (err) {
+                        }
+                        if (user.chatId == SWAPNIL) {
+                            await bot.telegram.sendMessage(SWAPNIL, `After: ${JSON.stringify(user)}`)
                         }
                     }
                     try {
@@ -965,7 +974,6 @@ bot.command('locations', inviteMiddle, async (ctx) => {
 })
 
 bot.action('not_booked', async (ctx) => {
-    const user = Users.find({ chatId: ctx.chat.id }).value()
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 

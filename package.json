@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon bot.js",
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "db": "mongod --dbpath ./db --directoryperdb"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +14,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "lowdb": "^1.0.0",
+    "mongoose": "^5.12.8",
     "nanoid": "^3.1.22",
     "telegraf": "^4.3.0",
     "tunnel": "^0.0.6"

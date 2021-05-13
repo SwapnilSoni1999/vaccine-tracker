@@ -939,10 +939,6 @@ bot.command('locations', inviteMiddle, async (ctx) => {
             if (!stateName) throw new Error('Display all states.')
             const { state_name, state_id } = states.find(v => v.state_name == stateName.trim())
             console.log(state_name, stateName.trim(), state_id)
-            if (!state_id) {
-                await ctx.reply('State name not found!')
-                throw new Error('Display all states.')
-            }
             const districts = await CoWIN.getDistrict(state_id)
             const districtIds = [...new Set(users.filter(u => u.districtId && u.stateId == state_id).map(u => u.districtId))]
             const districtMap = districtIds.reduce((result, districtId) => {

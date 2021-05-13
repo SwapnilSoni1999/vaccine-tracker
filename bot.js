@@ -774,7 +774,7 @@ bot.command('sleeptime', async (ctx) => {
             TRACKER_SLEEP_TIME = parseInt(ms)
             return await ctx.reply('Sleep time updated for tracker.')
         } catch(err) {
-            await ctx.reply('Current sleeptime for tracker is ' + TRACKER_SLEEP_TIME)
+            await ctx.reply('Current sleeptime for tracker is ' + TRACKER_SLEEP_TIME + 'mss')
             return ctx.reply('Please provide milisecond /sleeptime <ms> for tracker')
         }
     }

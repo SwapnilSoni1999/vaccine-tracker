@@ -984,7 +984,7 @@ trackAndInform()
 // set false and wait for 5mins if tracker updates the flag or not
 setInterval(() => {
     TRACKER_ALIVE = false
-}, 1 * 60 * 1000)
+}, 3 * 60 * 1000)
 setInterval(() => {
     if (!TRACKER_ALIVE) {
         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')

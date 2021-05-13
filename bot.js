@@ -791,7 +791,7 @@ var TRACKER_ALIVE = false
 
 async function trackAndInform() {
     console.log('Fetching information')
-    const users = Users.value()
+    const users = [ ...Users.value() ]
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
     // console.log(districtIds)
     if (!districtIds.length) {
@@ -876,12 +876,6 @@ async function trackAndInform() {
                             console.log('Informed user!')
                             informedUser = true
                         } catch (err) {
-                            if (err instanceof TelegramError) {
-                                Users.remove({ chatId: user.chatId }).write()
-                                console.log('Removed chatId because bot was blocked.')
-                            } else {
-                                console.log(err)
-                            }
                         }
                     }
                     try {
@@ -893,12 +887,7 @@ async function trackAndInform() {
                             } })
                         }
                     } catch (err) {
-                        if (err instanceof TelegramError) {
-                            Users.remove({ chatId: user.chatId }).write()
-                            return
-                        } else {
-                            console.log(err)
-                        }
+                        console.log(err)
                     }
                 }
             }

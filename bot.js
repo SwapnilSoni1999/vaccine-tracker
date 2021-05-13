@@ -942,11 +942,13 @@ bot.command('locations', inviteMiddle, async (ctx) => {
             const districts = await CoWIN.getDistrict(state_id)
             const districtIds = [...new Set(users.filter(u => u.districtId && u.stateId == state_id).map(u => u.districtId))]
             const districtMap = districtIds.reduce((result, districtId) => {
-                const { district_name } = districts.find(v => v.district_id == districtId)
-                const totalUsers = (users.filter(v => v.districtId == districtId )).length
-                if(totalUsers && !(result.find(v => v.district_name == district_name))) {
-                    result.push({ district_name, totalUsers })
-                }
+                try {
+                    const { district_name } = districts.find(v => v.district_id == districtId)
+                    const totalUsers = (users.filter(v => v.districtId == districtId )).length
+                    if(totalUsers && !(result.find(v => v.district_name == district_name))) {
+                        result.push({ district_name, totalUsers })
+                    }
+                } catch (err) { }
                 return result
             }, []).sort((a, b) => b.totalUsers - a.totalUsers)
             const txt = districtMap.map(o => `<b>${o.district_name}</b>: ${o.totalUsers}`).join('\n')
@@ -955,11 +957,13 @@ bot.command('locations', inviteMiddle, async (ctx) => {
         } catch (error) {
             const stateIds = [...new Set(users.filter(u => u.stateId).map(u => u.stateId))]
             const stateMap = stateIds.reduce((result, stateId) => {
-                const { state_name } = states.find(v => v.state_id == stateId)
-                const totalUsers = (users.filter(v => v.stateId == stateId )).length
-                if (totalUsers && !(result.find(v => v.state_name == state_name))) {
-                    result.push({ state_name, totalUsers })
-                }
+                try {
+                    const { state_name } = states.find(v => v.state_id == stateId)
+                    const totalUsers = (users.filter(v => v.stateId == stateId )).length
+                    if (totalUsers && !(result.find(v => v.state_name == state_name))) {
+                        result.push({ state_name, totalUsers })
+                    }
+                } catch (err) { }
                 return result
             }, []).sort((a, b) => b.totalUsers - a.totalUsers)
             const txt = stateMap.map(o => `<b>${o.state_name}</b>: ${o.totalUsers}`).join('\n')

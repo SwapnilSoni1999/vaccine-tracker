@@ -828,6 +828,7 @@ async function trackAndInform() {
                 }
                 return valid
             }, [])
+            console.log(validUsers)
 
             for (const user of validUsers) {
                 let informedUser = false

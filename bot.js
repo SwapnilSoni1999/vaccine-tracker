@@ -938,8 +938,8 @@ bot.command('locations', inviteMiddle, async (ctx) => {
             const stateName = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')
             if (!stateName) throw new Error('Display all states.')
             const { state_name, state_id } = states.find(v => v.state_name == stateName.trim())
-            console.log(state_name, stateName.trim())
-            if (!state_name) {
+            console.log(state_name, stateName.trim(), state_id)
+            if (!state_id) {
                 await ctx.reply('State name not found!')
                 throw new Error('Display all states.')
             }

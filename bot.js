@@ -539,7 +539,7 @@ const districtSelection = new Scenes.WizardScene(
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll, districtSelection])
 
-bot.use(botUnderMaintain)
+// bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())
@@ -956,19 +956,19 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-// trackAndInform()
-// // set false and wait for 5mins if tracker updates the flag or not
-// setInterval(() => {
-//     TRACKER_ALIVE = false
-// }, 3 * 60 * 1000)
-// setInterval(() => {
-//     if (!TRACKER_ALIVE) {
-//         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
-//         setTimeout(() => {
-//             console.log('Starting tracker again...')
-//             trackAndInform()
-//         }, 4 * 60 * 1000)
-//     }
-// }, 10 * 60 * 1000)
+trackAndInform()
+// set false and wait for 5mins if tracker updates the flag or not
+setInterval(() => {
+    TRACKER_ALIVE = false
+}, 3 * 60 * 1000)
+setInterval(() => {
+    if (!TRACKER_ALIVE) {
+        bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
+        setTimeout(() => {
+            console.log('Starting tracker again...')
+            trackAndInform()
+        }, 4 * 60 * 1000)
+    }
+}, 10 * 60 * 1000)
 
 bot.launch()

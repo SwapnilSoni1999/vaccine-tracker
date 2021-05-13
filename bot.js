@@ -1,18 +1,17 @@
 'use strict';
 const { Telegraf, Scenes, session, TelegramError, Markup } = require('telegraf')
-const low = require('lowdb')
-const FileSync = require('lowdb/adapters/FileSync')
 const { CoWIN, em } = require('./wrapper')
-const { nanoid }  = require('nanoid')
+const mongoose = require('mongoose')
+const User = require('./model')
+
+mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
+.then(() => console.log('Connected to Database!'))
+.catch((err) => console.log(err))
 
 const BOT_TOKEN = '1707560756:AAGklCxSVVtfEtPBYEmOCZW6of4nEzffhx0'
 const bot = new Telegraf(BOT_TOKEN)
 const INVITE_KEY = "C0WiNbotSwapnil"
 const SWAPNIL = 317890515
-
-const adapter = new FileSync('db.json')
-const db = low(adapter)
-db.defaults({ users: [] }).write()
 
 /**
  * Helper methods
@@ -38,13 +37,13 @@ const THUMBS = {
     down: ['👎', '👎🏻', '👎🏼', '👎🏽', '👎🏾', '👎🏿']
 }
 
-const _isAuth = (chatId) => {
-    const { token } = db.get('users').find({ chatId }).pick('token').value()
+const _isAuth = async (chatId) => {
+    const { token } = await User.findOne({ chatId })
     return !!token 
 }
 
-const _isInvited = (chatId) => {
-    const { allowed } = db.get('users').find({ chatId }).pick('allowed').value()
+const _isInvited = async (chatId) => {
+    const allowed = await User.findOne({ chatId, allowed: true })
     return !!allowed
 }
 
@@ -72,28 +71,28 @@ function sleep(ms) {
  */
 
 const authMiddle = async (ctx, next) => {
-    if (_isAuth(ctx.chat.id)) {
+    if (await _isAuth(ctx.chat.id)) {
         next()
     } else {
         try {
             return await ctx.reply('Sorry! You\'re not logged in! Please /login first.')
         } catch (err) {
             if (err instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
             }
         }
     }
 }
 
 const inviteMiddle = async (ctx, next) => {
-    if(_isInvited(ctx.chat.id)) {
+    if(await _isInvited(ctx.chat.id)) {
         next()
     } else {
         try {
             return await ctx.reply('Please verify yourself by providing invite code!\nSend /start to invite yourself.')
         } catch (err) {
             if (err instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
             }
         }
     }
@@ -130,14 +129,14 @@ const inviteWizard = new Scenes.WizardScene(
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return
             }    
             console.log(error)
             try {
                 await ctx.reply('Some error occured please retry again with /start!')
             } catch (err) { 
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
             }
             return ctx.scene.leave()
         }
@@ -147,17 +146,17 @@ const inviteWizard = new Scenes.WizardScene(
             if ('message' in ctx) {
                 if ('text' in ctx.message) {
                     const code = ctx.message.text
-                    if (!db.get('users').find({ chatId: ctx.chat.id }).value()) {
-                        db.get('users').push({ chatId: ctx.chat.id }).write()
+                    if (!(await User.findOne({ chatId: ctx.chat.id }))) {
+                        await User.create({ chatId: ctx.chat.id })
                     }
                     if (code == INVITE_KEY) {
-                        db.get('users').find({ chatId: ctx.chat.id }).assign({ allowed: true }).write()
+                        await User.updateOne({ chatId: ctx.chat.id }, { allowed: true })
                         await ctx.reply('Invitation accepted!')
                         const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
                         await ctx.reply(msg, { parse_mode: 'HTML' })
                         return ctx.scene.leave()
                     } else {
-                        db.get('users').find({ chatId: ctx.chat.id }).assign({ allowed: false }).write()
+                        await User.updateOne({ chatId: ctx.chat.id }, { allowed: false })
                         await ctx.reply('Wrong invitation code. Please try again with /start if you wish to.')
                         return ctx.scene.leave()
                     }
@@ -165,14 +164,14 @@ const inviteWizard = new Scenes.WizardScene(
             }
         } catch (error) {
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
             console.log(error)
             try {
                 await ctx.reply('Some error occured please retry again with /start!')
             } catch (err) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
             }
             return ctx.scene.leave()
         }
@@ -187,7 +186,7 @@ const loginWizard = new Scenes.WizardScene(
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
             console.log(error)
@@ -215,17 +214,17 @@ const loginWizard = new Scenes.WizardScene(
                 ctx.wizard.state.cowin = cowin
                 const MAX_TIMEOUT_OTP = 180 //sec
                 const currentTime = parseInt(Date.now() / 1000)
-                const { lastOtpRequested } = db.get('users').find({ chatId: ctx.chat.id }).pick('lastOtpRequested').value()
+                const { lastOtpRequested } = await User.findOne({ chatId: ctx.chat.id })
                 if (currentTime - lastOtpRequested < MAX_TIMEOUT_OTP) {
                     await ctx.reply(`Please wait ${Math.abs(currentTime - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
                     return ctx.scene.leave()
                 }
                 await ctx.wizard.state.cowin.sendOtp()
-                db.get('users').find({ chatId: ctx.chat.id }).assign({ lastOtpRequested: parseInt(Date.now()/1000) }).write()
-                db.get('users').find({ chatId: ctx.chat.id }).assign({ txnId: ctx.wizard.state.cowin.txnId }).write()
+                await User.updateOne({ chatId: ctx.chat.id }, { lastOtpRequested: parseInt(Date.now()/1000) })
+                await User.updateOne({ chatId: ctx.chat.id }, { txnId: ctx.wizard.state.cowin.txnId })
             } catch (err) {
                 if (err instanceof TelegramError) {
-                    db.get('users').remove({ chatId: ctx.chat.id }).write()
+                    await User.deleteOne({ chatId: ctx.chat.id })
                     return ctx.scene.leave()
                 }
                 console.log(err)
@@ -237,7 +236,7 @@ const loginWizard = new Scenes.WizardScene(
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
             console.log(error)
@@ -257,14 +256,14 @@ const loginWizard = new Scenes.WizardScene(
             }
             try {
                 await ctx.wizard.state.cowin.verifyOtp(otp)
-                db.get('users').find({ chatId: ctx.chat.id }).assign({ token: ctx.wizard.state.cowin.token }).write()
+                await User.updateOne({ chatId: ctx.chat.id }, { token: ctx.wizard.state.cowin.token })
                 await ctx.reply('Login successful!')
-                db.get('users').find({ chatId: ctx.chat.id }).assign({ mobile: ctx.wizard.state.mobile, informedExpiration: false }).write()
+                await User.updateOne({ chatId: ctx.chat.id }, { mobile: ctx.wizard.state.mobile })
                 await ctx.reply('Send /help to know further commands.')
                 return ctx.scene.leave()
             } catch (err) {
                 if (err instanceof TelegramError) {
-                    db.get('users').remove({ chatId: ctx.chat.id }).write()
+                    await User.deleteOne({ chatId: ctx.chat.id })
                     return ctx.scene.leave()
                 }
                 console.log(err)
@@ -273,7 +272,7 @@ const loginWizard = new Scenes.WizardScene(
             }
         } catch (error) {
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
             console.log(error)
@@ -317,7 +316,7 @@ const slotWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             ctx.wizard.state.pincode = pincode
-            db.get('users').find({ chatId: ctx.chat.id }).assign({ tmpPincode: pincode }).write()
+            await User.updateOne({ chatId: ctx.chat.id }, { $set: { tmpPincode: pincode } })
             await ctx.reply('Please choose age group.', { reply_markup: 
                 {
                     inline_keyboard:[
@@ -341,15 +340,15 @@ const slotWizard = new Scenes.WizardScene(
     },
     async (ctx) => {
         try {
-            const { tmpPincode } = db.get('users').find({ chatId: ctx.chat.id }).pick('tmpPincode').value()
+            const { tmpPincode } = await User.findOne({ chatId: ctx.chat.id })
             ctx.wizard.state.pincode = tmpPincode
-            const { tmp_age_group } = db.get('users').find({ chatId: ctx.chat.id }).pick('tmp_age_group').value()
+            const { tmp_age_group } = await User.findOne({ chatId: ctx.chat.id })
             ctx.wizard.state.age_group = tmp_age_group
             if (!tmp_age_group || !tmpPincode) {
                 await ctx.reply('Please select valid age group and provide valid pincode and try again.')
                 return ctx.scene.leave()
             }
-            const userTracking = db.get('users').find({ chatId: ctx.chat.id }).get('tracking').find({ pincode: tmpPincode, age_group: tmp_age_group }).value()
+            const userTracking = await User.findOne({ $and: [ { chatId: ctx.chat.id }, { 'tracking.pincode': tmpPincode }, { 'tracking.age_group': tmp_age_group } ] }).select('tracking')
             if (userTracking) {
                 await ctx.reply('You are already tracking this pincode and age group!')
                 return ctx.scene.leave()
@@ -369,15 +368,19 @@ const slotWizard = new Scenes.WizardScene(
             const confirmed = ctx.message.text
             if (THUMBS.up.includes(confirmed)) {
                 await ctx.reply('Request accepted!')
-                db.get('users').find({ chatId: ctx.chat.id }).get('tracking').push({ id: nanoid(), pincode: ctx.wizard.state.pincode, age_group: ctx.wizard.state.age_group }).write()
-                db.get('users').find({ chatId: ctx.chat.id }).unset('tmpPincode').write()
-                db.get('users').find({ chatId: ctx.chat.id }).unset('tmp_age_group').write()
+                await User.updateOne({ chatId: ctx.chat.id }, { $push: 
+                    { 
+                        tracking: { pincode: ctx.wizard.state.pincode, age_group: ctx.wizard.state.age_group } 
+                    }
+                })
+                await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1 } })
+                await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmp_age_group: 1 } })
                 await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
                 await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}`)
                 return ctx.scene.leave()
             } else {
                 await ctx.reply('Request declined!')
-                db.get('users').find({ chatId: ctx.chat.id }).unset('tmpPincode').unset('tmp_age_group').write()
+                await User.find({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1} })
                 return ctx.scene.leave()
             }
         } catch (error) {
@@ -397,14 +400,14 @@ slotWizard.command('cancel', async (ctx) => {
 
 bot.action('18_plus', async (ctx) => {
     const chatId = ctx.update.callback_query.from.id
-    db.get('users').find({ chatId }).assign({ tmp_age_group: 18 }).write()
+    await User.updateOne({ chatId }, { $set: { tmp_age_group: 18 } })
     return await ctx.editMessageText('Selected 18+ age group.\nSend any text to continue...')
     // return ctx.scene.enter('track-pt2')
 })
 
 bot.action('45_plus', async (ctx) => {
     const chatId = ctx.update.callback_query.from.id
-    db.get('users').find({ chatId }).assign({ tmp_age_group: 45 }).write()
+    await User.updateOne({ chatId }, { $set: { tmp_age_group: 45 } })
     return await ctx.editMessageText('Selected 45+ age group.\nSend any text to continue...')
     // return ctx.scene.enter('track-pt2')
 })
@@ -420,7 +423,7 @@ const sendToAll = new Scenes.WizardScene(
             ctx.scene.leave()
             const msg = ctx.message.text
             const entities = ctx.message.entities
-            const users = (db.get('users').value()).filter(u => u.allowed && u.chatId)
+            const users = (await User.find({}).lean()).filter(u => u.allowed && u.chatId)
             await ctx.reply(`Broadcasting the message to ${users.length} people.`)
             const mesg = await ctx.reply('Status...')
             
@@ -436,7 +439,7 @@ const sendToAll = new Scenes.WizardScene(
                     console.log("Broadcast error!", err)
                     if (err instanceof TelegramError) {
                         if (err.response.error_code == 403) {
-                            db.get('users').remove({ chatId: user.chatId }).write()
+                            await User.deleteOne({ chatId: user.chatId })
                         }
                     }
                 }
@@ -476,7 +479,7 @@ const districtSelection = new Scenes.WizardScene(
             console.log(error)
             await ctx.reply('Something went wrong! try again.')
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
         }
@@ -489,7 +492,7 @@ const districtSelection = new Scenes.WizardScene(
                 await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid state.', { reply_markup: { remove_keyboard: true } })
                 return ctx.scene.leave()
             }
-            db.get('users').find({ chatId: ctx.chat.id }).assign({ stateId: state_id }).write()
+            await User.updateOne({ chatId: ctx.chat.id }, { $set: { stateId: state_id } })
             const districts = await CoWIN.getDistrict(state_id)
             ctx.wizard.state.districts = districts
             const markupButton = districts.reduce((result, value, index, array) => {
@@ -506,8 +509,9 @@ const districtSelection = new Scenes.WizardScene(
             })
             return ctx.wizard.next()
         } catch (error) {
+            console.log(error)
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
         }
@@ -520,13 +524,13 @@ const districtSelection = new Scenes.WizardScene(
                 await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid district.', { reply_markup: { remove_keyboard: true } })
                 return ctx.scene.leave()
             }
-            db.get('users').find({ chatId: ctx.chat.id }).assign({ districtId: district_id }).write()
+            await User.updateOne({ chatId: ctx.chat.id }, { $set: { districtId: district_id } })
             await ctx.reply(`You\'ve selected ${district_name}.`, { reply_markup: { remove_keyboard: true } })
             await ctx.reply('Now you can /track your desired pincode. You can also change your district whenever you want to by sending /district')
             return ctx.scene.leave()
         } catch (error) {
             if (error instanceof TelegramError) {
-                db.get('users').remove({ chatId: ctx.chat.id }).write()
+                await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()
             }
         }
@@ -535,7 +539,7 @@ const districtSelection = new Scenes.WizardScene(
 
 const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll, districtSelection])
 
-// bot.use(botUnderMaintain)
+bot.use(botUnderMaintain)
 bot.use(session())
 bot.use(groupDetection)
 bot.use(stage.middleware())
@@ -557,14 +561,14 @@ bot.help(inviteMiddle, async (ctx) => {
         return await ctx.reply(commands)
     } catch (err) {
         if (err instanceof TelegramError) {
-            db.get('users').remove({ chatId: ctx.chat.id }).write()
+            await User.deleteOne({ chatId: ctx.chat.id })
             return
         }
     }
 })
 
 bot.start(async (ctx) => {
-    if (_isInvited(ctx.chat.id)) {
+    if (await _isInvited(ctx.chat.id)) {
         const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
         return await ctx.reply(msg, { parse_mode: 'HTML' })
     }
@@ -572,7 +576,7 @@ bot.start(async (ctx) => {
 })
 
 bot.command('login', inviteMiddle, async (ctx) => {
-    const user = db.get('users').find({ chatId: ctx.chat.id }).value()
+    const user = await User.findOne({ chatId: ctx.chat.id })
     if (user) {
         if (user.token) {
             return await ctx.reply('You\'re already logged in! Send /logout to Logout.')
@@ -582,7 +586,7 @@ bot.command('login', inviteMiddle, async (ctx) => {
 })
 
 bot.command('otp', inviteMiddle, async (ctx) => {
-    const user = db.get('users').find({ chatId: ctx.chat.id }).value()
+    const user = await User.findOne({ chatId: ctx.chat.id })
     if (user.token) {
         return await ctx.reply('You\'re already logged in! Send /logout to Logout.')
     }
@@ -593,7 +597,7 @@ bot.command('otp', inviteMiddle, async (ctx) => {
 
     try {
         const token = await CoWIN.verifyOtpStatic(ctx.message.text.split(' ')[1], user.txnId)
-        db.get('users').find({ chatId: ctx.chat.id }).assign({ token: token }).write()
+        await User.updateOne({ chatId: ctx.chat.id }, { token: token })
         return await ctx.reply('Login successful!')
     } catch (err) {
         console.log(err)
@@ -603,18 +607,18 @@ bot.command('otp', inviteMiddle, async (ctx) => {
 
 bot.command('logout', inviteMiddle, async (ctx) => {
     try {
-        const user = db.get('users').find({ chatId: ctx.chat.id }).value()
+        const user = await User.findOne({ chatId: ctx.chat.id })
         if (!user.token) {
             return await ctx.reply('You\'re not logged in! Please /login first.')
         }
         if (user.txnId) {
-            db.get('users').find({ chatId: ctx.chat.id }).assign({ txnId: null }).write()
+            await User.updateOne({ chatId: ctx.chat.id }, { txnId: null })
         }
-        db.get('users').find({ chatId: ctx.chat.id }).assign({ token: null, txnId: null }).write()
+        await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
         return await ctx.reply('Logged out! Send /login to login. Note: You\'re still tracking your current pincode and age group. Check it with /status')
     } catch (err) {
         if (err.response.status == 403 || err instanceof TelegramError) {
-            db.get('users').remove({ chatId: ctx.chat.id }).write()
+            await User.deleteOne({ chatId: ctx.chat.id })
         }
     }
 })
@@ -627,10 +631,10 @@ function expandAppointments(appointments) {
 
 
 bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
-    const { token } = db.get('users').find({ chatId: ctx.chat.id }).pick('token').value()
+    const { token } = await User.findOne({ chatId: ctx.chat.id })
     try {
         const ben = await CoWIN.getBeneficiariesStatic(token)
-        db.get('users').find({ chatId: ctx.chat.id }).assign({ beneficiaries: ben }).write()
+        await User.updateOne({ chatId: ctx.chat.id }, { beneficiaries: ben })
         const txts = ben.map(b => `<b>ID:</b> ${b.beneficiary_reference_id}\n<b>Name</b>: ${b.name}\n<b>Birth Year</b>: ${b.birth_year}\n<b>Gender</b>: ${b.gender}\n<b>Vaccination Status</b>: ${b.vaccination_status}\n<b>Vaccine</b>: ${b.vaccine}\n<b>Dose 1 Date</b>: ${b.dose1_date || 'Not vaccinated'}\n<b>Dose 2 Date</b>: ${b.dose2_date || 'Not vaccinated'}\n\n<b>Appointments</b>: ${b.appointments.length ? expandAppointments(b.appointments) : 'No appointments booked.'}\n\n<u>It is recommended to take both doses of same vaccines. Please do not take different vaccine doeses.</u>`)
         
         for (const txt of txts) {
@@ -638,24 +642,18 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
         }
         return
     } catch (err) {
-        if(err instanceof TelegramError && err.response.status == 401) {
-            db.get('users').find({ chatId: ctx.chat.id }).assign({ token: null }).assign({ txnId: null }).write()
-            return await ctx.reply('Token expired! Please /login again.')
-        }
+        await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
         return await ctx.reply('Token expired! Please /logout and /login again.')
     }
 })
 
 bot.command('track', inviteMiddle, async (ctx) => {
     try {
-        const { districtId } = db.get('users').find({ chatId: ctx.chat.id }).pick('districtId').value()
+        const { districtId } = await User.findOne({ chatId: ctx.chat.id })
         if (!districtId) {
             return await ctx.reply('You haven\'t selected your prefered district. Please select your /district first.')
         }
-        const { tracking } = db.get('users').find({ chatId: ctx.chat.id }).pick('tracking').value()
-        if (!tracking) {
-            db.get('users').find({ chatId: ctx.chat.id }).assign({ tracking: [] }).write()
-        }
+        const { tracking } = await User.find({ chatId: ctx.chat.id })
         if (Array.isArray(tracking) && tracking.length >= MAX_TRACKING_ALLOWED) {
             return await ctx.reply(`Sorry you can track maximum ${MAX_TRACKING_ALLOWED} pincodes. send /untrack to remove one of the pincode.`)
         }
@@ -669,27 +667,27 @@ bot.command('track', inviteMiddle, async (ctx) => {
 
 bot.command('untrack', inviteMiddle, async (ctx) => {
     try {
-        const { tracking } = db.get('users').find({ chatId: ctx.chat.id }).pick('tracking').value()
+        const { tracking } = await User.findOne({ chatId: ctx.chat.id })
         if (!Array.isArray(tracking) || !tracking.length) {
             return await ctx.reply('You aren\'t tracking any pincode. send /track to start tracking.')
         }
-        const markupButton = tracking.map((t) => ({ text: `Pin: ${t.pincode} | Age: ${t.age_group}`, callback_data: `remove-pin--${t.id}` }))
+        const markupButton = tracking.map((t) => ([{ text: `Pin: ${t.pincode} | Age: ${t.age_group}`, callback_data: `remove-pin--${t.id}` }]))
         return await ctx.reply('Choose which pincode to remove.', { reply_markup: { inline_keyboard: markupButton } })
     } catch (error) {
+        console.log(error)
         if (error instanceof TelegramError) {
-            db.get('users').remove({ chatId: ctx.chat.id }).write()
+            await User.deleteOne({ chatId: ctx.chat.id })
             return
         }
-        console.log(error)
         return await ctx.reply('Something went wrong please try again later!')
     }
 })
 bot.action(/remove-pin--.*/, async (ctx) => {
     try {
         const trackingId = ctx.update.callback_query.data.split('remove-pin--')[1]
-        console.log(db.get('users').find({ chatId: ctx.update.callback_query.from.id }).get('tracking').find({ id: trackingId }).value())
-        const { pincode, age_group } = db.get('users').find({ chatId: ctx.update.callback_query.from.id }).get('tracking').find({ id: trackingId }).value()
-        db.get('users').find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
+        const { tracking } = await User.findOne({ $and: [ { chatId: ctx.update.callback_query.from.id }, { 'tracking._id': trackingId } ] }).select('tracking')
+        const { pincode, age_group } = tracking[0]
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $pull: { tracking: { _id: trackingId } } })
         return await ctx.editMessageText(`Removed ${pincode}|${age_group} from your tracking list.`)
     } catch (err) {
         console.log(err)
@@ -704,7 +702,7 @@ bot.command('district', inviteMiddle, async (ctx) => {
         console.log(error)
         await ctx.reply('Something went wrong! try again.')
         if (err instanceof TelegramError) {
-            db.get('users').remove({ chatId: ctx.chat.id }).write()
+            await User.deleteOne({ chatId: ctx.chat.id })
             return
         }
     }
@@ -724,7 +722,7 @@ bot.command('snooze', inviteMiddle, async (ctx) => {
 })
 
 bot.command('unsnooze', inviteMiddle, async (ctx) => {
-    db.get('users').find({ chatId: ctx.chat.id }).assign({ snoozeTime: null }).write()
+    await User.updateOne({ chatId: ctx.chat.id }, { snoozeTime: null })
     return await ctx.reply('Unsoozed! You can /snooze your messages if they\'re annoying.')
 })
 
@@ -734,9 +732,8 @@ function expandTracking(tracking) {
 
 bot.command('status', inviteMiddle, async (ctx) => {
     try {
-        const user = db.get('users').find({ chatId: ctx.chat.id }).value()
-        const { stateId } = db.get('users').find({ chatId: ctx.chat.id }).pick('stateId').value()
-        const { districtId } = db.get('users').find({ chatId: ctx.chat.id }).pick('districtId').value()
+        const user = await User.findOne({ chatId: ctx.chat.id }).lean()
+        const { stateId, districtId } = user
         let district_name = null
         if (districtId) {
             const districts = await CoWIN.getDistrict(stateId)
@@ -752,10 +749,10 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        const users = (db.get('users').value()).filter(u => u.allowed && u.token && !!u.chatId && Array.isArray(u.tracking) && u.tracking.length)
+        const users = (await User.find({}).lean()).filter(u => u.allowed && u.token && !!u.chatId && Array.isArray(u.tracking) && u.tracking.length)
         for (const user of users) {
             if (user.chatId) {
-                db.get('users').find({ chatId: user.chatId }).assign({ token: null }).write()
+                await User.updateOne({ chatId: user.chatId }, { token: null })
             }
         }
         return await ctx.reply(`Revoked ${users.length} user\'s token!`)
@@ -783,14 +780,14 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     const lit = SNOOZE_LITERALS.find(v => v.seconds === parseInt(seconds))
     await ctx.editMessageText(`You've snoozed bot messages for ${lit.name}\nYou can unsnooze using /unsnooze`)
     const currentTime = parseInt(Date.now()/1000)
-    db.get('users').find({ chatId: ctx.update.callback_query.from.id }).assign({ snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime }).write()
+    await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime })
 })
 
 var TRACKER_ALIVE = false
 
 async function trackAndInform() {
     console.log('Fetching information')
-    const users = (db.get('users').value()).slice()
+    const users = await User.find({}).lean()
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
     // console.log(districtIds)
     if (!districtIds.length) {
@@ -849,7 +846,7 @@ async function trackAndInform() {
 
                 if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
                     console.log('Snooze timeout for user!')
-                    db.get('users').find({ chatId: user.chatId }).assign({ snoozeTime: null }).write()
+                    await User.updateOne({ chatId: user.chatId }, { snoozeTime: null })
                     await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
                 }
 
@@ -900,20 +897,19 @@ bot.command('sendall', async (ctx) => {
 
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
-        const users = db.get('users').value()
-        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${db.get('users').filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${db.get('users').filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${db.get('users').filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${db.get('users').filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(db.get('users').filter(u => u.districtId).map(u => u.districtId))].length}\n<b>Total Districts</b>: ${db.get('users').filter(u => !!u.districtId).length}`
+        const users = await User.find({}).lean()
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(users.filter(u => u.districtId).map(u => u.districtId))].length}\n<b>Total Districts</b>: ${users.filter(u => !!u.districtId).length}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
 })
 
 bot.action('yes_booked', async (ctx) => {
-    // db.get('users').find({ chatId: ctx.update.callback_query.from.id }).get('tracking').remove({ id: trackingId }).write()
     return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
 })
 
 bot.command('locations', inviteMiddle, async (ctx) => {
     try {
-        const users = db.get('users').value()
+        const users = await User.find({}).lean()
         const states = await CoWIN.getStates()
         try {
             const stateName = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')
@@ -960,19 +956,19 @@ bot.action('not_booked', async (ctx) => {
     return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
 })
 
-trackAndInform()
-// set false and wait for 5mins if tracker updates the flag or not
-setInterval(() => {
-    TRACKER_ALIVE = false
-}, 3 * 60 * 1000)
-setInterval(() => {
-    if (!TRACKER_ALIVE) {
-        bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
-        setTimeout(() => {
-            console.log('Starting tracker again...')
-            trackAndInform()
-        }, 4 * 60 * 1000)
-    }
-}, 10 * 60 * 1000)
+// trackAndInform()
+// // set false and wait for 5mins if tracker updates the flag or not
+// setInterval(() => {
+//     TRACKER_ALIVE = false
+// }, 3 * 60 * 1000)
+// setInterval(() => {
+//     if (!TRACKER_ALIVE) {
+//         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
+//         setTimeout(() => {
+//             console.log('Starting tracker again...')
+//             trackAndInform()
+//         }, 4 * 60 * 1000)
+//     }
+// }, 10 * 60 * 1000)
 
 bot.launch()

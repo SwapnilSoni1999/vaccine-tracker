@@ -653,7 +653,8 @@ bot.command('track', inviteMiddle, async (ctx) => {
         if (!districtId) {
             return await ctx.reply('You haven\'t selected your prefered district. Please select your /district first.')
         }
-        const { tracking } = await User.find({ chatId: ctx.chat.id }).select('tracking')
+        const { tracking } = await User.findOne({ chatId: ctx.chat.id }).select('tracking')
+        console.log(tracking)
         if (tracking.length >= MAX_TRACKING_ALLOWED) {
             const length4tracking = tracking.splice(0, MAX_TRACKING_ALLOWED)
             await User.find({ chatId: ctx.chat.id }, { $set: { tracking: length4tracking } })

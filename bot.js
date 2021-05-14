@@ -685,7 +685,7 @@ bot.command('untrack', inviteMiddle, async (ctx) => {
 bot.action(/remove-pin--.*/, async (ctx) => {
     try {
         const trackingId = ctx.update.callback_query.data.split('remove-pin--')[1]
-        const { tracking } = await User.findOne({ $and: [ { chatId: ctx.update.callback_query.from.id }, { 'tracking._id': trackingId } ] }).select('tracking')
+        const { tracking } = await User.findOne({ chatId: ctx.update.callback_query.from.id }, { 'tracking._id': trackingId }).select('tracking')
         const { pincode, age_group } = tracking[0]
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $pull: { tracking: { _id: trackingId } } })
         return await ctx.editMessageText(`Removed ${pincode}|${age_group} from your tracking list.`)

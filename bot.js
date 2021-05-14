@@ -653,8 +653,10 @@ bot.command('track', inviteMiddle, async (ctx) => {
         if (!districtId) {
             return await ctx.reply('You haven\'t selected your prefered district. Please select your /district first.')
         }
-        const { tracking } = await User.find({ chatId: ctx.chat.id })
+        const { tracking } = await User.find({ chatId: ctx.chat.id }).select('tracking')
         if (Array.isArray(tracking) && tracking.length >= MAX_TRACKING_ALLOWED) {
+            const length4tracking = tracking.splice(0, MAX_TRACKING_ALLOWED)
+            await User.find({ chatId: ctx.chat.id }, { $set: { tracking: length4tracking } })
             return await ctx.reply(`Sorry you can track maximum ${MAX_TRACKING_ALLOWED} pincodes. send /untrack to remove one of the pincode.`)
         }
         return ctx.scene.enter('slot-booking')

@@ -656,8 +656,7 @@ bot.command('track', inviteMiddle, async (ctx) => {
         const { tracking } = await User.findOne({ chatId: ctx.chat.id }).select('tracking')
         console.log(tracking)
         if (tracking.length >= MAX_TRACKING_ALLOWED) {
-            const length4tracking = tracking.splice(0, MAX_TRACKING_ALLOWED)
-            await User.find({ chatId: ctx.chat.id }, { $set: { tracking: length4tracking } })
+            await User.updateOne({ chatId: ctx.chat.id }, { $set: { tracking: tracking.slice(0, MAX_TRACKING_ALLOWED) } })
             return await ctx.reply(`Sorry you can track maximum ${MAX_TRACKING_ALLOWED} pincodes. send /untrack to remove one of the pincode.`)
         }
         return ctx.scene.enter('slot-booking')

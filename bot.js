@@ -348,7 +348,7 @@ const slotWizard = new Scenes.WizardScene(
                 await ctx.reply('Please select valid age group and provide valid pincode and try again.')
                 return ctx.scene.leave()
             }
-            const userTracking = await User.findOne({ $and: [ { chatId: ctx.chat.id }, { 'tracking.pincode': tmpPincode }, { 'tracking.age_group': tmp_age_group } ] }).select('tracking')
+            const userTracking = await User.findOne({ chatId: ctx.chat.id, tracking: { $elemMatch: { pincode: tmpPincode, age_group: tmp_age_group } } }).select('tracking')
             if (userTracking) {
                 await ctx.reply('You are already tracking this pincode and age group!')
                 return ctx.scene.leave()

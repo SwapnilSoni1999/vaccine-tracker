@@ -960,7 +960,7 @@ async function trackAndInform() {
                             
                             if (user.autobook && !Token.isValid(user.token)) {
                                 bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
-                                await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
+                                // await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
                             }
 
                             if (user.autobook && Token.isValid(user.token)) {
@@ -1024,7 +1024,7 @@ bot.command('sendall', async (ctx) => {
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         const users = await User.find({}).lean()
-        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(users.filter(u => u.districtId).map(u => u.districtId))].length}\n<b>Total Districts</b>: ${users.filter(u => !!u.districtId).length}`
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))].length}\n<b>Total Districts</b>: ${users.filter(u => !!u.districtId).length}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
 })

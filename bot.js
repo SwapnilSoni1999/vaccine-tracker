@@ -881,7 +881,7 @@ var TRACKER_ALIVE = false
 async function trackAndInform() {
     console.log('Fetching information')
     const users = await User.find({}).lean()
-    const districtIds = [...new Set(users.filter(u => u.districtId).map(u => u.districtId))]
+    const districtIds = [...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))]
     // console.log(districtIds)
     if (!districtIds.length) {
         return

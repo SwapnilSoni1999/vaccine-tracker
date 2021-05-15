@@ -957,12 +957,9 @@ async function trackAndInform() {
                             await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                             console.log('Informed user!')
                             informedUser = true
-                            console.log('===========', user.autobook, Token.isValid(user.token))
-                            if (user.chatId == SWAPNIL) {
-                                await bot.telegram.sendMessage(SWAPNIL, `${user.autobook} ${Token.isValid(user.token)}`)
-                            }
+                            
                             if (user.autobook && !Token.isValid(user.token)) {
-                                await bot.telegram.sendMessage('Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
+                                await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
                                 await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
                             }
 

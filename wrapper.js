@@ -239,6 +239,7 @@ class CoWIN {
             return res.data.centers
         } catch (err) {
             try {
+                console.log(err)
                 if (requestCount < 0) {
                     requestCount = 0
                 }

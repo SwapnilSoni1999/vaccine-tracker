@@ -3,6 +3,7 @@ const crypto = require('crypto')
 const { EventEmitter } = require('events')
 const { httpsOverHttp } = require('tunnel')
 const fs = require('fs')
+const tools = require('./tools')
 
 const em = new EventEmitter()
 
@@ -171,7 +172,42 @@ class CoWIN {
         }
     }
 
-    static async getCentersByDist(districtId) {
+    /**
+     * returns solved captcha
+     */
+    static async getCaptcha(token, chatId) {
+        const res = await axios({
+            method: 'POST',
+            url: 'https://cdn-api.co-vin.in/api/v2/auth/getRecaptcha',
+            data: '{}',
+            headers: {
+                ...headers,
+                authorization: 'Bearer ' + token
+            }
+        })
+        const svgCode = res.data.captcha
+        const { filename } = await tools.svgToPng(svgCode, chatId)
+        const bitmap = fs.readFileSync(filename)
+        const base64Image = Buffer.from(bitmap).toString('base64')
+        const result = await tools.solveCaptcha(base64Image)
+        fs.unlinkSync(filename)
+        return result
+    }
+
+    static async schedule(token, payload={ beneficiaries, center_id, captcha, dose, slot, session_id }) {
+        const res = await axios({
+            method: 'POST',
+            url: 'https://cdn-api.co-vin.in/api/v2/appointment/schedule',
+            headers: {
+                ...headers,
+                authorization: 'Bearer ' + token
+            },
+            data: payload
+        })
+        return res.data
+    }
+
+    static async getCentersByDist(districtId, token) {
         const params = {
             district_id: districtId,
             date: getToday()
@@ -179,13 +215,16 @@ class CoWIN {
         console.log(params)
         try {
             const agent = httpsOverHttp({ proxy: proxies[requestCount] })
-            console.log('Request Count:', requestCount)
+            console.log('Request Count:', requestCount, 'API: Private')
             console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
             const axiosConfig = {
                 method: 'GET',
-                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict',
                 params,
-                headers,
+                headers: {
+                    ...headers,
+                    authorization: 'Bearer ' + token
+                },
                 httpsAgent: agent
             }
             if (requestCount >= proxies.length) {
@@ -196,17 +235,38 @@ class CoWIN {
             requestCount++
             return res.data.centers
         } catch (err) {
-            console.log(err)
-            if (err.response.status == 403) {
-                console.log("Rate limit exceeded! Waiting for 10 minutes...")
-                await sleep(10* 60 * 1000)
-                em.emit('rate-limit')
-                // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
-                return
+            try {
+                const agent = httpsOverHttp({ proxy: proxies[requestCount] })
+                console.log('Request Count:', requestCount, 'API: Public')
+                console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
+                const axiosConfig = {
+                    method: 'GET',
+                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+                    params,
+                    headers,
+                    httpsAgent: agent
+                }
+                if (requestCount >= proxies.length) {
+                    delete axiosConfig.httpsAgent
+                    requestCount = -1
+                }
+                const res = await axios(axiosConfig)
+                requestCount++
+                return res.data.centers
+            } catch (err) {
+                console.log(err)
+                if (err.response.status == 403) {
+                    console.log("Rate limit exceeded! Waiting for 10 minutes...")
+                    await sleep(10* 60 * 1000)
+                    em.emit('rate-limit')
+                    // currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
+                    return
+                }
+                const centers = []
+                requestCount++
+                return centers
             }
-            const centers = []
-            requestCount++
-            return centers
+
         }
     }
 }

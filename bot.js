@@ -4,6 +4,7 @@ const { CoWIN, em } = require('./wrapper')
 const mongoose = require('mongoose')
 const User = require('./model')
 const fs = require('fs')
+const Token = require('./token')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -17,6 +18,13 @@ const SWAPNIL = 317890515
 /**
  * Helper methods
  */
+function getDoseCount(beneficiary) {
+    if(beneficiary.dose1_date) {
+        return 2
+    }
+    return 1
+}
+
 function calculateSleeptime() {
     const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
     const ipCount = proxies.length + 1 // +1 for system ip
@@ -118,6 +126,20 @@ const groupDetection = async (ctx, next) => {
         }
         next()
     } catch (err) { }
+}
+
+const benefMiddle = async (ctx, next) => {
+    try {
+        const { beneficiaries, preferredBenef } = await User.findOne({ chatId: ctx.chat.id }).lean()
+        if (Array.isArray(beneficiaries) && beneficiaries.length) {
+            if (preferredBenef && (Object.keys(preferredBenef)).length !== 0) {
+                return next()
+            }
+            return await ctx.reply('Please choose preferred beneficiary for auto slot booking. Send /beneficiaries to choose.')
+        }
+        
+        return await ctx.reply('Please search for /beneficiaries and choose your preferred one.')
+    } catch (error) {}
 }
 
 const botUnderMaintain = async (ctx, next) => {
@@ -626,7 +648,7 @@ bot.command('logout', inviteMiddle, async (ctx) => {
         if (user.txnId) {
             await User.updateOne({ chatId: ctx.chat.id }, { txnId: null })
         }
-        await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
+        await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null, txnId: null, beneficiaries: [], preferredBenef: null } })
         return await ctx.reply('Logged out! Send /login to login. Note: You\'re still tracking your current pincode and age group. Check it with /status')
     } catch (err) {
         if (err.response.status == 403 || err instanceof TelegramError) {
@@ -646,17 +668,31 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
     const { token } = await User.findOne({ chatId: ctx.chat.id })
     try {
         const ben = await CoWIN.getBeneficiariesStatic(token)
-        await User.updateOne({ chatId: ctx.chat.id }, { beneficiaries: ben })
+        await User.updateOne({ chatId: ctx.chat.id }, { $set: { beneficiaries: ben } })
+
         const txts = ben.map(b => `<b>ID:</b> ${b.beneficiary_reference_id}\n<b>Name</b>: ${b.name}\n<b>Birth Year</b>: ${b.birth_year}\n<b>Gender</b>: ${b.gender}\n<b>Vaccination Status</b>: ${b.vaccination_status}\n<b>Vaccine</b>: ${b.vaccine}\n<b>Dose 1 Date</b>: ${b.dose1_date || 'Not vaccinated'}\n<b>Dose 2 Date</b>: ${b.dose2_date || 'Not vaccinated'}\n\n<b>Appointments</b>: ${b.appointments.length ? expandAppointments(b.appointments) : 'No appointments booked.'}\n\n<u>It is recommended to take both doses of same vaccines. Please do not take different vaccine doeses.</u>`)
         
         for (const txt of txts) {
             await ctx.reply(txt, { parse_mode: 'HTML' })
         }
+        const validBenef = ben.filter(b => (!!b.dose1_date || !!b.dose2_date))
+        const markupButton = validBenef.map(b => ({ text: b.name, callback_data: `benef--${b.beneficiary_reference_id}` }))
+        await ctx.reply('Please choose preferred beneficiary for auto booking.', { reply_markup: {
+            inline_keyboard: markupButton
+        } })
         return
     } catch (err) {
         await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
         return await ctx.reply('Token expired! Please /logout and /login again.')
     }
+})
+
+bot.action(/benef--.*/, async (ctx) => {
+    const benefId = ctx.update.callback_query.data.split('benef--')[1]
+    const { beneficiaries } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('beneficiaries')
+    const matched = beneficiaries.find(b => b.beneficiary_reference_id == benefId)
+    await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { preferredBenef: matched } })
+    return await ctx.reply(`<b>ID:</b> ${b.beneficiary_reference_id}\n<b>Name</b>: ${b.name}\n<b>Birth Year</b>: ${b.birth_year}\n<b>Gender</b>: ${b.gender}`, { parse_mode: 'HTML' })
 })
 
 bot.command('track', inviteMiddle, async (ctx) => {
@@ -723,7 +759,7 @@ bot.command('district', inviteMiddle, async (ctx) => {
     }
 })
 
-bot.command('autobook', inviteMiddle, authMiddle, async (ctx) => {
+bot.command('autobook', inviteMiddle, authMiddle, benefMiddle, async (ctx) => {
     try {
         return await ctx.reply('Choose switch for autobook.\n<b>What is this?</b>\nIts a feature to book an available slot in youre desired pincode if your token is valid within the given time.\n\n<b>Note</b>: <u>If your token expires AND your autobook switch is on then you will get message regarding expired token. Then you need to relogin to use this feature. If the bot is spamming and you dont want to autobook simply turn off the switch.</u>', {
             reply_markup: {
@@ -915,6 +951,34 @@ async function trackAndInform() {
                             await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                             console.log('Informed user!')
                             informedUser = true
+
+                            if (user.autobook && !Token.isValid(user.token)) {
+                                await bot.telegram.sendMessage('Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
+                                await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
+                            }
+
+                            if (user.autobook && Token.isValid(user.token)) {
+                                await bot.telegram.sendMessage('Attempting to book slot...')
+                                try {
+                                    const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
+                                    const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
+                                    const appointmentId = await CoWIN.schedule(user.token, {
+                                        beneficiaries: [user.preferredBenef.beneficiary_reference_id],
+                                        captcha: captchaResult,
+                                        center_id: uCenter.center_id,
+                                        dose: getDoseCount(user.preferredBenef),
+                                        session_id: sess.session_id,
+                                        slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
+                                    })
+                                    const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
+                                    const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
+                                    const appointment = bookedOne.appointments.find(a => a.appointment_id == appointmentId)
+                                    await bot.telegram.sendMessage(`Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`)
+                                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
+                                } catch (err) {
+                                    await bot.telegram.sendMessage('Failed to book appointment. Please try yourself once. Sorry.')
+                                }
+                            }
                         } catch (err) {
                         }
                     }

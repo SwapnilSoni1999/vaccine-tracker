@@ -3,6 +3,7 @@ const { Telegraf, Scenes, session, TelegramError, Markup } = require('telegraf')
 const { CoWIN, em } = require('./wrapper')
 const mongoose = require('mongoose')
 const User = require('./model')
+const fs = require('fs')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))

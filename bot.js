@@ -957,7 +957,7 @@ async function trackAndInform() {
                             await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                             console.log('Informed user!')
                             informedUser = true
-                            console.log('===========', user, Token.isValid(user.token))
+                            console.log('===========', user.autobook, Token.isValid(user.token))
                             if (user.chatId == SWAPNIL) {
                                 await bot.telegram.sendMessage(SWAPNIL, `${user.autobook} ${Token.isValid(user.token)}`)
                             }

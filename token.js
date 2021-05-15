@@ -2,8 +2,12 @@ const jwt = require('jsonwebtoken')
 const User = require('./model')
 
 const isValid = (token) => {
-    const { exp } = jwt.decode(token)
-    return !(Date.now() >= exp*1000)
+    try {
+        const { exp } = jwt.decode(token)
+        return !(Date.now() >= exp*1000)
+    } catch (err) {
+        return err
+    }
 }
 
 const getAnyValidToken = async () => {

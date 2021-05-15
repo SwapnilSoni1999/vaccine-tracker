@@ -767,7 +767,8 @@ bot.command('autobook', inviteMiddle, authMiddle, benefMiddle, async (ctx) => {
                 inline_keyboard: [
                     [ { text: 'Turn ON ✔️', callback_data: 'turn_on' }, { text: 'Turn OFF ✖️', callback_data: 'turn_off' } ]
                 ]
-            }
+            },
+            parse_mode: 'HTML'
         })
     } catch (error) {
         console.log(error)

@@ -16,7 +16,19 @@ const SWAPNIL = 317890515
 /**
  * Helper methods
  */
-var TRACKER_SLEEP_TIME = 800 // for 11 ips
+function calculateSleeptime() {
+    const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
+    const ipCount = proxies.length
+    const fivMins = 5*60*1000
+    const reqPerIp = 100
+    const perIpTime = fiveMins/ipCount
+    const responseTime = 45
+    const sleeptime = (perIpTime/reqPerIp) - responseTime
+    console.log('SLEEPTIME:', sleeptime)
+    return sleeptime
+}
+
+var TRACKER_SLEEP_TIME = calculateSleeptime() // for 11 ips
 const MAX_TRACKING_ALLOWED = 4
 const SNOOZE_LITERALS = [
     { name: '10min', seconds: 10 * 60 },
@@ -708,6 +720,42 @@ bot.command('district', inviteMiddle, async (ctx) => {
             await User.deleteOne({ chatId: ctx.chat.id })
             return
         }
+    }
+})
+
+bot.command('autobook', inviteMiddle, authMiddle, async (ctx) => {
+    try {
+        return await ctx.reply('Choose switch for autobook.\n<b>What is this?</b>\nIts a feature to book an available slot in youre desired pincode if your token is valid within the given time.\n\n<b>Note</b>: <u>If your token expires AND your autobook switch is on then you will get message regarding expired token. Then you need to relogin to use this feature. If the bot is spamming and you dont want to autobook simply turn off the switch.</u>', {
+            reply_markup: {
+                inline_keyboard: [
+                    [ { text: 'Turn ON ✔️', callback_data: 'turn_on' }, { text: 'Turn OFF ✖️', callback_data: 'turn_off' } ]
+                ]
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return
+        }
+    }
+})
+
+bot.action('turn_on', async (ctx) => {
+    try {
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: true } })
+        return await ctx.editMessageText('Autobook is now turned <b>ON</b>', { parse_mode: 'HTML' })
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+bot.action('turn_off', async (ctx) => {
+    try {
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: false } })
+        return await ctx.editMessageText('Autobook is now turned <b>ON</b>', { parse_mode: 'HTML' })
+    } catch (error) {
+        console.log(error)
     }
 })
 

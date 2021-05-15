@@ -21,7 +21,8 @@ const UserSchema = new Schema({
     tmpPincode: { type: Number },
     tmp_age_group: { type: Number },
     tracking: [{ type: TrackingSchema, default: [] }],
-    beneficiaries: { type: Array, default: [] }
+    beneficiaries: { type: Array, default: [] },
+    autobook: { type: Boolean, default: false }
 })
 
 const User = model('User', UserSchema, 'users')

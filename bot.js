@@ -791,7 +791,7 @@ bot.action('turn_on', async (ctx) => {
 bot.action('turn_off', async (ctx) => {
     try {
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: false } })
-        return await ctx.editMessageText('Autobook is now turned <b>ON</b>', { parse_mode: 'HTML' })
+        return await ctx.editMessageText('Autobook is now turned <b>OFF</b>', { parse_mode: 'HTML' })
     } catch (error) {
         console.log(error)
     }

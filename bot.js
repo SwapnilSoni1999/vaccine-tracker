@@ -22,7 +22,7 @@ function calculateSleeptime() {
     const ipCount = proxies.length
     const fivMins = 5*60*1000
     const reqPerIp = 100
-    const perIpTime = fiveMins/ipCount
+    const perIpTime = fivMins/ipCount
     const responseTime = 45
     const sleeptime = (perIpTime/reqPerIp) - responseTime
     console.log('SLEEPTIME:', sleeptime)

@@ -189,8 +189,9 @@ class CoWIN {
         const { filename } = await tools.svgToPng(svgCode, chatId)
         const bitmap = fs.readFileSync(filename)
         const base64Image = Buffer.from(bitmap).toString('base64')
+        let result
         try {
-            const result = await tools.solveCaptcha(base64Image)
+            result = await tools.solveCaptcha(base64Image)
         } catch (err) {
             if (retry <= 2) {
                 return this.getCaptcha(token, chatId, retry+1)

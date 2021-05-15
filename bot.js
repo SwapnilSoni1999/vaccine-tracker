@@ -23,8 +23,7 @@ function calculateSleeptime() {
     const fivMins = 5*60*1000
     const reqPerIp = 100
     const perIpTime = fivMins/ipCount
-    const responseTime = 40
-    const sleeptime = parseInt((perIpTime/reqPerIp) + responseTime)
+    const sleeptime = parseInt(perIpTime/reqPerIp)
     console.log('SLEEPTIME:', sleeptime)
     return sleeptime
 }
@@ -821,7 +820,7 @@ bot.command('sleeptime', async (ctx) => {
             TRACKER_SLEEP_TIME = parseInt(ms)
             return await ctx.reply('Sleep time updated for tracker.')
         } catch(err) {
-            await ctx.reply('Current sleeptime for tracker is ' + TRACKER_SLEEP_TIME + 'mss')
+            await ctx.reply('Current sleeptime for tracker is ' + TRACKER_SLEEP_TIME + 'ms')
             return ctx.reply('Please provide milisecond /sleeptime <ms> for tracker')
         }
     }

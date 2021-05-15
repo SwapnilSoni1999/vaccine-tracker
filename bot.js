@@ -19,16 +19,16 @@ const SWAPNIL = 317890515
  */
 function calculateSleeptime() {
     const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
-    const ipCount = proxies.length
+    const ipCount = proxies.length + 1 // +1 for system ip
     const fivMins = 5*60*1000
     const reqPerIp = 100
     const perIpTime = fivMins/ipCount
-    const sleeptime = parseInt(perIpTime/reqPerIp)
+    const sleeptime = parseInt((perIpTime/reqPerIp))
     console.log('SLEEPTIME:', sleeptime)
     return sleeptime
 }
 
-var TRACKER_SLEEP_TIME = calculateSleeptime() // for 11 ips
+var TRACKER_SLEEP_TIME = calculateSleeptime() // for x ips
 const MAX_TRACKING_ALLOWED = 4
 const SNOOZE_LITERALS = [
     { name: '10min', seconds: 10 * 60 },

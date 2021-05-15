@@ -8,7 +8,7 @@ const isValid = (token) => {
 
 const getAnyValidToken = async () => {
     const users = await User.find({ token: { $ne: null } })
-    const validTokens = users.filter(u => this.isValid(u.token))
+    const validTokens = users.filter(u => isValid(u.token))
     return validTokens[Math.floor(Math.random() * validTokens.length)]
 }
 

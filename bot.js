@@ -676,7 +676,7 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
             await ctx.reply(txt, { parse_mode: 'HTML' })
         }
         const validBenef = ben.filter(b => (!!b.dose1_date || !!b.dose2_date))
-        const markupButton = validBenef.map(b => ({ text: b.name, callback_data: `benef--${b.beneficiary_reference_id}` }))
+        const markupButton = validBenef.map(b => ([{ text: b.name, callback_data: `benef--${b.beneficiary_reference_id}` }]))
         await ctx.reply('Please choose preferred beneficiary for auto booking.', { reply_markup: {
             inline_keyboard: markupButton
         } })

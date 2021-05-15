@@ -23,8 +23,8 @@ function calculateSleeptime() {
     const fivMins = 5*60*1000
     const reqPerIp = 100
     const perIpTime = fivMins/ipCount
-    const responseTime = 45
-    const sleeptime = (perIpTime/reqPerIp) - responseTime
+    const responseTime = 40
+    const sleeptime = parseInt((perIpTime/reqPerIp) + responseTime)
     console.log('SLEEPTIME:', sleeptime)
     return sleeptime
 }

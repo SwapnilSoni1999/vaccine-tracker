@@ -682,8 +682,9 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
         } })
         return
     } catch (err) {
+        console.log(err)
         await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
-        return await ctx.reply('Token expired! Please /logout and /login again.')
+        return await ctx.reply('Token expired! Please /login again.')
     }
 })
 
@@ -825,6 +826,10 @@ bot.command('status', inviteMiddle, async (ctx) => {
         if (districtId) {
             const districts = await CoWIN.getDistrict(stateId)
             district_name = districts.find(d => d.district_id == districtId).district_name
+        }
+        if (!Token.isValid(user.token)) {
+            await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null } })
+            user.token = null
         }
         const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })

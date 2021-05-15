@@ -991,7 +991,7 @@ async function trackAndInform() {
                         } catch (err) {
                             console.log('Inform errors', err)
                             if (err instanceof TelegramError) {
-                                await User.deleteOne({ chatId: ctx.chat.id })
+                                await User.deleteOne({ chatId: user.chatId })
                             }
                         }
                     }

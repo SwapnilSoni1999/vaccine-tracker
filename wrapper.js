@@ -214,6 +214,9 @@ class CoWIN {
         }
         console.log(params)
         try {
+            if (!token) {
+                throw new Error('No token direct public request.')
+            }
             const agent = httpsOverHttp({ proxy: proxies[requestCount] })
             console.log('Request Count:', requestCount, 'API: Private')
             console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
@@ -236,6 +239,9 @@ class CoWIN {
             return res.data.centers
         } catch (err) {
             try {
+                if (requestCount < 0) {
+                    requestCount = 0
+                }
                 const agent = httpsOverHttp({ proxy: proxies[requestCount] })
                 console.log('Request Count:', requestCount, 'API: Public')
                 console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')

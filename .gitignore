@@ -2,3 +2,5 @@ node_modules/
 test.js
 db.json
 db/
+*.svg
+*.png

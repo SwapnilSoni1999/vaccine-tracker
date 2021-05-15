@@ -6,7 +6,7 @@ const isValid = (token) => {
         const { exp } = jwt.decode(token)
         return !(Date.now() >= exp*1000)
     } catch (err) {
-        return err
+        return false
     }
 }
 

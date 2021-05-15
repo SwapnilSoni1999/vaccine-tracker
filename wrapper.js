@@ -207,7 +207,7 @@ class CoWIN {
         return res.data.appointment_id
     }
 
-    static async getCentersByDist(districtId, { token }) {
+    static async getCentersByDist(districtId, token) {
         const params = {
             district_id: districtId,
             date: getToday()

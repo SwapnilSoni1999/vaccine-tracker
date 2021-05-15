@@ -208,7 +208,6 @@ class CoWIN {
     }
 
     static async getCentersByDist(districtId, { token }) {
-        console.log("Token:", token)
         const params = {
             district_id: districtId,
             date: getToday()

@@ -22,7 +22,7 @@ const UserSchema = new Schema({
     tmp_age_group: { type: Number },
     tracking: [{ type: TrackingSchema, default: [] }],
     beneficiaries: { type: Array, default: [] },
-    preferedBenef: { type: Object, default: null },
+    preferredBenef: { type: Object, default: null },
     autobook: { type: Boolean, default: false }
 })
 

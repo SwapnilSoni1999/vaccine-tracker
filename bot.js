@@ -414,7 +414,7 @@ const slotWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             } else {
                 await ctx.reply('Request declined!')
-                await User.find({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1} })
+                await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1} })
                 return ctx.scene.leave()
             }
         } catch (error) {
@@ -964,7 +964,7 @@ async function trackAndInform() {
                             }
 
                             if (user.autobook && Token.isValid(user.token)) {
-                                await bot.telegram.sendMessage('Attempting to book slot...')
+                                await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
                                 try {
                                     const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
                                     const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
@@ -979,10 +979,10 @@ async function trackAndInform() {
                                     const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
                                     const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
                                     const appointment = bookedOne.appointments.find(a => a.appointment_id == appointmentId)
-                                    await bot.telegram.sendMessage(`Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`)
+                                    await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`)
                                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                                 } catch (err) {
-                                    await bot.telegram.sendMessage('Failed to book appointment. Please try yourself once. Sorry.')
+                                    await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
                                 }
                             }
                         } catch (err) {

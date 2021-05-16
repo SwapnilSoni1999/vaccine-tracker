@@ -954,17 +954,17 @@ async function trackAndInform() {
                     for (const uCenter of userCenters) {
                         const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`
                         try {
-                            bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+                            await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                             console.log('Informed user!')
                             informedUser = true
                             
                             if (user.autobook && !Token.isValid(user.token)) {
-                                bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
+                                await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
                                 // await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
                             }
 
                             if (user.autobook && Token.isValid(user.token)) {
-                                bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
+                                await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
                                 try {
                                     const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
                                     const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]

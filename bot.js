@@ -941,12 +941,22 @@ async function trackAndInform() {
                     continue
                 }
 
+                
                 if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
                     console.log('Snooze timeout for user!')
                     await User.updateOne({ chatId: user.chatId }, { snoozeTime: null })
                     await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
                 }
-
+                
+                if (user.autobook && !Token.isValid(user.token)) {
+                    try {
+                        await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
+                    } catch (err) {
+                        if (err instanceof TelegramError) {
+                            await User.deleteOne({ chatId: user.chatId })
+                        }
+                    }
+                }
                 for (const trc of user.tracking) {
                     const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
 
@@ -961,11 +971,6 @@ async function trackAndInform() {
                             await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
                             console.log('Informed user!')
                             informedUser = true
-                            
-                            if (user.autobook && !Token.isValid(user.token)) {
-                                await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
-                                // await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
-                            }
 
                             if (user.autobook && Token.isValid(user.token)) {
                                 await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')

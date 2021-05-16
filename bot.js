@@ -612,7 +612,7 @@ bot.start(async (ctx) => {
 bot.command('login', inviteMiddle, async (ctx) => {
     const user = await User.findOne({ chatId: ctx.chat.id })
     if (user) {
-        if (user.token) {
+        if (user.token && Token.isValid(user.token)) {
             return await ctx.reply('You\'re already logged in! Send /logout to Logout.')
         }
     }

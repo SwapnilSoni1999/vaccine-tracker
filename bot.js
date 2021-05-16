@@ -994,8 +994,10 @@ async function trackAndInform() {
                                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                                 } catch (err) {
                                     console.log(err)
-                                    await bot.telegram.sendMessage(SWAPNIL, `${err.toString()}\n${JSON.stringify(err.response.data)}`)
                                     await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
+                                    if ('response' in err) {
+                                        await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+                                    }
                                 }
                             }
                         } catch (err) {

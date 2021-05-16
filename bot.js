@@ -762,7 +762,7 @@ bot.command('district', inviteMiddle, async (ctx) => {
 
 bot.command('autobook', inviteMiddle, authMiddle, benefMiddle, async (ctx) => {
     try {
-        return await ctx.reply('Choose switch for autobook.\n<b>What is this?</b>\nIts a feature to book an available slot in youre desired pincode if your token is valid within the given time.\n\n<b>Note</b>: <u>If your token expires AND your autobook switch is on then you will get message regarding expired token. Then you need to relogin to use this feature. If the bot is spamming and you dont want to autobook simply turn off the switch.</u>', {
+        return await ctx.reply('Choose switch for autobook.\n<b>What is this?</b>\nIts a feature to book an available slot in youre desired pincode if your token is valid within the given time.\n\n<b>Note</b>: <u>Once you login. You will be auto logged out from cowin by itself after 15minutes. So you will get an alert message to login again if you\'ve turned autobook switch ON. So use this feature only when you need.</u>', {
             reply_markup: {
                 inline_keyboard: [
                     [ { text: 'Turn ON ✔️', callback_data: 'turn_on' }, { text: 'Turn OFF ✖️', callback_data: 'turn_off' } ]

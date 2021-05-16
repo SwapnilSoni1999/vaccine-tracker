@@ -847,7 +847,13 @@ bot.command('revokeall', async (ctx) => {
         for (const user of users) {
             if (user.chatId) {
                 await User.updateOne({ chatId: user.chatId }, { $set: { token: null, autobook: false } })
-                await bot.telegram.sendMessage(user.chatId, 'Bot status update!\n<b>Autobook</b>: turned off\n<b>Token</b>: Revoked\n\nYou can again /autobook and /login if you wish to.', { parse_mode: 'HTML' })
+                try {
+                    await bot.telegram.sendMessage(user.chatId, 'Bot status update!\n<b>Autobook</b>: turned off\n<b>Token</b>: Revoked\n\nYou can again /autobook and /login if you wish to.', { parse_mode: 'HTML' })
+                } catch (err) {
+                    if (err instanceof TelegramError) {
+                        await User.deleteOne({ chatId: ctx.chat.id })
+                    }
+                }
             }
         }
         return await ctx.reply(`Revoked ${users.length} user\'s token!`)

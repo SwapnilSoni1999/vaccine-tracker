@@ -933,7 +933,11 @@ async function trackAndInform() {
                     console.log('No district id! Please send /district to set your prefered district.')
                     try {
                         await bot.telegram.sendMessage(user.chatId, 'No district id! Please send /district to set your prefered district.')
-                    } catch (err) {}
+                    } catch (err) {
+                        if (err instanceof TelegramError) {
+                            await User.deleteOne({ chatId: user.chatId })
+                        }
+                    }
                     continue
                 }
 

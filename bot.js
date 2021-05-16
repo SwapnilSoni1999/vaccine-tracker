@@ -591,7 +591,7 @@ bot.help(inviteMiddle, async (ctx) => {
         }
         commands += `/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.\n/locations = Usage: /locations <State Name> -> to get number of users in your state/area who are active on this bot.`
         if (ctx.chat.id == SWAPNIL) {
-            commands += `\nAdmin commands:\n/sleeptime | /sleeptime <ms>\n/sendall\n/botstat\n/revokeall`
+            commands += `\nAdmin commands:\n/sleeptime | /sleeptime <ms>\n/sendall\n/botstat\n/revokeall\n/captchainfo\n/captchatest`
         }
         return await ctx.reply(commands)
     } catch (err) {
@@ -881,7 +881,7 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 bot.command('captchainfo', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
-            const data = ctx.message.text.split(' ').splice(0, 1).join(' ')
+            const data = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')
             if (!data) {
                 throw new Error('Show existing data!')
             }

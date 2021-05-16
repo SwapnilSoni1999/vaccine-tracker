@@ -947,7 +947,9 @@ async function trackAndInform() {
                     await User.updateOne({ chatId: user.chatId }, { snoozeTime: null })
                     await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
                 }
-                
+
+                const { token: dbToken } = await User.findOne({ chatId: user.chatId }).select('token')
+                user.token = dbToken
                 if (user.autobook && !Token.isValid(user.token)) {
                     try {
                         await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')

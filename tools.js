@@ -30,11 +30,8 @@ exports.solveCaptcha = async (image_data) => {
         'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8',
     }
 
-    const jsonData = {
-        "userid": "arun56",
-        "apikey": "wMjXmBIcHcdYqO2RrsVN",
-        "data": image_data
-    }
+    const jsonData = JSON.parse(fs.readFileSync('captcha.json'))
+    jsonData.data = image_data
     const res = await axios({
         method: 'POST',
         url: 'https://api.apitruecaptcha.org/one/gettext',

@@ -192,6 +192,7 @@ class CoWIN {
         let result
         try {
             result = await tools.solveCaptcha(base64Image)
+            console.log('Captcha:', result)
         } catch (err) {
             if (retry <= 2) {
                 return this.getCaptcha(token, chatId, retry+1)

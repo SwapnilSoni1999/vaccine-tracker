@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const User = require('./model')
 const fs = require('fs')
 const Token = require('./token')
+const { default: axios } = require('axios')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -845,7 +846,8 @@ bot.command('revokeall', async (ctx) => {
         const users = (await User.find({}).lean()).filter(u => u.allowed && u.token && !!u.chatId && Array.isArray(u.tracking) && u.tracking.length)
         for (const user of users) {
             if (user.chatId) {
-                await User.updateOne({ chatId: user.chatId }, { token: null })
+                await User.updateOne({ chatId: user.chatId }, { $set: { token: null, autobook: false } })
+                await bot.telegram.sendMessage(user.chatId, 'Bot status update!\n<b>Autobook</b>: turned off\n<b>Token</b>: Revoked\n\nYou can again /autobook and /login if you wish to.')
             }
         }
         return await ctx.reply(`Revoked ${users.length} user\'s token!`)
@@ -874,6 +876,40 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     await ctx.editMessageText(`You've snoozed bot messages for ${lit.name}\nYou can unsnooze using /unsnooze`)
     const currentTime = parseInt(Date.now()/1000)
     await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime })
+})
+
+bot.command('captchainfo', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        try {
+            const data = ctx.message.text.split(' ').splice(0, 1).join(' ')
+            if (!data) {
+                throw new Error('Show existing data!')
+            }
+            fs.unlinkSync('captcha.json')
+            const newData = { apikey: data.split(' ')[1], userid: data.split(' ')[0] }
+            const rawdata = JSON.stringify(newData)
+            fs.writeFileSync('captcha.json', rawdata)
+            return await ctx.reply(`Saved credentials!\n${rawdata}`)
+        } catch (error) {
+            const apidata = JSON.parse(fs.readFileSync('captcha.json'))
+            await ctx.reply(`Apikey: ${apidata.apikey}\nUserID: ${apidata.userid}`)
+        }
+    }
+})
+
+bot.command('captchatest', async (ctx) => {
+    if (ctx.chat.id == SWAPNIL) {
+        try {
+            const token = await Token.getAnyValidToken()
+            if (!token) {
+                return await ctx.reply('No valid token found!')
+            }
+            const result = await CoWIN.getCaptcha(token, ctx.chat.id)
+            return await ctx.reply('Captcha working!\n' + result)
+        } catch (error) {
+            await ctx.reply(error.response.data.error)
+        }
+    }
 })
 
 var TRACKER_ALIVE = false
@@ -996,6 +1032,7 @@ async function trackAndInform() {
                                     console.log(err)
                                     await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
                                     if ('response' in err) {
+                                        await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                                         await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                                     }
                                 }

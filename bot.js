@@ -1044,13 +1044,14 @@ async function trackAndInform() {
                                     console.log(err)
                                     await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
                                     if ('response' in err) {
-                                        await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+                                        // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                                         await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                                     }
                                 }
                             }
                         } catch (err) {
                             console.log('Inform errors', err)
+                            await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
                             if (err instanceof TelegramError) {
                                 await User.deleteOne({ chatId: user.chatId })
                             }

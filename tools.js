@@ -6,7 +6,7 @@ exports.solveCaptcha = (svgCode, chatId) => {
         const filename = `captcha_${chatId}.svg`
         fs.writeFileSync(filename, svgCode)
         let dataToSend = ''
-        const process = spawn('python', ["captcha.py", `./${filename}`])
+        const process = spawn('python3', ["captcha.py", `./${filename}`])
         process.stdout.on('data', (chunk) => {
             dataToSend += Buffer.from(chunk).toString()
         })

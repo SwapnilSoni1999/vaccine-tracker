@@ -175,7 +175,7 @@ class CoWIN {
     /**
      * returns solved captcha
      */
-    static async getCaptcha(token, chatId, retry=0) {
+    static async getCaptcha(token, chatId) {
         const res = await axios({
             method: 'POST',
             url: 'https://cdn-api.co-vin.in/api/v2/auth/getRecaptcha',
@@ -186,19 +186,7 @@ class CoWIN {
             }
         })
         const svgCode = res.data.captcha
-        const { filename } = await tools.svgToPng(svgCode, chatId)
-        const bitmap = fs.readFileSync(filename)
-        const base64Image = Buffer.from(bitmap).toString('base64')
-        let result
-        try {
-            result = await tools.solveCaptcha(base64Image)
-            console.log('Captcha:', result)
-        } catch (err) {
-            if (retry <= 2) {
-                return this.getCaptcha(token, chatId, retry+1)
-            }
-        }
-        fs.unlinkSync(filename)
+        const result = await tools.solveCaptcha(svgCode, chatId)
         return result
     }
 

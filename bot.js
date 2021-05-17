@@ -911,6 +911,9 @@ bot.command('captchatest', async (ctx) => {
                 return await ctx.reply('No valid token found!')
             }
             const result = await CoWIN.getCaptcha(token, ctx.chat.id)
+            if (!result) {
+                return await ctx.reply('Not working!')
+            }
             return await ctx.reply('Captcha working!\n' + result)
         } catch (error) {
             await ctx.reply(error.response.data.error)
@@ -987,7 +990,9 @@ async function trackAndInform() {
                 if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
                     console.log('Snooze timeout for user!')
                     await User.updateOne({ chatId: user.chatId }, { snoozeTime: null })
-                    await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
+                    try {
+                        await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
+                    } catch(err) { }
                 }
 
                 const { token: dbToken } = await User.findOne({ chatId: user.chatId }).select('token')

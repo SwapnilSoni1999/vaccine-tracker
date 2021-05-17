@@ -12,7 +12,9 @@ exports.solveCaptcha = (svgCode, chatId) => {
         })
 
         process.stdout.on('end', () => {
-            fs.unlinkSync(filename)
+            try {
+                fs.unlinkSync(filename)
+            } catch (err) {}
             resolve(dataToSend.trim())
         })
     })

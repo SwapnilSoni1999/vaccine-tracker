@@ -921,6 +921,65 @@ bot.command('captchatest', async (ctx) => {
     }
 })
 
+async function inform(user, userCenters) {
+    let informedUser = false
+    for (const uCenter of userCenters) {
+        const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`
+        try {
+            await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+            console.log('Informed user!')
+            informedUser = true
+
+            if (user.autobook && Token.isValid(user.token)) {
+                await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
+                try {
+                    const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
+                    const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
+                    const appointmentId = await CoWIN.schedule(user.token, {
+                        beneficiaries: [user.preferredBenef.beneficiary_reference_id],
+                        captcha: captchaResult,
+                        center_id: uCenter.center_id,
+                        dose: getDoseCount(user.preferredBenef),
+                        session_id: sess.session_id,
+                        slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
+                    })
+                    const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
+                    const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
+                    const appointment = bookedOne.appointments.find(a => a.appointment_id == appointmentId)
+                    await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`, { parse_mode: 'HTML' })
+                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`, { parse_mode: 'HTML' })
+                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
+                } catch (err) {
+                    console.log(err)
+                    await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
+                    if ('response' in err) {
+                        // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+                        await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+                    }
+                }
+            }
+        } catch (err) {
+            console.log('Inform errors', err)
+            await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
+            if (err instanceof TelegramError) {
+                await User.deleteOne({ chatId: user.chatId })
+            }
+        }
+    }
+    try {
+        if (informedUser) {
+            await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
+                inline_keyboard: [
+                    [ { text: 'Yes 👍', callback_data: `yes_booked` }, { text: 'No 👎', callback_data: 'not_booked' } ]
+                ]
+            } })
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+
 var TRACKER_ALIVE = false
 
 async function trackAndInform() {
@@ -964,7 +1023,6 @@ async function trackAndInform() {
             }, [])
 
             for (const user of validUsers) {
-                let informedUser = false
                 //double check
                 if (!user.allowed) {
                     continue
@@ -1013,61 +1071,7 @@ async function trackAndInform() {
                         (center.pincode == userdata.pincode) && 
                         (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
                     )
-
-                    for (const uCenter of userCenters) {
-                        const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`
-                        try {
-                            await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-                            console.log('Informed user!')
-                            informedUser = true
-
-                            if (user.autobook && Token.isValid(user.token)) {
-                                await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
-                                try {
-                                    const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
-                                    const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
-                                    const appointmentId = await CoWIN.schedule(user.token, {
-                                        beneficiaries: [user.preferredBenef.beneficiary_reference_id],
-                                        captcha: captchaResult,
-                                        center_id: uCenter.center_id,
-                                        dose: getDoseCount(user.preferredBenef),
-                                        session_id: sess.session_id,
-                                        slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
-                                    })
-                                    const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
-                                    const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
-                                    const appointment = bookedOne.appointments.find(a => a.appointment_id == appointmentId)
-                                    await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`, { parse_mode: 'HTML' })
-                                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Block</b>: ${appointment.block_name}\n<b>Date</b>: ${appointment.date}\n<b>District</b>: ${appointment.district_name}\n<b>Dose</b>: ${appointment.dose}\n<b>Name</b>: ${appointment.name}\n<b>Slot</b>: ${appointment.slot}\n\nAutobook is now turned off.`, { parse_mode: 'HTML' })
-                                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
-                                } catch (err) {
-                                    console.log(err)
-                                    await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
-                                    if ('response' in err) {
-                                        // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
-                                        await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
-                                    }
-                                }
-                            }
-                        } catch (err) {
-                            console.log('Inform errors', err)
-                            await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
-                            if (err instanceof TelegramError) {
-                                await User.deleteOne({ chatId: user.chatId })
-                            }
-                        }
-                    }
-                    try {
-                        if (informedUser) {
-                            await bot.telegram.sendMessage(user.chatId, 'Stop alerts? Have you booked the date?\nOr you can also /snooze the messages for a while :)', { reply_markup: {
-                                inline_keyboard: [
-                                    [ { text: 'Yes 👍', callback_data: `yes_booked` }, { text: 'No 👎', callback_data: 'not_booked' } ]
-                                ]
-                            } })
-                        }
-                    } catch (err) {
-                        console.log(err)
-                    }
+                    inform(user, userCenters)
                 }
             }
         } catch (error) {

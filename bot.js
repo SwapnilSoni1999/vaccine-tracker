@@ -921,7 +921,7 @@ bot.command('captchatest', async (ctx) => {
     }
 })
 
-async function inform(user, userCenters) {
+async function inform(user, userCenters, userdata) {
     let informedUser = false
     for (const uCenter of userCenters) {
         const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Available Slots</b>: ${s.available_capacity}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`
@@ -1071,7 +1071,7 @@ async function trackAndInform() {
                         (center.pincode == userdata.pincode) && 
                         (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
                     )
-                    inform(user, userCenters)
+                    inform(user, userCenters, userdata)
                 }
             }
         } catch (error) {

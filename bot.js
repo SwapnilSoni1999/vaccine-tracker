@@ -184,6 +184,12 @@ const inviteWizard = new Scenes.WizardScene(
                     if (!(await User.findOne({ chatId: ctx.chat.id }))) {
                         await User.create({ chatId: ctx.chat.id })
                     }
+                    if (code.startsWith('COWi')) {
+                        await ctx.reply('I think you\'ve misspelled the invitation code :/ please read the code once again. The mistake you made is the most common one.')
+                    }
+                    if (code.startsWith('C0Win')) {
+                        await ctx.reply('You\'re making dumb mistakes. Please read the code again. -.-')
+                    }
                     if (code == INVITE_KEY) {
                         await User.updateOne({ chatId: ctx.chat.id }, { allowed: true })
                         await ctx.reply('Invitation accepted!')

@@ -937,6 +937,11 @@ async function inform(user, userCenters, userdata) {
             console.log('Informed user!')
             informedUser = true
 
+            if (user.autobook && !user.preferredBenef.beneficiary_reference_id) {
+                await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
+                continue
+            }
+
             if (user.autobook && Token.isValid(user.token)) {
                 await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
                 try {

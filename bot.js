@@ -789,7 +789,8 @@ bot.command('autobook', inviteMiddle, authMiddle, benefMiddle, async (ctx) => {
 bot.action('turn_on', async (ctx) => {
     try {
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: true } })
-        return await ctx.editMessageText('Autobook is now turned <b>ON</b>', { parse_mode: 'HTML' })
+        const { preferredBenef } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('preferredBenef')
+        return await ctx.editMessageText(`Autobook is now turned <b>ON</b>\nYour preferred beneficiary: ${preferredBenef.name}`, { parse_mode: 'HTML' })
     } catch (error) {
         console.log(error)
     }

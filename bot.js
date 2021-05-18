@@ -950,14 +950,14 @@ async function inform(user, userCenters, userdata) {
                         session_id: sess.session_id,
                         slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
                     })
-                    const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
-                    const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
-                    const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false
+                    // const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
+                    // const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
+                    // const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false
                     await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
-                    if (appo) {
-                        await bot.telegram.sendMessage(user.chatId, `${appo}`, { parse_mode: 'HTML' })
-                    }
-                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n${appo}`, { parse_mode: 'HTML' })
+                    // if (appo) {
+                        // await bot.telegram.sendMessage(user.chatId, `${appo}`, { parse_mode: 'HTML' })
+                    // }
+                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n${appointmentId}`, { parse_mode: 'HTML' })
                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                 } catch (err) {
                     console.log(err)

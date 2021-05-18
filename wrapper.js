@@ -200,7 +200,7 @@ class CoWIN {
             },
             data: payload
         })
-        return res.data.appointment_id
+        return res.data
     }
 
     static async getCentersByDist(districtId, token) {

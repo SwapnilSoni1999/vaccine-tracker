@@ -936,8 +936,12 @@ async function inform(user, userCenters, userdata) {
             await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
             console.log('Informed user!')
             informedUser = true
-
-            if (user.autobook && !user.preferredBenef.beneficiary_reference_id) {
+            try {
+                if (user.autobook && !user.preferredBenef.beneficiary_reference_id) {
+                    await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
+                    continue
+                }
+            } catch (err) {
                 await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
                 continue
             }

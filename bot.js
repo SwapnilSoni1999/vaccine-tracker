@@ -998,7 +998,7 @@ async function trackAndInform() {
             console.log('Centers:', centers.length, 'District:', districtId)
             const available = centers.reduce((acc, center) => {
                 const tmpCenter = { ...center }
-                const sessions = center.sessions.filter(session => (session.available_capacity > 0) && (session.slots.length > 0))
+                const sessions = center.sessions.filter(session => (session.available_capacity > 1) && (session.slots.length > 0))
                 if (sessions.length) {
                     tmpCenter.sessions = sessions
                     acc.push(tmpCenter)

@@ -961,6 +961,9 @@ async function inform(user, userCenters, userdata) {
                     if ('response' in err) {
                         // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                         await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+                    } else {
+                        await bot.telegram.sendMessage(SWAPNIL, 'Somethings wrong\n' + err.toString())
+                        fs.writeFileSync('wrong.txt', err.toString() + '\n=======', { flag: 'a' })
                     }
                 }
             }

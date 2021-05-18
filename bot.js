@@ -949,11 +949,14 @@ async function inform(user, userCenters, userdata) {
                         session_id: sess.session_id,
                         slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
                     })
-                    await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\n\nAutobook is now turned off.`)
                     const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
                     const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
-                    const appointment = bookedOne.appointments.find(a => a.appointment_id == appointmentId)
-                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n${JSON.stringify(bookedOne)} \n\n${JSON.stringify(appointment)}`)
+                    const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false
+                    await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
+                    if (appo) {
+                        await bot.telegram.sendMessage(user.chatId, `${appo}`, { parse_mode: 'HTML' })
+                    }
+                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n${appo}`, { parse_mode: 'HTML' })
                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                 } catch (err) {
                     console.log(err)

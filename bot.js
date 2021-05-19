@@ -1016,12 +1016,21 @@ async function inform(user, userCenters, userdata) {
     }
 }
 
+async function checkTokens(users) {
+    for (const user of users) {
+        const { token } = user
+        if (user.autobook && !Token.isValid(token)) {
+            await bot.telegram.sendMessage(user.chatId, 'Token expired! Please /login again.\nYou will be notified every 15min after session gets expired. If you wish to stop this session expire alerts, please consider turning off /autobook')
+        }
+    }
+}
 
 var TRACKER_ALIVE = false
 
 async function trackAndInform() {
     console.log('Fetching information')
     const users = await User.find({}).lean()
+    checkTokens(users)
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))]
     // console.log(districtIds)
     if (!districtIds.length) {

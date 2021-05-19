@@ -1018,6 +1018,17 @@ async function inform(user, userCenters, userdata) {
 
 async function checkTokens(users) {
     for (const user of users) {
+        if (!user.allowed) {
+            continue
+        }
+        if (user.snoozeTime && user.snoozeTime > parseInt(Date.now() / 1000)) {
+            console.log('User is snoozed!')
+            // skip the user
+            continue
+        }
+        if (!user.token) {
+            continue
+        }
         const { token } = user
         if (user.autobook && !Token.isValid(token)) {
             try {

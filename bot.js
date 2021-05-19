@@ -949,6 +949,7 @@ async function inform(user, userCenters, userdata) {
             if (user.autobook && Token.isValid(user.token)) {
                 await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
                 try {
+                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                     const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
                     const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
                     const appointmentId = await CoWIN.schedule(user.token, {
@@ -966,10 +967,16 @@ async function inform(user, userCenters, userdata) {
                     if (appo) {
                         await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
                     }
-                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
-                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
+                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}\n\<b>AppointmentID</b>: ${appointmentId}`, { parse_mode: 'HTML' })
+                    try {
+                        const slip = await CoWIN.getAppointmentSlip(appointmentId, user.token, user.chatId)
+                        await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream(slip) })
+                    } catch (error) {
+                        await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
+                    }
                 } catch (err) {
                     console.log(err)
+                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: true } })
                     await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
                     if ('response' in err) {
                         // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)

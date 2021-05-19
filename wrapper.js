@@ -203,6 +203,23 @@ class CoWIN {
         return res.data.appointment_id
     }
 
+    static async getAppointmentSlip(appointmentId, token, chatId) {
+        const res = await axios({
+            method: 'GET',
+            url: 'https://cdn-api.co-vin.in/api/v2​/appointment​/appointmentslip​/download',
+            headers: {
+                ...headers,
+                authorization: 'Bearer ' + token
+            },
+            data: {
+                appointment_id: appointmentId
+            }
+        })
+        const outputPath = `./appointments/Appointment-Slip_${chatId}.pdf`
+        fs.writeFileSync(outputPath, res.data)
+        return outputPath
+    }
+
     static async getCentersByDist(districtId, token) {
         const params = {
             district_id: districtId,

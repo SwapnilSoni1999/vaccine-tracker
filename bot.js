@@ -572,6 +572,7 @@ const districtSelection = new Scenes.WizardScene(
             await ctx.reply('Now you can /track your desired pincode. You can also change your district whenever you want to by sending /district')
             return ctx.scene.leave()
         } catch (error) {
+            console.log(error)
             if (error instanceof TelegramError) {
                 await User.deleteOne({ chatId: ctx.chat.id })
                 return ctx.scene.leave()

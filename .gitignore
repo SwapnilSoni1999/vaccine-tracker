@@ -5,3 +5,4 @@ db/
 *.svg
 *.png
 appointments/*.pdf
+*.pdf

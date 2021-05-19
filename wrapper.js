@@ -209,6 +209,7 @@ class CoWIN {
             url: 'https://cdn-api.co-vin.in/api/v2​/appointment​/appointmentslip​/download',
             headers: {
                 ...headers,
+                accept: 'application/pdf',
                 authorization: 'Bearer ' + token
             },
             params: {

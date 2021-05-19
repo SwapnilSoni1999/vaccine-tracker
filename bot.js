@@ -675,6 +675,9 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
     const { token } = await User.findOne({ chatId: ctx.chat.id })
     try {
         const ben = await CoWIN.getBeneficiariesStatic(token)
+        if (!ben.length) {
+            return await ctx.reply('No beneficiaries. Please add beneficiary first from cowin.gov.in')
+        }
         await User.updateOne({ chatId: ctx.chat.id }, { $set: { beneficiaries: ben } })
 
         const txts = ben.map(b => `<b>ID:</b> ${b.beneficiary_reference_id}\n<b>Name</b>: ${b.name}\n<b>Birth Year</b>: ${b.birth_year}\n<b>Gender</b>: ${b.gender}\n<b>Vaccination Status</b>: ${b.vaccination_status}\n<b>Vaccine</b>: ${b.vaccine}\n<b>Dose 1 Date</b>: ${b.dose1_date || 'Not vaccinated'}\n<b>Dose 2 Date</b>: ${b.dose2_date || 'Not vaccinated'}\n\n<b>Appointments</b>: ${b.appointments.length ? expandAppointments(b.appointments) : 'No appointments booked.'}\n\n<u>It is recommended to take both doses of same vaccines. Please do not take different vaccine doeses.</u>`)

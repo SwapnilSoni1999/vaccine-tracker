@@ -536,7 +536,7 @@ const districtSelection = new Scenes.WizardScene(
             }
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { stateId: state_id } })
             const districts = await CoWIN.getDistrict(state_id)
-            ctx.wizard.state.districts = districts
+            ctx.wizard.state.state_id = state_id
             const markupButton = districts.reduce((result, value, index, array) => {
                 const buttonMap = array.slice(index, index+2)
                 if (index % 2 === 0)
@@ -562,7 +562,8 @@ const districtSelection = new Scenes.WizardScene(
     async (ctx) => {
         try {
             const district_nam = ctx.message.text
-            const { district_id, district_name } = ctx.wizard.state.districts.find(d => d.district_name == district_nam)
+            const districts = await CoWIN.getDistrict(ctx.wizard.state.state_id)
+            const { district_id, district_name } = districts.find(d => d.district_name == district_nam)
             if (!district_id) {
                 await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid district.', { reply_markup: { remove_keyboard: true } })
                 return ctx.scene.leave()

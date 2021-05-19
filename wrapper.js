@@ -215,10 +215,10 @@ class CoWIN {
             params: {
                 appointment_id: appointmentId
             },
-            responseType: 'blob'
+            responseType: 'arraybuffer'
         })
         const outputPath = `./appointments/Appointment-Slip_${chatId}.pdf`
-        fs.writeFileSync(outputPath, res.data)
+        fs.writeFileSync(outputPath, res.data, 'binary')
         return outputPath
     }
 

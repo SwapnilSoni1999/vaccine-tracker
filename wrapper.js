@@ -200,7 +200,7 @@ class CoWIN {
             },
             data: payload
         })
-        return res.data
+        return res.data.appointment_confirmation_no
     }
 
     static async getAppointmentSlip(appointmentId, token, chatId) {

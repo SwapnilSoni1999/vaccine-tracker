@@ -4,3 +4,4 @@ db.json
 db/
 *.svg
 *.png
+appointments/*

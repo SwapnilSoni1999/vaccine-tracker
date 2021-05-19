@@ -666,7 +666,7 @@ bot.command('logout', inviteMiddle, async (ctx) => {
 
 function expandAppointments(appointments) {
     // seperated by \n at end \t at begining
-    const appintmentMap = appointments.map(ap => `There ${appointments.length > 1 ? 'are': 'is'} ${appointments.length} appointment${appointments.length>1? 's': ''} Booked.\n\t<b>Center Name</b>: ${ap.name}\n\t<b>District</b>: ${ap.district}\n\t<b>Block</b>: ${ap.block_name}\n\t<b>Center Timings</b>:\n\t\t<u><b>From</b></u>: ${ap.from}\n\t\t<u><b>To</b></u>: ${ap.to}\n\t<b>Dose</b>: ${ap.dose}\n\t<b>Date</b>: ${ap.date}\n\t<u><b>Your time Slot</b></u>: <u>${ap.slot}</u>`)
+    const appintmentMap = appointments.map(ap => `There ${appointments.length > 1 ? 'are': 'is'} ${appointments.length} appointment${appointments.length>1? 's': ''} Booked.\n\t<b>Center Name</b>: ${ap.name}\n\t${ap.district ? '<b>District</b>: ' + ap.district : ''}\n\t<b>Block</b>: ${ap.block_name}\n\t<b>Center Timings</b>:\n\t\t<u><b>From</b></u>: ${ap.from}\n\t\t<u><b>To</b></u>: ${ap.to}\n\t<b>Dose</b>: ${ap.dose}\n\t<b>Date</b>: ${ap.date}\n\t<u><b>Your time Slot</b></u>: <u>${ap.slot}</u>`)
     return appintmentMap.join("\n")
 }
 
@@ -964,9 +964,9 @@ async function inform(user, userCenters, userdata) {
                     const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false
                     await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
                     if (appo) {
-                        await bot.telegram.sendMessage(user.chatId, `${appo}`, { parse_mode: 'HTML' })
+                        await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
                     }
-                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n${appo}`, { parse_mode: 'HTML' })
+                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                 } catch (err) {
                     console.log(err)

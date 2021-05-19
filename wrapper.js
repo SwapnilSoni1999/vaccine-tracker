@@ -211,9 +211,10 @@ class CoWIN {
                 ...headers,
                 authorization: 'Bearer ' + token
             },
-            data: {
+            params: {
                 appointment_id: appointmentId
-            }
+            },
+            responseType: 'blob'
         })
         const outputPath = `./appointments/Appointment-Slip_${chatId}.pdf`
         fs.writeFileSync(outputPath, res.data)

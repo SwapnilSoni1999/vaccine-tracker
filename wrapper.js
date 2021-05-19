@@ -206,7 +206,7 @@ class CoWIN {
     static async getAppointmentSlip(appointmentId, token, chatId) {
         const res = await axios({
             method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2​/appointment​/appointmentslip​/download',
+            url: 'https://cdn-api.co-vin.in/api/v2/appointment/appointmentslip/download',
             headers: {
                 ...headers,
                 accept: 'application/pdf',

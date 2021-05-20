@@ -60,7 +60,7 @@ const THUMBS = {
 
 const _isAuth = async (chatId) => {
     const { token } = await User.findOne({ chatId })
-    return !!token 
+    return Token.isValid(token)
 }
 
 const _isInvited = async (chatId) => {

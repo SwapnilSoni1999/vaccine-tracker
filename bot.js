@@ -977,7 +977,7 @@ async function inform(user, userCenters, userdata) {
                     await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}\n\<b>AppointmentID</b>: ${appointmentId}`, { parse_mode: 'HTML' })
                     try {
                         const slip = await CoWIN.getAppointmentSlip(appointmentId, user.token, user.chatId)
-                        await bot.telegram.sendDocument(user.chatId, { source: fs.createReadStream(slip) })
+                        await bot.telegram.sendDocument(user.chatId, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
                         await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
                     } catch (error) {
                         await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())

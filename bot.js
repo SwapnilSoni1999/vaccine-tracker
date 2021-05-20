@@ -952,7 +952,8 @@ async function inform(user, userCenters, userdata) {
                 await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
                 continue
             }
-
+            const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
+            user.autobook = autobook
             if (user.autobook && Token.isValid(user.token)) {
                 await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
                 try {

@@ -32,7 +32,7 @@ function calculateSleeptime() {
     const fivMins = 5*60*1000
     const reqPerIp = 100
     const perIpTime = fivMins/ipCount
-    const sleeptime = parseInt((perIpTime/reqPerIp) - 40)
+    const sleeptime = parseInt((perIpTime/reqPerIp))
     console.log('SLEEPTIME:', sleeptime)
     return sleeptime
 }
@@ -1225,6 +1225,7 @@ setInterval(() => {
         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
         setTimeout(() => {
             console.log('Starting tracker again...')
+            bot.telegram.sendMessage(SWAPNIL, 'Starting tracker again...')
             trackAndInform()
         }, 4 * 60 * 1000)
     }

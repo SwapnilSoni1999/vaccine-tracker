@@ -17,6 +17,11 @@ const headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0',
 }
 
+function getRandomAgent() {
+    const agent = httpsOverHttp({ proxy: proxies[Math.floor(Math.random() * proxies.length)] })
+    return agent
+}
+
 const sha256 = (data) => {
     return crypto.createHash('sha256').update(data).digest('hex')
 }
@@ -30,7 +35,8 @@ const verifyOtp = async (otp, txnId) => {
                 otp: sha256(otp),
                 txnId: txnId
             },
-            headers
+            headers,
+            httpsAgent: getRandomAgent()
         })
         console.log(res.data)
         // this.token = res.data.token
@@ -54,7 +60,8 @@ const _getBeneficiaries = async (token) => {
         headers: {
             ...headers,
             authorization: 'Bearer ' + token
-        }
+        },
+        httpsAgent: getRandomAgent()
     })
     console.log(res.data)
     return res.data.beneficiaries
@@ -85,7 +92,8 @@ class CoWIN {
             method: 'POST',
             url: 'http://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
             data: postData,
-            headers
+            headers,
+            httpsAgent: getRandomAgent()
         })
         console.log(res.data)
         this.txnId = res.data.txnId
@@ -113,7 +121,8 @@ class CoWIN {
         const res = await axios({
             method: 'GET',
             url: 'http://cdn-api.co-vin.in/api/v2/admin/location/states',
-            headers
+            headers,
+            httpsAgent: getRandomAgent()
         })
         return res.data.states
     }
@@ -122,7 +131,8 @@ class CoWIN {
         const res = await axios({
             method: 'GET',
             url: 'http://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
-            headers
+            headers,
+            httpAgent: getRandomAgent()
         })
         return res.data.districts
     }
@@ -183,7 +193,8 @@ class CoWIN {
             headers: {
                 ...headers,
                 authorization: 'Bearer ' + token
-            }
+            },
+            httpsAgent: getRandomAgent()
         })
         const svgCode = res.data.captcha
         const result = await tools.solveCaptcha(svgCode, chatId)
@@ -198,7 +209,8 @@ class CoWIN {
                 ...headers,
                 authorization: 'Bearer ' + token
             },
-            data: payload
+            data: payload,
+            httpsAgent: getRandomAgent()
         })
         return res.data.appointment_confirmation_no
     }
@@ -215,7 +227,8 @@ class CoWIN {
             params: {
                 appointment_id: appointmentId
             },
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            httpsAgent: getRandomAgent()
         })
         const outputPath = `./appointments/Appointment-Slip_${chatId}.pdf`
         fs.writeFileSync(outputPath, res.data, 'binary')

@@ -503,7 +503,6 @@ const districtSelection = new Scenes.WizardScene(
     async (ctx) => {
         try {
             const states = await CoWIN.getStates()
-            ctx.wizard.state.states = states
             const markupButton = states.reduce((result, value, index, array) => {
                 const buttonMap = array.slice(index, index+2)
                 if (index % 2 === 0)
@@ -529,7 +528,8 @@ const districtSelection = new Scenes.WizardScene(
     async (ctx) => {
         try {
             const state_nam = ctx.message.text
-            const { state_id, state_name } = ctx.wizard.state.states.find(s => s.state_name.trim() == state_nam.trim())
+            const states = await CoWIN.getStates()
+            const { state_id, state_name } = states.find(s => s.state_name.trim() == state_nam.trim())
             if (!state_id) {
                 await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid state.', { reply_markup: { remove_keyboard: true } })
                 return ctx.scene.leave()

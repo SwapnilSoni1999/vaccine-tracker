@@ -3,7 +3,7 @@ const { Schema, model } = require('mongoose')
 const TrackingSchema = new Schema({
     pincode: { type: Number },
     age_group: { type: Number },
-    dose: { type: Number, default: -1 }
+    dose: { type: Number, default: 0 }
 }, {
     id: true,
 })
@@ -21,6 +21,7 @@ const UserSchema = new Schema({
     districtId: { type: Number },
     tmpPincode: { type: Number },
     tmp_age_group: { type: Number },
+    tmpDose: { type: Number },
     tracking: [{ type: TrackingSchema, default: [] }],
     beneficiaries: { type: Array, default: [] },
     preferredBenef: { type: Object, default: null },

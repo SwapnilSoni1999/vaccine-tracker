@@ -472,24 +472,45 @@ slotWizard.command('cancel', async (ctx) => {
 })
 
 bot.action('18_plus', async (ctx) => {
-    const chatId = ctx.update.callback_query.from.id
-    await User.updateOne({ chatId }, { $set: { tmp_age_group: 18 } })
-    return await ctx.editMessageText('Selected 18+ age group.\nSend any text to continue...')
+    try {
+        const chatId = ctx.update.callback_query.from.id
+        await User.updateOne({ chatId }, { $set: { tmp_age_group: 18 } })
+        return await ctx.editMessageText('Selected 18+ age group.\nSend any text to continue...')
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return ctx.scene.leave()
+        }
+    }
     // return ctx.scene.enter('track-pt2')
 })
 
 bot.action('45_plus', async (ctx) => {
-    const chatId = ctx.update.callback_query.from.id
-    await User.updateOne({ chatId }, { $set: { tmp_age_group: 45 } })
-    return await ctx.editMessageText('Selected 45+ age group.\nSend any text to continue...')
+    try {
+        const chatId = ctx.update.callback_query.from.id
+        await User.updateOne({ chatId }, { $set: { tmp_age_group: 45 } })
+        return await ctx.editMessageText('Selected 45+ age group.\nSend any text to continue...')
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return ctx.scene.leave()
+        }
+    }
     // return ctx.scene.enter('track-pt2')
 })
 
 bot.action(/dose-selection--.*/, async (ctx) => {
-    const chatId = ctx.update.callback_query.from.id
-    const dose = parseInt(ctx.update.callback_query.data.split('dose-selection--')[1])
-    await User.updateOne({ chatId }, { $set: { tmpDose: dose } })
-    return await ctx.editMessageText(`Selected ${dose ? 'Dose ' + dose : 'Any Dose'}\nSend any text to continue...`)
+    try {
+        const chatId = ctx.update.callback_query.from.id
+        const dose = parseInt(ctx.update.callback_query.data.split('dose-selection--')[1])
+        await User.updateOne({ chatId }, { $set: { tmpDose: dose } })
+        return await ctx.editMessageText(`Selected ${dose ? 'Dose ' + dose : 'Any Dose'}\nSend any text to continue...`)
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return ctx.scene.leave()
+        }
+    }
 })
 
 const sendToAll = new Scenes.WizardScene(
@@ -742,11 +763,18 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
 })
 
 bot.action(/benef--.*/, async (ctx) => {
-    const benefId = ctx.update.callback_query.data.split('benef--')[1]
-    const { beneficiaries } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('beneficiaries')
-    const matched = beneficiaries.find(b => b.beneficiary_reference_id == benefId)
-    await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { preferredBenef: matched } })
-    return await ctx.reply(`<b>ID:</b> ${matched.beneficiary_reference_id}\n<b>Name</b>: ${matched.name}\n<b>Birth Year</b>: ${matched.birth_year}\n<b>Gender</b>: ${matched.gender}\n\n\nNow you can use /autobook feature.`, { parse_mode: 'HTML' })
+    try {
+        const benefId = ctx.update.callback_query.data.split('benef--')[1]
+        const { beneficiaries } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('beneficiaries')
+        const matched = beneficiaries.find(b => b.beneficiary_reference_id == benefId)
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { preferredBenef: matched } })
+        return await ctx.reply(`<b>ID:</b> ${matched.beneficiary_reference_id}\n<b>Name</b>: ${matched.name}\n<b>Birth Year</b>: ${matched.birth_year}\n<b>Gender</b>: ${matched.gender}\n\n\nNow you can use /autobook feature.`, { parse_mode: 'HTML' })
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return ctx.scene.leave()
+        }
+    }
 })
 
 bot.command('track', inviteMiddle, async (ctx) => {
@@ -930,11 +958,18 @@ bot.command('sleeptime', async (ctx) => {
 })
 
 bot.action(/snooze_req--\d+/, async (ctx) => {
-    const seconds = ctx.update.callback_query.data.split('snooze_req--')[1]
-    const lit = SNOOZE_LITERALS.find(v => v.seconds === parseInt(seconds))
-    await ctx.editMessageText(`You've snoozed bot messages for ${lit.name}\nYou can unsnooze using /unsnooze`)
-    const currentTime = parseInt(Date.now()/1000)
-    await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime })
+    try {
+        const seconds = ctx.update.callback_query.data.split('snooze_req--')[1]
+        const lit = SNOOZE_LITERALS.find(v => v.seconds === parseInt(seconds))
+        await ctx.editMessageText(`You've snoozed bot messages for ${lit.name}\nYou can unsnooze using /unsnooze`)
+        const currentTime = parseInt(Date.now()/1000)
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { snoozeTime: currentTime + lit.seconds, snoozedAt: currentTime })
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return ctx.scene.leave()
+        }
+    }
 })
 
 bot.command('captchainfo', async (ctx) => {
@@ -1225,7 +1260,9 @@ bot.command('botstat', async (ctx) => {
 })
 
 bot.action('yes_booked', async (ctx) => {
-    return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
+    try {
+        return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status', { parse_mode: 'HTML' })
+    } catch (err) {}
 })
 
 bot.command('locations', inviteMiddle, async (ctx) => {
@@ -1274,7 +1311,9 @@ bot.command('locations', inviteMiddle, async (ctx) => {
 })
 
 bot.action('not_booked', async (ctx) => {
-    return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
+    try {
+        return await ctx.editMessageText(`No worries! You\'re still tracked for your current pincodes and age groups!.\nYou can check stat by /status\nWish you luck for the next time. :)`, { parse_mode: 'HTML' })
+    } catch (err) {}
 })
 
 trackAndInform()

@@ -245,8 +245,8 @@ class CoWIN {
                 },
                 httpsAgent: agent
             }
-            if (requestCount >= proxies.length) {
-                delete axiosConfig.httpsAgent
+            if (requestCount >= proxies.length-1) {
+                // delete axiosConfig.httpsAgent
                 requestCount = -1
             }
             const res = await axios(axiosConfig)
@@ -268,8 +268,8 @@ class CoWIN {
                     headers,
                     httpsAgent: agent
                 }
-                if (requestCount >= proxies.length) {
-                    delete axiosConfig.httpsAgent
+                if (requestCount >= proxies.length-1) {
+                    // delete axiosConfig.httpsAgent
                     requestCount = -1
                 }
                 const res = await axios(axiosConfig)

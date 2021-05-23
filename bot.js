@@ -984,10 +984,10 @@ async function inform(user, userCenters, userdata) {
                         await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
                     }
                 } catch (err) {
-                    console.log(err)
                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: true } })
                     await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
                     if ('response' in err) {
+                        console.log(err.response.data)
                         // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                         await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
                     } else {

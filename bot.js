@@ -870,7 +870,7 @@ bot.command('unsnooze', inviteMiddle, async (ctx) => {
 })
 
 function expandTracking(tracking) {
-    return tracking.map(t => `\t<b>Pincode</b>: ${t.pincode} | <b>Age Group</b>: ${t.age_group}`).join('\n')
+    return tracking.map(t => `\t<b>Pincode</b>: ${t.pincode} | <b>Age Group</b>: ${t.age_group} | <b>Dose</b>: ${t.dose || 'Any Dose'}`).join('\n')
 }
 
 bot.command('status', inviteMiddle, async (ctx) => {

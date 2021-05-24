@@ -1173,7 +1173,7 @@ async function trackAndInform() {
                                         return true
                                     }
                                 })
-                            )
+                            ).length
                         )).length
                     )
                     if (tracking.length) {

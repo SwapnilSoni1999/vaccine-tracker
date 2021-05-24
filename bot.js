@@ -1163,7 +1163,7 @@ async function trackAndInform() {
                                             return true
                                         }
                                         
-                                        if (
+                                        else if (
                                             (t.dose == 2) &&
                                             (session.available_capacity_dose2.length) &&
                                             (session.min_age_limit == t.age_group)
@@ -1171,7 +1171,7 @@ async function trackAndInform() {
                                             return true
                                         }
                                     }
-                                    if (session.min_age_limit == t.age_group) {
+                                    else if (session.min_age_limit == t.age_group) {
                                         return true
                                     }
                                 })

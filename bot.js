@@ -1154,7 +1154,7 @@ async function trackAndInform() {
                             (center.pincode == t.pincode) &&
                             (
                                 center.sessions.filter(session => {
-                                    if (t.dose) {
+                                    if (t.dose !== 0) {
                                         if (
                                             (t.dose == 1) &&
                                             (session.available_capacity_dose1.length) &&

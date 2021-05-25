@@ -1061,6 +1061,7 @@ async function inform(user, userCenters, userdata) {
                         slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
                     }, _schedule)
                     const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
+                    await User.updateOne({ chatId: user.chatId }, { $set: { beneficiaries: beneficiaries } })
                     const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
                     const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false
                     await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)

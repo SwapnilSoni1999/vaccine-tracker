@@ -5,7 +5,7 @@ const mongoose = require('mongoose')
 const User = require('./model')
 const fs = require('fs')
 const Token = require('./token')
-const { default: axios } = require('axios')
+const moment = require('moment')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -84,6 +84,18 @@ function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(() => resolve(), ms)
     })
+}
+
+function switchChoose () {
+    if(!user.preferredBenef.appointments.length) {
+        return 'schedule'
+    }
+    const hasFutureApp = user.preferredBenef.appointments.some(x => parseInt(moment(x.date).valueOf() / 1000) > parseInt(Date.now() / 1000))
+    if (hasFutureApp) {
+        return 'reschedule'
+    } else {
+        return 'schedule'
+    }
 }
 
 
@@ -1039,6 +1051,7 @@ async function inform(user, userCenters, userdata) {
                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
                     const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
                     const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
+                    const _schedule = switchChoose(user.preferredBenef)
                     const appointmentId = await CoWIN.schedule(user.token, {
                         beneficiaries: [user.preferredBenef.beneficiary_reference_id],
                         captcha: captchaResult,
@@ -1046,7 +1059,7 @@ async function inform(user, userCenters, userdata) {
                         dose: getDoseCount(user.preferredBenef),
                         session_id: sess.session_id,
                         slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
-                    })
+                    }, _schedule)
                     const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
                     const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
                     const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false

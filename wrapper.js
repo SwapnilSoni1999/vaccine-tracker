@@ -215,10 +215,10 @@ class CoWIN {
         return result
     }
 
-    static async schedule(token, payload={ beneficiaries, center_id, captcha, dose, slot, session_id }) {
+    static async schedule(token, payload={ beneficiaries, center_id, captcha, dose, slot, session_id }, _pre) {
         const res = await axios({
             method: 'POST',
-            url: 'https://cdn-api.co-vin.in/api/v2/appointment/schedule',
+            url: 'https://cdn-api.co-vin.in/api/v2/appointment/' + _pre,
             headers: {
                 ...headers,
                 authorization: 'Bearer ' + token

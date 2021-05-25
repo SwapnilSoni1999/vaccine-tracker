@@ -30,7 +30,7 @@ const verifyOtp = async (otp, txnId) => {
     try {
         const res = await axios({
             method: 'POST',
-            url: 'http://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
+            url: 'https://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
             data: {
                 otp: sha256(otp),
                 txnId: txnId
@@ -56,7 +56,7 @@ function sleep(ms) {
 const _getBeneficiaries = async (token) => {
     const res = await axios({
         method: 'GET',
-        url: 'http://cdn-api.co-vin.in/api/v2/appointment/beneficiaries',
+        url: 'https://cdn-api.co-vin.in/api/v2/appointment/beneficiaries',
         headers: {
             ...headers,
             authorization: 'Bearer ' + token
@@ -86,11 +86,11 @@ class CoWIN {
     async sendOtp() {
         const postData = {
             mobile: this.mobile,
-            secret: "U2FsdGVkX19at5EJPMYRe6TTDK4WWA2Nyb6b6c+QAmcYQjuhurrk6+CUqmMKHtSeaETDAIuXC+7Jz+ioZvkG+Q=="
+            secret: "U2FsdGVkX19gg1fHCWvmS/3a8YterUFO8gpnXGCile+XwRAIcUa6UsxGPxrc4KE6g4Ne4ewcvKYhs+1ObNBTPQ=="
         }
         const res = await axios({
             method: 'POST',
-            url: 'http://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
+            url: 'https://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
             data: postData,
             headers,
             httpsAgent: getRandomAgent()
@@ -120,7 +120,7 @@ class CoWIN {
     static async getStates() {
         const res = await axios({
             method: 'GET',
-            url: 'http://cdn-api.co-vin.in/api/v2/admin/location/states',
+            url: 'https://cdn-api.co-vin.in/api/v2/admin/location/states',
             headers,
             httpsAgent: getRandomAgent()
         })
@@ -130,7 +130,7 @@ class CoWIN {
     static async getDistrict(stateId) {
         const res = await axios({
             method: 'GET',
-            url: 'http://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
+            url: 'https://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
             headers,
             httpAgent: getRandomAgent()
         })
@@ -155,7 +155,7 @@ class CoWIN {
             console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
             const axiosConfig = {
                 method: 'GET',
-                url: 'http://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
+                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
                 params,
                 headers,
                 httpsAgent: agent

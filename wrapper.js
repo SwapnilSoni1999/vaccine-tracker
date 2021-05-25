@@ -14,6 +14,7 @@ var requestCount = 0
 const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
 
 const headers = {
+    'accept': 'application/json, text/plain, */*',
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0',
 }
 

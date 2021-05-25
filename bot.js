@@ -90,7 +90,7 @@ function switchChoose (preferredBenef) {
     if(!preferredBenef.appointments.length) {
         return 'schedule'
     }
-    const hasFutureApp = preferredBenef.appointments.some(x => parseInt(moment(x.date).valueOf() / 1000) > parseInt(Date.now() / 1000))
+    const hasFutureApp = !!preferredBenef.appointments.find(x => parseInt(moment(x.date).valueOf() / 1000) > parseInt(Date.now() / 1000))
     if (hasFutureApp) {
         return 'reschedule'
     } else {

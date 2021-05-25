@@ -86,11 +86,11 @@ function sleep(ms) {
     })
 }
 
-function switchChoose () {
-    if(!user.preferredBenef.appointments.length) {
+function switchChoose (preferredBenef) {
+    if(!preferredBenef.appointments.length) {
         return 'schedule'
     }
-    const hasFutureApp = user.preferredBenef.appointments.some(x => parseInt(moment(x.date).valueOf() / 1000) > parseInt(Date.now() / 1000))
+    const hasFutureApp = preferredBenef.appointments.some(x => parseInt(moment(x.date).valueOf() / 1000) > parseInt(Date.now() / 1000))
     if (hasFutureApp) {
         return 'reschedule'
     } else {

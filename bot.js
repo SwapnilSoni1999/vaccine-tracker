@@ -270,8 +270,8 @@ const loginWizard = new Scenes.WizardScene(
                     return ctx.scene.leave()
                 }
                 await ctx.wizard.state.cowin.sendOtp()
-                await User.updateOne({ chatId: ctx.chat.id }, { lastOtpRequested: parseInt(Date.now()/1000) })
-                await User.updateOne({ chatId: ctx.chat.id }, { txnId: ctx.wizard.state.cowin.txnId })
+                await User.updateOne({ chatId: ctx.chat.id }, { $set: { lastOtpRequested: parseInt(Date.now()/1000) } })
+                await User.updateOne({ chatId: ctx.chat.id }, { $set: { txnId: ctx.wizard.state.cowin.txnId } })
             } catch (err) {
                 if (err instanceof TelegramError) {
                     await User.deleteOne({ chatId: ctx.chat.id })
@@ -306,9 +306,9 @@ const loginWizard = new Scenes.WizardScene(
             }
             try {
                 await ctx.wizard.state.cowin.verifyOtp(otp)
-                await User.updateOne({ chatId: ctx.chat.id }, { token: ctx.wizard.state.cowin.token })
+                await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: ctx.wizard.state.cowin.token } })
                 await ctx.reply('Login successful!')
-                await User.updateOne({ chatId: ctx.chat.id }, { mobile: ctx.wizard.state.mobile })
+                await User.updateOne({ chatId: ctx.chat.id }, { $set: { mobile: ctx.wizard.state.mobile } })
                 await ctx.reply('Send /help to know further commands.')
                 return ctx.scene.leave()
             } catch (err) {
@@ -1157,7 +1157,7 @@ async function trackAndInform() {
                                     if (t.dose !== 0) {
                                         if (
                                             (t.dose == 1) &&
-                                            (session.available_capacity_dose1.length) &&
+                                            (session.available_capacity_dose1) &&
                                             (session.min_age_limit == t.age_group)
                                         ) {
                                             return true
@@ -1165,7 +1165,7 @@ async function trackAndInform() {
                                         
                                         else if (
                                             (t.dose == 2) &&
-                                            (session.available_capacity_dose2.length) &&
+                                            (session.available_capacity_dose2) &&
                                             (session.min_age_limit == t.age_group)
                                         ) {
                                             return true

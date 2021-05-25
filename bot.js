@@ -520,7 +520,12 @@ const sendToAll = new Scenes.WizardScene(
         return ctx.wizard.next()
     },
     async (ctx) => {
+        await ctx.reply(`Start from?`)
+        return ctx.wizard.next()
+    },
+    async (ctx) => {
         try {
+            const startfrom = parseInt(ctx.message.text.trim()) || 0
             ctx.scene.leave()
             const msg = ctx.message.text
             const entities = ctx.message.entities
@@ -529,7 +534,7 @@ const sendToAll = new Scenes.WizardScene(
             const mesg = await ctx.reply('Status...')
             
             await ctx.scene.leave()
-            let counter = 1
+            let counter = startfrom
             for (const user of users) {
                 try {
                     if (user.allowed) {

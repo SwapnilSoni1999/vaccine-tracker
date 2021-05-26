@@ -953,7 +953,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        const users = (await User.find({}).lean()).filter(u => u.allowed && u.token && !!u.chatId && Array.isArray(u.tracking) && u.tracking.length)
+        const users = await User.find({ allowed: true, token: { $ne: null }, chatId: { $ne: null }, autobook: true }).lean()
         for (const user of users) {
             if (user.chatId) {
                 await User.updateOne({ chatId: user.chatId }, { $set: { token: null, autobook: false } })

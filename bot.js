@@ -88,9 +88,9 @@ function sleep(ms) {
 function switchChoose (preferredBenef) {
     if(!preferredBenef.appointments.length) {
         return 'schedule'
-    }
+    }   
     const hasFuture = !!preferredBenef.appointments.find(x => {
-        const [day, month, year] = x.split('-')
+        const [day, month, year] = x.date.split('-')
         const today = new Date()
         if (+year >= today.getFullYear()) {
             if (+month >= today.getMonth()+1) {

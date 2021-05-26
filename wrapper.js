@@ -215,7 +215,7 @@ class CoWIN {
         return result
     }
 
-    static async schedule(token, payload={ beneficiaries, center_id, captcha, dose, slot, session_id }, _pre) {
+    static async schedule(token, payload, _pre) {
         const res = await axios({
             method: 'POST',
             url: 'https://cdn-api.co-vin.in/api/v2/appointment/' + _pre,

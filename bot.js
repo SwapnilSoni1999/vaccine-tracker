@@ -552,8 +552,7 @@ const sendToAll = new Scenes.WizardScene(
         try {
             const startfrom = parseInt(ctx.message.text.trim()) || 0
             ctx.scene.leave()
-            const msg = ctx.message.text
-            const entities = ctx.message.entities
+            const { msg, entities } = ctx.wizard.state
             const users = (await User.find({}).lean()).filter(u => u.allowed && u.chatId)
             await ctx.reply(`Broadcasting the message to ${users.length} people.`)
             const mesg = await ctx.reply('Status...')

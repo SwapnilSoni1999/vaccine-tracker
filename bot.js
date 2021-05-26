@@ -541,6 +541,10 @@ const sendToAll = new Scenes.WizardScene(
         return ctx.wizard.next()
     },
     async (ctx) => {
+        const msg = ctx.message.text
+        const entities = ctx.message.entities
+        ctx.wizard.state.msg = msg
+        ctx.wizard.state.entities = entities
         await ctx.reply(`Start from?`)
         return ctx.wizard.next()
     },

@@ -5,7 +5,6 @@ const mongoose = require('mongoose')
 const User = require('./model')
 const fs = require('fs')
 const Token = require('./token')
-const moment = require('moment')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -90,8 +89,18 @@ function switchChoose (preferredBenef) {
     if(!preferredBenef.appointments.length) {
         return 'schedule'
     }
-    const hasFutureApp = !!preferredBenef.appointments.find(x => parseInt(moment(x.date).valueOf() / 1000) > parseInt(Date.now() / 1000))
-    if (hasFutureApp) {
+    const hasFuture = !!preferredBenef.appointments.find(x => {
+        const [day, month, year] = x.split('-')
+        const today = new Date()
+        if (+year >= today.getFullYear()) {
+            if (+month >= today.getMonth()+1) {
+                if (+day >= today.getDate()) {
+                    return true
+                }
+            }
+        }
+    })
+    if (hasFuture) {
         return 'reschedule'
     } else {
         return 'schedule'

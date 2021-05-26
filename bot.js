@@ -558,13 +558,17 @@ const sendToAll = new Scenes.WizardScene(
             const mesg = await ctx.reply('Status...')
             
             await ctx.scene.leave()
-            let counter = startfrom
+            let counter = 0
             for (const user of users) {
+                if (counter < startfrom) {
+                    counter += 1
+                    continue
+                }
                 try {
                     if (user.allowed) {
                         await bot.telegram.sendMessage(user.chatId, msg, { entities })
                         await sleep(200)
-                    }
+                        startfrom }
                 } catch (err) {
                     console.log("Broadcast error!", err)
                     if (err instanceof TelegramError) {

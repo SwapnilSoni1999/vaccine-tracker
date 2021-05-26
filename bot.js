@@ -85,26 +85,33 @@ function sleep(ms) {
     })
 }
 
+function getFutureDate(appointment) {
+    const [day, month, year] = appointment.date.split('-')
+    const today = new Date()
+    if (+year >= today.getFullYear()) {
+        if (+month >= today.getMonth()+1) {
+            if (+day >= today.getDate()) {
+                return true
+            }
+        }
+    }
+}
+
 function switchChoose (preferredBenef) {
     if(!preferredBenef.appointments.length) {
         return 'schedule'
     }   
-    const hasFuture = !!preferredBenef.appointments.find(x => {
-        const [day, month, year] = x.date.split('-')
-        const today = new Date()
-        if (+year >= today.getFullYear()) {
-            if (+month >= today.getMonth()+1) {
-                if (+day >= today.getDate()) {
-                    return true
-                }
-            }
-        }
-    })
+    const hasFuture = !!preferredBenef.appointments.find(getFutureDate)
     if (hasFuture) {
         return 'reschedule'
     } else {
         return 'schedule'
     }
+}
+
+function getFutureAppointment(appointments) {
+    const appointment = appointments.find(getFutureDate)
+    return appointment.appointment_id
 }
 
 
@@ -1068,6 +1075,17 @@ async function inform(user, userCenters, userdata) {
                     const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
                     const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
                     const _schedule = switchChoose(user.preferredBenef)
+                    const payload = {
+                        beneficiaries: [user.preferredBenef.beneficiary_reference_id],
+                        captcha: captchaResult,
+                        center_id: uCenter.center_id,
+                        dose: getDoseCount(user.preferredBenef),
+                        session_id: sess.session_id,
+                        slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
+                    }
+                    if (_schedule === 'reschedule') {
+                        payload.appointment_id = getFutureAppointment(user.preferredBenef.appointments)
+                    }
                     const appointmentId = await CoWIN.schedule(user.token, {
                         beneficiaries: [user.preferredBenef.beneficiary_reference_id],
                         captcha: captchaResult,

@@ -97,6 +97,14 @@ function getFutureDate(appointment) {
     }
 }
 
+function checkValidVaccine(center, preferredBenef) {
+    if (!preferredBenef.vaccine) {
+        return true
+    }
+    const valid = !!center.sessions.find(s => s.vaccine == preferredBenef.vaccine)
+    return valid
+}
+
 function switchChoose (preferredBenef) {
     if(!preferredBenef.appointments.length) {
         return 'schedule'
@@ -1068,7 +1076,7 @@ async function inform(user, userCenters, userdata) {
             }
             const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
             user.autobook = autobook
-            if (user.autobook && Token.isValid(user.token)) {
+            if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
                 await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
                 try {
                     await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })

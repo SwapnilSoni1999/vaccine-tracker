@@ -1098,7 +1098,7 @@ async function inform(user, userCenters, userdata) {
                     const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
                     await User.updateOne({ chatId: user.chatId }, { $set: { beneficiaries: beneficiaries } })
                     const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
-                    const appo = bookedOne.appointments.length ? expandAppointments(bookedOne.appointments) : false
+                    const appo = bookedOne.appointments.length ? expandAppointments([bookedOne.appointments.find(a => a.appointment_id == appointmentId)]) : false
                     await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
                     if (appo) {
                         await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })

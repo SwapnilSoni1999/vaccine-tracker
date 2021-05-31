@@ -1381,9 +1381,14 @@ setInterval(() => {
     if (!TRACKER_ALIVE) {
         bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
         setTimeout(() => {
-            console.log('Starting tracker again...')
-            bot.telegram.sendMessage(SWAPNIL, 'Starting tracker again...')
-            trackAndInform()
+            if (!TRACKER_ALIVE) {
+                console.log('Starting tracker again...')
+                bot.telegram.sendMessage(SWAPNIL, 'Starting tracker again...')
+                trackAndInform()
+            } else {
+                console.log('Tracker got started again by itself. No need to recall')
+                bot.telegram.sendMessage(SWAPNIL, 'Tracker got started again by itself. No need to recall')
+            }
         }, 4 * 60 * 1000)
     }
 }, 10 * 60 * 1000)

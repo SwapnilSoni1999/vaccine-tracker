@@ -18,9 +18,6 @@ const headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0',
 }
 
-const packetStreamAgent = httpsOverHttp({ proxy: { host: 'proxy.packetstream.io', port: 31112, proxyAuth: 'houdini1:CbBxCbaJQgJURLKY_country-India' } })
-const PACKET_STREAM_COUNT = 25
-
 function getRandomAgent() {
     const agent = httpsOverHttp({ proxy: proxies[Math.floor(Math.random() * proxies.length)] })
     return agent
@@ -276,12 +273,8 @@ class CoWIN {
                 httpsAgent: agent
             }
             if (requestCount >= proxies.length-1) {
-                if (requestCount >= proxies.length-1 + PACKET_STREAM_COUNT) {
-                    delete axiosConfig.httpsAgent
-                    requestCount = -1
-                }
-                axiosConfig.httpsAgent = packetStreamAgent
-                console.log('[PacketStream Agent] = Private')
+                delete axiosConfig.httpsAgent
+                requestCount = -1
             }
             const res = await axios(axiosConfig)
             requestCount++
@@ -303,12 +296,8 @@ class CoWIN {
                     httpsAgent: agent
                 }
                 if (requestCount >= proxies.length-1) {
-                    if (requestCount >= proxies.length-1 + PACKET_STREAM_COUNT) {
-                        delete axiosConfig.httpsAgent
-                        requestCount = -1
-                    }
-                    axiosConfig.httpsAgent = packetStreamAgent
-                    console.log('[PacketStream Agent] = Public')
+                    delete axiosConfig.httpsAgent
+                    requestCount = -1
                 }
                 const res = await axios(axiosConfig)
                 requestCount++

@@ -32,7 +32,7 @@ const getToday = () => {
         try {
             const res = await axios(axiosConfig)
             if (res.status === 200) {
-                process.stdout.write(`${proxy.host}...OK\n`)
+                process.stdout.write(`${proxy.host}...OK`)
             } else {
                 process.stdout.write(`${proxy.host}...UNKOWN ERROR`)
             }

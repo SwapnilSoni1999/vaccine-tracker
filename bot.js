@@ -1236,8 +1236,8 @@ async function trackAndInform() {
                                     dup.sessions = filtSessions
                                     result.push(dup)
                                 }
-                                return result
                             }
+                            return result
                         }, [])).length
                     )
                     if (tracking.length) {

@@ -1234,6 +1234,7 @@ async function trackAndInform() {
                                 if (filtSessions.length) {
                                     result.push({ ...center, sessions: filtSessions })
                                 }
+                                return result
                             }
                         }, []).length).length
                     )

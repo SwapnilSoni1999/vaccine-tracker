@@ -825,6 +825,35 @@ bot.action(/benef--.*/, async (ctx) => {
     }
 })
 
+bot.command('vaccine', inviteMiddle, async (ctx) => {
+    try {
+        const vaccines = ['COVISHIELD', 'COVAXIN', 'ANY']
+        const markupButton = [vaccines.map(v => ({ text: v, callback_data: `vaccine--${v}`}))]
+        return await ctx.reply(`Choose your preferred vaccine to track.`, { reply_markup: {
+            inline_keyboard: markupButton
+        } })
+    } catch (error) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return
+        }
+    }
+})
+
+bot.action(/vaccine--.*/, async (ctx) => {
+    try {
+        const vaccine = ctx.update.callback_query.data.split('vaccine--')[1]
+        await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { vaccine } })
+        return await ctx.reply(`You've chosen: <b>${vaccine}\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
+    } catch (err) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return
+        }
+    }
+})
+
 bot.command('track', inviteMiddle, async (ctx) => {
     try {
         const { districtId } = await User.findOne({ chatId: ctx.chat.id })
@@ -1214,7 +1243,8 @@ async function trackAndInform() {
                                         if (
                                             (t.dose == 1) &&
                                             (session.available_capacity_dose1 > 0) &&
-                                            (session.min_age_limit == t.age_group)
+                                            (session.min_age_limit == t.age_group) &&
+                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : false)
                                         ) {
                                             return true
                                         }
@@ -1222,12 +1252,13 @@ async function trackAndInform() {
                                         else if (
                                             (t.dose == 2) &&
                                             (session.available_capacity_dose2 > 0) &&
-                                            (session.min_age_limit == t.age_group)
+                                            (session.min_age_limit == t.age_group) &&
+                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : false)
                                         ) {
                                             return true
                                         }
                                     }
-                                    else if (session.min_age_limit == t.age_group) {
+                                    else if (session.min_age_limit == t.age_group && (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : false)) {
                                         return true
                                     }
                                 })

@@ -25,7 +25,8 @@ const UserSchema = new Schema({
     tracking: [{ type: TrackingSchema, default: [] }],
     beneficiaries: { type: Array, default: [] },
     preferredBenef: { type: Object, default: null },
-    autobook: { type: Boolean, default: false }
+    autobook: { type: Boolean, default: false },
+    vaccine: { type: String, default: 'ANY', enum: ['COVAXIN', 'COVISHIELD', 'ANY'] }
 })
 
 const User = model('User', UserSchema, 'users')

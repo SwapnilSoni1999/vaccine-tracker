@@ -19,12 +19,12 @@ const getToday = () => {
         process.stdout.write(`${proxy.host}...\r`)
         const agent = httpsOverHttp({ proxy: { host: proxy.host, port: proxy.port } })
         const params = {
-            pincode: 380061,
+            pincode: '380061',
             date: getToday()
         }
         const axiosConfig = {
             method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+            url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPincode',
             params,
             headers,
             httpsAgent: agent

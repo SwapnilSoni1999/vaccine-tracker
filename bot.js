@@ -1244,7 +1244,7 @@ async function trackAndInform() {
                                             (t.dose == 1) &&
                                             (session.available_capacity_dose1 > 0) &&
                                             (session.min_age_limit == t.age_group) &&
-                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : false)
+                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
                                         ) {
                                             return true
                                         }
@@ -1253,12 +1253,12 @@ async function trackAndInform() {
                                             (t.dose == 2) &&
                                             (session.available_capacity_dose2 > 0) &&
                                             (session.min_age_limit == t.age_group) &&
-                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : false)
+                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
                                         ) {
                                             return true
                                         }
                                     }
-                                    else if (session.min_age_limit == t.age_group && (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : false)) {
+                                    else if (session.min_age_limit == t.age_group && (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)) {
                                         return true
                                     }
                                 })

@@ -1213,7 +1213,7 @@ async function trackAndInform() {
                                     if (t.dose !== 0) {
                                         if (
                                             (t.dose == 1) &&
-                                            (session.available_capacity_dose1) &&
+                                            (session.available_capacity_dose1 > 0) &&
                                             (session.min_age_limit == t.age_group)
                                         ) {
                                             return true
@@ -1221,7 +1221,7 @@ async function trackAndInform() {
                                         
                                         else if (
                                             (t.dose == 2) &&
-                                            (session.available_capacity_dose2) &&
+                                            (session.available_capacity_dose2 > 0) &&
                                             (session.min_age_limit == t.age_group)
                                         ) {
                                             return true
@@ -1232,7 +1232,9 @@ async function trackAndInform() {
                                     }
                                 })
                                 if (filtSessions.length) {
-                                    result.push({ ...center, sessions: filtSessions })
+                                    const dup = { ...center }
+                                    dup.sessions = filtSessions
+                                    result.push(dup)
                                 }
                                 return result
                             }

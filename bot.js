@@ -1238,7 +1238,7 @@ async function trackAndInform() {
                                 }
                                 return result
                             }
-                        }, []).length).length
+                        }, [])).length
                     )
                     if (tracking.length) {
                         userdata.tracking = tracking

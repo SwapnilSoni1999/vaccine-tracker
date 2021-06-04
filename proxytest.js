@@ -24,7 +24,7 @@ const getToday = () => {
         }
         const axiosConfig = {
             method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPincode',
+            url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin',
             params,
             headers,
             httpsAgent: agent

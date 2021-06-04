@@ -17,7 +17,7 @@ const getToday = () => {
     for (const proxy of proxies) {
         console.log()
         process.stdout.write(`${proxy.host}...\r`)
-        const agent = httpsOverHttp({ proxy: { ...proxy } })
+        const agent = httpsOverHttp({ proxy: { host: proxy.host, port: proxy.port } })
         const params = {
             pincode: 380061,
             date: getToday()

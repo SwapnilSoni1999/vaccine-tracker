@@ -846,6 +846,7 @@ bot.action(/vaccine--.*/, async (ctx) => {
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { vaccine } })
         return await ctx.editMessageText(`You've chosen: <b>${vaccine}\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
     } catch (err) {
+        console.log(err)
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
             return

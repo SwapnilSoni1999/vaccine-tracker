@@ -843,9 +843,8 @@ bot.command('vaccine', inviteMiddle, async (ctx) => {
 bot.action(/vaccine--.*/, async (ctx) => {
     try {
         const vaccine = ctx.update.callback_query.data.split('vaccine--')[1]
-        await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { vaccine } })
-        return await ctx.reply(`You've chosen: <b>${vaccine}\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
+        return await ctx.editMessageText(`You've chosen: <b>${vaccine}\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
@@ -1160,7 +1159,7 @@ async function inform(user, userCenters, userdata) {
         } catch (err) {
             console.log('Inform errors', err)
             await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
-            if (err instanceof TelegramError) {
+            if (err instanceof TelegramError && err.response.error_code !== 429) {
                 await User.deleteOne({ chatId: user.chatId })
             }
         } finally {

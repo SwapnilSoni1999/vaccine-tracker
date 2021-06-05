@@ -1417,6 +1417,16 @@ bot.action('not_booked', async (ctx) => {
     } catch (err) {}
 })
 
+bot.command('test', async (ctx) => {
+    try {
+        const centers = await CoWIN.getCentersByDist(702)
+        const center = centers.find(c => c.center_id == 581201)
+        await ctx.replyWithLocation(center.lat, center.long, { allow_sending_without_reply: true })
+    } catch (err) {
+        console.log(err)
+    }
+})
+
 trackAndInform()
 // set false and wait for 5mins if tracker updates the flag or not
 setInterval(() => {

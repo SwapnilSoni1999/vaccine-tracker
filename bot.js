@@ -142,7 +142,7 @@ const authMiddle = async (ctx, next) => {
 }
 
 const pinCheckMiddle = async (ctx, next) => {
-    const { tracking } = await User.findOne({ chatId: ctx.chat.id }).lean()
+    const { tracking } = await User.findOne({ chatId: ctx.chat.id })
     if (Array.isArray(tracking) && tracking.length > 0) {
         next()
     } else {
@@ -176,7 +176,7 @@ const groupDetection = async (ctx, next) => {
 
 const benefMiddle = async (ctx, next) => {
     try {
-        const { beneficiaries, preferredBenef } = await User.findOne({ chatId: ctx.chat.id }).lean()
+        const { beneficiaries, preferredBenef } = await User.findOne({ chatId: ctx.chat.id })
         if (Array.isArray(beneficiaries) && beneficiaries.length) {
             if (preferredBenef && (Object.keys(preferredBenef)).length !== 0) {
                 return next()
@@ -568,7 +568,7 @@ const sendToAll = new Scenes.WizardScene(
             const startfrom = parseInt(ctx.message.text.trim()) || 0
             ctx.scene.leave()
             const { msg, entities } = ctx.wizard.state
-            const users = (await User.find({}).lean()).filter(u => u.allowed && u.chatId)
+            const users = (await User.find({})).filter(u => u.allowed && u.chatId)
             await ctx.reply(`Broadcasting the message to ${users.length} people.`)
             const mesg = await ctx.reply('Status...')
             
@@ -980,7 +980,7 @@ function expandTracking(tracking) {
 
 bot.command('status', inviteMiddle, async (ctx) => {
     try {
-        const user = await User.findOne({ chatId: ctx.chat.id }).lean()
+        const user = await User.findOne({ chatId: ctx.chat.id })
         const { stateId, districtId } = user
         let district_name = null
         if (districtId) {
@@ -1001,7 +1001,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        const users = await User.find({ allowed: true, token: { $ne: null }, chatId: { $ne: null }, autobook: true }).lean()
+        const users = await User.find({ allowed: true, token: { $ne: null }, chatId: { $ne: null }, autobook: true })
         for (const user of users) {
             if (user.chatId) {
                 await User.updateOne({ chatId: user.chatId }, { $set: { token: null, autobook: false } })
@@ -1187,7 +1187,7 @@ async function checkTokens(users) {
         if (!user.token) {
             continue
         }
-        const { autobook, token } = await User.findOne({ chatId: user.chatId }).lean()
+        const { autobook, token } = await User.findOne({ chatId: user.chatId })
         user.autobook = autobook
         user.token = token
         if (user.autobook && !(Token.isValid(user.token))) {
@@ -1207,7 +1207,7 @@ var TRACKER_ALIVE = false
 
 async function trackAndInform() {
     console.log('Fetching information')
-    const users = await User.find({}).lean()
+    const users = await User.find({})
     checkTokens(users)
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))]
     // console.log(districtIds)
@@ -1348,7 +1348,7 @@ bot.command('sendall', async (ctx) => {
 
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
-        const users = await User.find({}).lean()
+        const users = await User.find({})
         const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${users.filter(v => v.tracking).flat(1).length}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))].length}\n<b>Total Districts</b>: ${users.filter(u => !!u.districtId).length}\n<b>Total users with AutoBook</b>: ${users.filter(u => u.autobook == true).length}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
@@ -1362,7 +1362,7 @@ bot.action('yes_booked', async (ctx) => {
 
 bot.command('locations', inviteMiddle, async (ctx) => {
     try {
-        const users = await User.find({}).lean()
+        const users = await User.find({})
         const states = await CoWIN.getStates()
         try {
             const stateName = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')

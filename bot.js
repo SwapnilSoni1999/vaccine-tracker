@@ -1118,6 +1118,7 @@ async function bookSlot(user, uCenter, ) {
             const slip = await CoWIN.getAppointmentSlip(appointmentId, user.token, user.chatId)
             await bot.telegram.sendDocument(user.chatId, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
             await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
+            await bot.telegram.sendLocation(user.chatId, uCenter.lat, uCenter.long, { allow_sending_without_reply: true })
         } catch (error) {
             await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
         }
@@ -1421,7 +1422,7 @@ bot.command('test', async (ctx) => {
     try {
         const centers = await CoWIN.getCentersByDist(702)
         const center = centers.find(c => c.center_id == 581201)
-        await ctx.replyWithLocation(center.lat, center.long, { allow_sending_without_reply: true })
+        
     } catch (err) {
         console.log(err)
     }

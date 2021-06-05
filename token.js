@@ -3,7 +3,7 @@ const User = require('./model')
 
 const isValid = (token) => {
     if (!token) {
-        return
+        return false
     }
     try {
         const { exp } = jwt.decode(token)

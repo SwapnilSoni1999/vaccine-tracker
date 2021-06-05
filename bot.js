@@ -1323,6 +1323,7 @@ async function trackAndInform() {
                 if (user.autobook && !Token.isValid(user.token)) {
                     try {
                         await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
+                        await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
                     } catch (err) {
                         if (err instanceof TelegramError) {
                             await User.deleteOne({ chatId: user.chatId })

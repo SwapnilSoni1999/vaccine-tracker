@@ -15,11 +15,10 @@ const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(lin
 
 const headers = {
     'authority': 'cdn-api.co-vin.in',
-    'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
+    'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
     'accept': 'application/json, text/plain, */*',
     'sec-ch-ua-mobile': '?0',
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
-    'content-type': 'application/json',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36',
     'origin': 'https://selfregistration.cowin.gov.in',
     'sec-fetch-site': 'cross-site',
     'sec-fetch-mode': 'cors',

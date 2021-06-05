@@ -14,14 +14,18 @@ var requestCount = 0
 const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
 
 const headers = {
+    'authority': 'cdn-api.co-vin.in',
+    'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
+    'accept': 'application/json, text/plain, */*',
+    'sec-ch-ua-mobile': '?0',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+    'content-type': 'application/json',
     'origin': 'https://selfregistration.cowin.gov.in',
     'sec-fetch-site': 'cross-site',
     'sec-fetch-mode': 'cors',
     'sec-fetch-dest': 'empty',
-    'accept': 'application/json, text/plain, */*',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"',
-    'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0',
+    'referer': 'https://selfregistration.cowin.gov.in/',
+    'accept-language': 'en-US,en-IN;q=0.9,en;q=0.8',
 }
 
 function getRandomAgent() {

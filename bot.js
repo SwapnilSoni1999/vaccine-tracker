@@ -1086,6 +1086,55 @@ bot.command('captchatest', async (ctx) => {
     }
 })
 
+async function bookSlot(user, uCenter, ) {
+    await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
+    try {
+        await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
+        const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
+        const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
+        const _schedule = switchChoose(user.preferredBenef)
+        const payload = {
+            beneficiaries: [user.preferredBenef.beneficiary_reference_id],
+            captcha: captchaResult,
+            center_id: uCenter.center_id,
+            dose: getDoseCount(user.preferredBenef),
+            session_id: sess.session_id,
+            slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
+        }
+        if (_schedule === 'reschedule') {
+            payload.appointment_id = getFutureAppointment(user.preferredBenef.appointments)
+        }
+        const appointmentId = await CoWIN.schedule(user.token, payload, _schedule)
+        const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
+        await User.updateOne({ chatId: user.chatId }, { $set: { beneficiaries: beneficiaries } })
+        const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
+        const appo = bookedOne.appointments.length ? expandAppointments([bookedOne.appointments.find(a => a.appointment_id == appointmentId)]) : false
+        await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
+        if (appo) {
+            await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
+        }
+        await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}\n\<b>AppointmentID</b>: ${appointmentId}`, { parse_mode: 'HTML' })
+        try {
+            const slip = await CoWIN.getAppointmentSlip(appointmentId, user.token, user.chatId)
+            await bot.telegram.sendDocument(user.chatId, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
+            await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
+        } catch (error) {
+            await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
+        }
+    } catch (err) {
+        await User.updateOne({ chatId: user.chatId }, { $set: { autobook: true } })
+        await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
+        if ('response' in err) {
+            console.log(err.response.data)
+            // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+            await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
+        } else {
+            await bot.telegram.sendMessage(SWAPNIL, 'Somethings wrong\n' + err.toString())
+            fs.writeFileSync('wrong.txt', err.toString() + '\n=======', { flag: 'a' })
+        }
+    }
+}
+
 async function inform(user, userCenters, userdata) {
     let informedUser = false
     for (const uCenter of userCenters) {
@@ -1106,52 +1155,7 @@ async function inform(user, userCenters, userdata) {
             const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
             user.autobook = autobook
             if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
-                await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
-                try {
-                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
-                    const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
-                    const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
-                    const _schedule = switchChoose(user.preferredBenef)
-                    const payload = {
-                        beneficiaries: [user.preferredBenef.beneficiary_reference_id],
-                        captcha: captchaResult,
-                        center_id: uCenter.center_id,
-                        dose: getDoseCount(user.preferredBenef),
-                        session_id: sess.session_id,
-                        slot: sess.slots[Math.floor(Math.random() * sess.slots.length)]
-                    }
-                    if (_schedule === 'reschedule') {
-                        payload.appointment_id = getFutureAppointment(user.preferredBenef.appointments)
-                    }
-                    const appointmentId = await CoWIN.schedule(user.token, payload, _schedule)
-                    const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
-                    await User.updateOne({ chatId: user.chatId }, { $set: { beneficiaries: beneficiaries } })
-                    const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
-                    const appo = bookedOne.appointments.length ? expandAppointments([bookedOne.appointments.find(a => a.appointment_id == appointmentId)]) : false
-                    await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
-                    if (appo) {
-                        await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
-                    }
-                    await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}\n\<b>AppointmentID</b>: ${appointmentId}`, { parse_mode: 'HTML' })
-                    try {
-                        const slip = await CoWIN.getAppointmentSlip(appointmentId, user.token, user.chatId)
-                        await bot.telegram.sendDocument(user.chatId, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
-                        await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })
-                    } catch (error) {
-                        await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
-                    }
-                } catch (err) {
-                    await User.updateOne({ chatId: user.chatId }, { $set: { autobook: true } })
-                    await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')
-                    if ('response' in err) {
-                        console.log(err.response.data)
-                        // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
-                        await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
-                    } else {
-                        await bot.telegram.sendMessage(SWAPNIL, 'Somethings wrong\n' + err.toString())
-                        fs.writeFileSync('wrong.txt', err.toString() + '\n=======', { flag: 'a' })
-                    }
-                }
+                bookSlot(user, uCenter)
             }
         } catch (err) {
             console.log('Inform errors', err)
@@ -1159,6 +1163,8 @@ async function inform(user, userCenters, userdata) {
             if (err instanceof TelegramError) {
                 await User.deleteOne({ chatId: user.chatId })
             }
+        } finally {
+            await sleep(300)
         }
     }
     try {

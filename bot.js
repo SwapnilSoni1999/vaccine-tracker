@@ -25,6 +25,13 @@ function getDoseCount(beneficiary) {
     return 1
 }
 
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 function calculateSleeptime() {
     const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
     const ipCount = proxies.length
@@ -1217,6 +1224,7 @@ async function trackAndInform() {
     console.log('Fetching information')
     const users = await User.find({})
     checkTokens(users)
+    shuffle(users)
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))]
     // console.log(districtIds)
     if (!districtIds.length) {
@@ -1287,6 +1295,7 @@ async function trackAndInform() {
                 return valid
             }, [])
 
+            shuffle(validUsers)
             for (const user of validUsers) {
                 //double check
                 if (!user.allowed) {

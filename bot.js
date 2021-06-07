@@ -1173,7 +1173,7 @@ async function inform(user, userCenters, userdata) {
                 await User.deleteOne({ chatId: user.chatId })
             }
         } finally {
-            await sleep(300)
+            await sleep(100)
         }
     }
     try {

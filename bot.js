@@ -1065,9 +1065,9 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 bot.command('test', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
-            const payUrl = encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
+            const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
             await bot.telegram.sendMessage(SWAPNIL, 
-                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)\n\n<a href="${payUrl}">Send on UPI</a>`,
+                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)\n\n${payUrl}`,
                 { parse_mode: 'HTML' }
             )
         } catch (err) {

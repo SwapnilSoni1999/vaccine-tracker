@@ -1067,7 +1067,7 @@ bot.command('test', async (ctx) => {
         try {
             const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
             await bot.telegram.sendMessage(SWAPNIL, 
-                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)\n\n${payUrl}`,
+                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
                 { parse_mode: 'HTML' }
             )
         } catch (err) {
@@ -1130,9 +1130,13 @@ async function bookSlot(user, uCenter, ) {
         } catch (error) {
             await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
         } 
-        // finally {
-            // await bot.telegram.sendMessage(SWAPNIL, 'Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)')
-        // }
+        finally {
+            const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
+            await bot.telegram.sendMessage(SWAPNIL, 
+                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
+                { parse_mode: 'HTML' }
+            )
+        }
     } catch (err) {
         await User.updateOne({ chatId: user.chatId }, { $set: { autobook: true } })
         await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')

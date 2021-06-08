@@ -729,6 +729,8 @@ bot.help(inviteMiddle, async (ctx) => {
     }
 })
 
+bot.command('id', async (ctx) => await ctx.reply(`Your chat id is: ${ctx.chat.id}`))
+
 bot.start(async (ctx) => {
     if (await _isInvited(ctx.chat.id)) {
         const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`

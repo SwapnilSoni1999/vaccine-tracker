@@ -1062,21 +1062,19 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     }
 })
 
-bot.command('captchainfo', async (ctx) => {
+bot.command('test', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
-            const data = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')
-            if (!data) {
-                throw new Error('Show existing data!')
-            }
-            fs.unlinkSync('captcha.json')
-            const newData = { apikey: data.split(' ')[1], userid: data.split(' ')[0] }
-            const rawdata = JSON.stringify(newData)
-            fs.writeFileSync('captcha.json', rawdata)
-            return await ctx.reply(`Saved credentials!\n${rawdata}`)
+            const payUrl = encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
+            await bot.telegram.sendMessage(SWAPNIL, 'Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ url: payUrl, text: 'Send on UPI' }]
+                    ]
+                }
+            })
         } catch (error) {
-            const apidata = JSON.parse(fs.readFileSync('captcha.json'))
-            await ctx.reply(`Apikey: ${apidata.apikey}\nUserID: ${apidata.userid}`)
+            await ctx.reply('Some error:' + err.stack)
         }
     }
 })
@@ -1134,7 +1132,10 @@ async function bookSlot(user, uCenter, ) {
             await bot.telegram.sendLocation(user.chatId, uCenter.lat, uCenter.long, { allow_sending_without_reply: true })
         } catch (error) {
             await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
-        }
+        } 
+        // finally {
+            // await bot.telegram.sendMessage(SWAPNIL, 'Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)')
+        // }
     } catch (err) {
         await User.updateOne({ chatId: user.chatId }, { $set: { autobook: true } })
         await bot.telegram.sendMessage(user.chatId, 'Failed to book appointment. Please try yourself once. Sorry.')

@@ -1066,14 +1066,11 @@ bot.command('test', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
             const payUrl = encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
-            await bot.telegram.sendMessage(SWAPNIL, 'Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)', {
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ url: payUrl, text: 'Send on UPI' }]
-                    ]
-                }
-            })
-        } catch (error) {
+            await bot.telegram.sendMessage(SWAPNIL, 
+                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? :)\nYou can send me the prize on my UPI if you wish to. Thanks :)\n\n<a href="${payUrl}">Send on UPI</a>`,
+                { parse_mode: 'HTML' }
+            )
+        } catch (err) {
             await ctx.reply('Some error:' + err.stack)
         }
     }

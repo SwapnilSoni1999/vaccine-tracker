@@ -247,6 +247,7 @@ const inviteWizard = new Scenes.WizardScene(
                         await ctx.reply('Invitation accepted!')
                         const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
                         await ctx.reply(msg, { parse_mode: 'HTML' })
+                        await ctx.reply(`Before you proceed further, Make sure you read the following notes:\n\n - <u>You must have atleast one beneficiary on your registered mobile number.</u>\n - <u>You must use login number which you used to register on cowin portal.`)
                         return ctx.scene.leave()
                     } else {
                         await User.updateOne({ chatId: ctx.chat.id }, { allowed: false })
@@ -814,7 +815,7 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
     } catch (err) {
         console.log(err)
         await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
-        return await ctx.reply('Token expired! Please /login again.')
+        return await ctx.reply('Token expired! Please /login again. Or maybe you haven\'t added any beneficiary on cowin portal. Please consider adding atleast one from selfregistration.cowin.gov.in')
     }
 })
 

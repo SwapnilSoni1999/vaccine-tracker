@@ -1374,7 +1374,8 @@ bot.command('botstat', async (ctx) => {
             }
             return count
         }, 0)
-        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${totalPincodes}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))].length}\n<b>Total Districts</b>: ${users.filter(u => !!u.districtId).length}\n<b>Total users with AutoBook</b>: ${users.filter(u => u.autobook == true).length}`
+        const totalSlips = fs.readdirSync('./appointments').length
+        const txt = `Bot Stat!\n<b>Total Users</b>: ${users.length}\n<b>Verified Users (InviteKey)</b>: ${users.filter(u => u.allowed).length}\n<b>Unverified Users</b>: ${users.filter(u => !u.allowed).length}\n<b>Total pincodes in tracking</b>: ${totalPincodes}\n<b>Logged in users</b>: ${users.filter(u => u.token).length}\n<b>Total Districts(Unique)</b>: ${[...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))].length}\n<b>Total Districts</b>: ${users.filter(u => !!u.districtId).length}\n<b>Total users with AutoBook</b>: ${users.filter(u => u.autobook == true).length}\n<b>Total users booked with autobook</b>: ${totalSlips}`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     }
 })

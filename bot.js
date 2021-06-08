@@ -598,11 +598,13 @@ const sendToAll = new Scenes.WizardScene(
                     if (err instanceof TelegramError) {
                         if (err.response.error_code == 403) {
                             await User.deleteOne({ chatId: user.chatId })
+                            const index = users.findIndex(u => u.chatId == user.chatId)
+                            users.splice(index, 1)
                         }
                     }
                 }
-                await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, null, `Notified to ${counter}/${users.length} people.`)
                 counter += 1
+                await ctx.telegram.editMessageText(SWAPNIL, mesg.message_id, null, `Notified to ${counter}/${users.length} people.`)
             }
         } catch (err) {
             await ctx.reply('Some error occured!')

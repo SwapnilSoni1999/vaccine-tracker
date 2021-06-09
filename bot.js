@@ -1132,7 +1132,7 @@ async function bookSlot(user, uCenter, ) {
         } 
         finally {
             const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
-            await bot.telegram.sendMessage(SWAPNIL, 
+            await bot.telegram.sendMessage(user.chatId, 
                 `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
                 { parse_mode: 'HTML' }
             )

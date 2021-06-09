@@ -1118,6 +1118,7 @@ async function bookSlot(user, uCenter, ) {
         const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
         const appo = bookedOne.appointments.length ? expandAppointments([bookedOne.appointments.find(a => a.appointment_id == appointmentId)]) : false
         await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
+        await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
         if (appo) {
             await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
         }

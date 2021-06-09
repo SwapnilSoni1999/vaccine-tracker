@@ -36,6 +36,18 @@ const sha256 = (data) => {
     return crypto.createHash('sha256').update(data).digest('hex')
 }
 
+function randomstring(len) {
+    const lower = 'abcdefghijklmnopqrstuvwxyz'
+    const upper = lower.toUpperCase()
+    const digits = '1234567890'
+    const chars = lower + upper + digits
+    let result = ''
+    for (let i=0; i<len; i++) {
+        result += chars[Math.floor(Math.random() * len)]
+    }
+    return result
+}
+
 const verifyOtp = async (otp, txnId) => {
     try {
         const res = await axios({
@@ -261,7 +273,9 @@ class CoWIN {
     static async getCentersByDist(districtId, token) {
         const params = {
             district_id: districtId,
-            date: getToday()
+            date: getToday(),
+            // to bypass cache
+            vaccine: randomstring(9)
         }
         console.log(params)
         try {

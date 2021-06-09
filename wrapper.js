@@ -38,12 +38,12 @@ const sha256 = (data) => {
 
 function randomstring(len) {
     const lower = 'abcdefghijklmnopqrstuvwxyz'
-    const upper = lower.toUpperCase()
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     const digits = '1234567890'
     const chars = lower + upper + digits
     let result = ''
     for (let i=0; i<len; i++) {
-        result += chars[Math.floor(Math.random() * len)]
+        result += chars[Math.floor(Math.random() * chars.length)]
     }
     return result
 }

@@ -1117,12 +1117,12 @@ async function bookSlot(user, uCenter, ) {
         await User.updateOne({ chatId: user.chatId }, { $set: { beneficiaries: beneficiaries } })
         const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)
         const appo = bookedOne.appointments.length ? expandAppointments([bookedOne.appointments.find(a => a.appointment_id == appointmentId)]) : false
-        await bot.telegram.sendMessage(user.chatId, `Successfully booked appointment! 🎉\nAutobook is now turned off.`)
+        await bot.telegram.sendMessage(user.chatId, `Successfully ${_schedule == 'schedule' ? 'scheduled' : 'rescheduled'} appointment! 🎉\nAutobook is now turned off.`)
         await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
         if (appo) {
             await bot.telegram.sendMessage(user.chatId, `<b>Beneficiary</b>: ${bookedOne.name}\n${appo}`, { parse_mode: 'HTML' })
         }
-        await bot.telegram.sendMessage(SWAPNIL, `Successfully booked appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}\n\<b>AppointmentID</b>: ${appointmentId}`, { parse_mode: 'HTML' })
+        await bot.telegram.sendMessage(SWAPNIL, `Successfully ${_schedule == 'schedule' ? 'scheduled' : 'rescheduled'} appointment! 🎉\n<b>Beneficiary</b>: ${bookedOne.name}\n${appo}\n\<b>AppointmentID</b>: ${appointmentId}`, { parse_mode: 'HTML' })
         try {
             const slip = await CoWIN.getAppointmentSlip(appointmentId, user.token, user.chatId)
             await bot.telegram.sendDocument(user.chatId, { source: fs.createReadStream(slip), filename: 'Appointment Slip.pdf' })

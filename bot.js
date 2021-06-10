@@ -342,7 +342,7 @@ const loginWizard = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             const { otpCount } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount')
-            await ctx.reply(`You\'ve requested otp for ${otpCount} today. You can check your otp counts by sending /status`)
+            await ctx.reply(`You\'ve requested otp for ${otpCount} time${otpCount > 1 ? 's': ''} today. You can check your otp counts by sending /status`)
             await ctx.reply('Enter your otp')
             return ctx.wizard.next()
         } catch (error) {

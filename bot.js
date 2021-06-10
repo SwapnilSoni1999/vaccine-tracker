@@ -1244,6 +1244,13 @@ async function checkTokens(users) {
                 }
             }
         }
+        if (!user.autobook && !(Token.isValid(user.token))) {
+            try {
+                await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
+            } catch (error) {
+                
+            }
+        }
     }
 }
 

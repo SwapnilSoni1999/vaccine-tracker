@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const User = require('./model')
 const fs = require('fs')
 const Token = require('./token')
+const cron = require('node-cron')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -14,6 +15,16 @@ const BOT_TOKEN = '1707560756:AAGklCxSVVtfEtPBYEmOCZW6of4nEzffhx0'
 const bot = new Telegraf(BOT_TOKEN)
 const INVITE_KEY = "C0WiNbotSwapnil"
 const SWAPNIL = 317890515
+const MAX_OTP_PER_DAY = 50
+
+// ========CRON=========
+cron.schedule('0 0 * * *', async () => {
+    await bot.telegram.sendMessage(SWAPNIL, 'Cron Task: Resetting OTP Counts!')
+    await User.updateOne({ allowed: true }, { $set: { otpCount: 0 } })
+}, { timezone: 'Asia/Kolkata', scheduled: true })
+
+// =====================
+
 
 /**
  * Helper methods
@@ -314,8 +325,13 @@ const loginWizard = new Scenes.WizardScene(
                     return ctx.scene.leave()
                 }
                 await ctx.wizard.state.cowin.sendOtp()
-                await User.updateOne({ chatId: ctx.chat.id }, { $set: { lastOtpRequested: parseInt(Date.now()/1000) } })
-                await User.updateOne({ chatId: ctx.chat.id }, { $set: { txnId: ctx.wizard.state.cowin.txnId } })
+                await User.updateOne({ chatId: ctx.chat.id }, { 
+                    $set: { 
+                        lastOtpRequested: parseInt(Date.now()/1000),
+                        txnId: ctx.wizard.state.cowin.txnId 
+                    }, 
+                    $inc: { otpCount: 1 }  
+                })
             } catch (err) {
                 if (err instanceof TelegramError) {
                     await User.deleteOne({ chatId: ctx.chat.id })
@@ -325,7 +341,8 @@ const loginWizard = new Scenes.WizardScene(
                 await ctx.reply('Error while sending otp!\nPlease try again!')
                 return ctx.scene.leave()
             }
-            
+            const { otpCount } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount')
+            await ctx.reply(`You\'ve requested otp for ${otpCount} today. You can check your otp counts by sending /status`)
             await ctx.reply('Enter your otp')
             return ctx.wizard.next()
         } catch (error) {
@@ -748,6 +765,10 @@ bot.command('login', inviteMiddle, async (ctx) => {
             return await ctx.reply('You\'re already logged in! Send /logout to Logout.')
         }
     }
+
+    if (user.otpCount > MAX_OTP_PER_DAY) {
+        return await ctx.reply(`Sorry! you've reached max otp request limit for today! Try tomorrow.\nAlso do not login on CoWIN portal else your account will be banned for 24 hours.`)
+    }
     ctx.scene.enter('login')
 })
 
@@ -1004,7 +1025,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null } })
             user.token = null
         }
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n\nType /help for more info.`
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(user.snoozeTime - user.snoozedAt) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)

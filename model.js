@@ -26,7 +26,8 @@ const UserSchema = new Schema({
     beneficiaries: { type: Array, default: [] },
     preferredBenef: { type: Object, default: null },
     autobook: { type: Boolean, default: false },
-    vaccine: { type: String, default: 'ANY' }
+    vaccine: { type: String, default: 'ANY' },
+    otpCount: { type: Number, default: 0 }
 })
 
 const User = model('User', UserSchema, 'users')

@@ -629,7 +629,7 @@ const districtSelection = new Scenes.WizardScene(
                 return result
             }, [])        
             
-            await ctx.reply('Choose your prefered state first. Make sure you choose the state/district whichever\'s pincode you wanna track.', { reply_markup: {
+            await ctx.reply('Choose your preferred state first. Make sure you choose the state/district whichever\'s pincode you wanna track.', { reply_markup: {
                 keyboard: markupButton,
                 remove_keyboard: true,
                 one_time_keyboard: true

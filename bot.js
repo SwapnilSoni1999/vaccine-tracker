@@ -1240,7 +1240,7 @@ async function trackAndInform() {
     }
     for (const districtId of districtIds) {
         try {
-            const centers = await CoWIN.getCentersByDist(districtId, await Token.getAnyValidToken())
+            const centers = await CoWIN.getCentersByDist(districtId)
             await sleep(TRACKER_SLEEP_TIME)
             TRACKER_ALIVE = true
             console.log('Centers:', centers.length, 'District:', districtId)

@@ -104,7 +104,15 @@ const _getBeneficiaries = async (token) => {
 
 const getToday = () => {
     const dateObj = new Date()
-    return `${String(dateObj.getDate()).padStart(2, '0')}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${dateObj.getFullYear()}`
+    const seperators = [ '-', '/', '=', '+', '&', '$', '' ]
+    // choose random seperator
+    const seperator = seperators[Math.floor(Math.random() * seperators.length)] + String().padStart(Math.floor(Math.random() * seperators.length))
+    const pad = Math.floor(Math.random() * 100) % 2 === 0 ? 1 : 2
+    const day = String(dateObj.getDate()).padStart(pad, '0')
+    const month = String(dateObj.getMonth()+1).padStart(pad, '0')
+    const yearFull = dateObj.getFullYear().toString()
+    const year = Math.floor(Math.random() * 100) % 2 === 0 ? yearFull : yearFull.substr(-2)
+    return [day, month, year].join(seperator)
 }
 
 // const proxies = fs.readFileSync('proxies.txt').toString('ascii').split('\n').map(line =>  ({ host: line.split(':')[0], port: line.split(':')[1] }))
@@ -274,8 +282,6 @@ class CoWIN {
         const params = {
             district_id: districtId,
             date: getToday(),
-            // to bypass cache
-            vaccine: randomstring(9)
         }
         console.log(params)
         try {

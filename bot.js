@@ -161,10 +161,11 @@ const authMiddle = async (ctx, next) => {
 
 const switchMiddle = async (ctx, next) => {
     const { autobook } = await User.findOne({ chatId: ctx.chat.id })
-    if (autobook) {
+    if (autobook == true) {
         return next()
+    } else {
+        return authMiddle(ctx, next)
     }
-    return authMiddle(ctx, next)
 }
 
 const pinCheckMiddle = async (ctx, next) => {

@@ -1219,6 +1219,7 @@ async function inform(user, userCenters, userdata) {
 }
 
 async function checkTokens(users) {
+    console.log('CHECKING TOKENS....')
     for (const user of users) {
         if (!user.allowed) {
             continue
@@ -1231,7 +1232,7 @@ async function checkTokens(users) {
         if (!user.token) {
             continue
         }
-        const { autobook, token } = await User.findOne({ chatId: user.chatId })
+        const { autobook, token } = await User.findOne({ chatId: user.chatId }).select('autobook token')
         user.autobook = autobook
         user.token = token
         if (user.autobook && (!(Token.isValid(user.token)) || !user.token )) {

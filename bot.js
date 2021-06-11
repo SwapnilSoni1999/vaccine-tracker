@@ -18,7 +18,7 @@ const SWAPNIL = 317890515
 const MAX_OTP_PER_DAY = 50
 
 // ========CRON=========
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('2 0 * * *', async () => {
     await bot.telegram.sendMessage(SWAPNIL, 'Cron Task: Resetting OTP Counts!')
     await User.updateMany({ allowed: true }, { $set: { otpCount: 0 } })
 }, { timezone: 'Asia/Kolkata', scheduled: true })

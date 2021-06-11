@@ -1261,7 +1261,6 @@ var TRACKER_ALIVE = false
 async function trackAndInform() {
     console.log('Fetching information')
     const users = await User.find({})
-    checkTokens(users)
     shuffle(users)
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))]
     // console.log(districtIds)
@@ -1504,5 +1503,9 @@ setInterval(() => {
         }, 4 * 60 * 1000)
     }
 }, 10 * 60 * 1000)
+setInterval(async () => {
+    const users = await User.find({})
+    checkTokens(users)
+}, 1 * 60 * 1000)
 
 bot.launch()

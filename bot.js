@@ -164,7 +164,7 @@ const switchMiddle = async (ctx, next) => {
     if (autobook) {
         return next()
     }
-    return authMiddle
+    return authMiddle(ctx, next)
 }
 
 const pinCheckMiddle = async (ctx, next) => {

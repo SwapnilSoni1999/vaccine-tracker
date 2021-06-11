@@ -1237,9 +1237,10 @@ async function checkTokens(users) {
                 console.log('Notifying expired token...')
                 await bot.telegram.sendMessage(user.chatId, 'Token expired! Please /login again.\nYou will be notified every 15min after session gets expired. If you wish to stop this session expire alerts, please consider turning off /autobook')
                 await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
+                await sleep(100)
             } catch (err) {
                 console.log(err)
-                if (err instanceof TelegramError) {
+                if (err instanceof TelegramError && err.response.error_code !== 429) {
                     await User.deleteOne({ chatId: user.chatId })
                 }
             }

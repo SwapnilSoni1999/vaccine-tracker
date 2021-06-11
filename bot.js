@@ -1229,9 +1229,6 @@ async function checkTokens(users) {
             // skip the user
             continue
         }
-        if (!user.token) {
-            continue
-        }
         const { autobook, token } = await User.findOne({ chatId: user.chatId }).select('autobook token')
         user.autobook = autobook
         user.token = token

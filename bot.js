@@ -159,6 +159,14 @@ const authMiddle = async (ctx, next) => {
     }
 }
 
+const switchMiddle = async (ctx, next) => {
+    const { autobook } = await User.findOne({ chatId: ctx.chat.id })
+    if (autobook) {
+        return next()
+    }
+    return authMiddle
+}
+
 const pinCheckMiddle = async (ctx, next) => {
     const { tracking } = await User.findOne({ chatId: ctx.chat.id })
     if (Array.isArray(tracking) && tracking.length > 0) {
@@ -952,7 +960,7 @@ bot.command('district', inviteMiddle, async (ctx) => {
     }
 })
 
-bot.command('autobook', inviteMiddle, authMiddle, benefMiddle, pinCheckMiddle, async (ctx) => {
+bot.command('autobook', inviteMiddle, switchMiddle, benefMiddle, pinCheckMiddle, async (ctx) => {
     try {
         return await ctx.reply('Choose switch for autobook.\n<b>What is this?</b>\nIts a feature to book an available slot in youre desired pincode if your token is valid within the given time.\n\n<b>Note</b>: <u>Once you login. You will be auto logged out from cowin by itself after 15minutes. So you will get an alert message to login again if you\'ve turned autobook switch ON. So use this feature only when you need.</u>\n\n<b>How it works?</b>\nThe bot will work normally like informing you for available slots. But with autobook it will also try to book a slot to any available center in your desired pincode.', {
             reply_markup: {

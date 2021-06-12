@@ -1394,12 +1394,43 @@ async function trackAndInform() {
                     }
                 }
                 for (const trc of user.tracking) {
-                    const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id }
+                    const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id, dose: trc.dose }
 
-                    const userCenters = available.filter(center => 
-                        (center.pincode == userdata.pincode) && 
-                        (center.sessions.filter(session => session.min_age_limit == userdata.age_group).length)
-                    )
+                    const userCenters = available.reduce((results, center) => {
+                        const tmpCenter = { ...center }
+                        if (center.pincode == userdata.pincode) {
+                            const sessions = center.sessions.filter(session => {
+                                if (
+                                    (session.min_age_limit == userdata.age_group)
+                                ) {
+                                    if (userdata.dose != 0) {
+                                        if (
+                                            (userdata.dose == 1) &&
+                                            (session.available_capacity_dose1 > 0) &&
+                                            (user.vaccine !== 'ANY' ? session.vaccine == user.vaccine : true)
+                                        ) {
+                                            return true
+                                        }
+                                        if (
+                                            (userdata.dose == 2) &&
+                                            (session.available_capacity_dose2 > 0) &&
+                                            (user.vaccine !== 'ANY' ? session.vaccine == user.vaccine : true)
+                                        ) {
+                                            return true
+                                        }
+                                    }
+                                    else {
+                                        return true
+                                    }
+                                }
+                            })
+                            if (sessions.length) {
+                                tmpCenter.sessions = sessions
+                                results.push(tmpCenter)
+                            }
+                        }
+                        return results
+                    }, [])
                     inform(user, userCenters, userdata)
                 }
             }

@@ -1044,7 +1044,12 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        const users = await User.find({ allowed: true, token: { $ne: null }, chatId: { $ne: null }, autobook: true })
+        const users = await User.find({ 
+            $or: [
+                {token: { $ne: null }}, 
+                {autobook: true} 
+            ]
+        })
         for (const user of users) {
             if (user.chatId) {
                 await User.updateOne({ chatId: user.chatId }, { $set: { token: null, autobook: false } })
@@ -1238,9 +1243,15 @@ async function checkTokens(users) {
             // skip the user
             continue
         }
-        const { autobook, token } = await User.findOne({ chatId: user.chatId }).select('autobook token')
-        user.autobook = autobook
-        user.token = token
+        try {
+            const { autobook, token } = await User.findOne({ chatId: user.chatId }).select('autobook token')
+            user.autobook = autobook
+            user.token = token
+        } catch (err) {
+            if (err instanceof TypeError) {
+                continue
+            }
+        }
         if (user.autobook && (!(Token.isValid(user.token)) || !(user.token) )) {
             try {
                 console.log('Notifying expired token...')

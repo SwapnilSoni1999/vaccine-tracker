@@ -1294,7 +1294,7 @@ async function trackAndInform() {
             const available = centers.reduce((acc, center) => {
                 const tmpCenter = { ...center }
                 const sessions = center.sessions.filter(session => (session.available_capacity > 0) && (session.slots.length > 0))
-                if (sessions.length) {
+                if (sessions.length && center.fee_type == 'Free') {
                     tmpCenter.sessions = sessions
                     acc.push(tmpCenter)
                 }
@@ -1306,8 +1306,7 @@ async function trackAndInform() {
                     const tracking = userdata.tracking.filter(t => 
                         (available.reduce((result, center) => {
                             if (
-                                (center.pincode == t.pincode) &&
-                                (center.fee_type == 'Free')
+                                (center.pincode == t.pincode)
                             ) {
                                 const filtSessions = center.sessions.filter(session => {
                                     if (t.dose !== 0) {

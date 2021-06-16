@@ -1211,6 +1211,9 @@ async function inform(user, userCenters, userdata) {
             }
         } catch (err) {
             console.log('Inform errors', err)
+            if (err instanceof TelegramError && err.response.error_code == 429) {
+                await sleep(1000)
+            }
             if (err instanceof TelegramError && err.response.error_code !== 429) {
                 await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
                 await User.deleteOne({ chatId: user.chatId })

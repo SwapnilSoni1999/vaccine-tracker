@@ -160,7 +160,7 @@ const authMiddle = async (ctx, next) => {
 }
 
 const switchMiddle = async (ctx, next) => {
-    const { autobook } = await User.findOne({ chatId: ctx.chat.id })
+    const { autobook } = await User.findOne({ chatId: ctx.chat.id, allowed: true })
     if (autobook == true) {
         return next()
     } else {
@@ -1278,7 +1278,7 @@ var TRACKER_ALIVE = false
 
 async function trackAndInform() {
     console.log('Fetching information')
-    const users = await User.find({})
+    const users = await User.find({ allowed: true })
     shuffle(users)
     const districtIds = [...new Set(users.filter(u => u.districtId).map(u => parseInt(u.districtId)))]
     // console.log(districtIds)
@@ -1453,7 +1453,7 @@ bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         const users = await User.find({})
         const totalPincodes = users.reduce((count, user) => { 
-            if (user.tracking.length) {
+            if (user.tracking.length && user.allowed) {
                 count += user.tracking.length
             }
             return count
@@ -1472,7 +1472,7 @@ bot.action('yes_booked', async (ctx) => {
 
 bot.command('locations', inviteMiddle, async (ctx) => {
     try {
-        const users = await User.find({})
+        const users = await User.find({ allowed: true })
         const states = await CoWIN.getStates()
         try {
             const stateName = ctx.message.text.split(' ').filter((_, i) => i !== 0).join(' ')
@@ -1552,7 +1552,7 @@ setInterval(() => {
     }
 }, 10 * 60 * 1000)
 setInterval(async () => {
-    const users = await User.find({})
+    const users = await User.find({ allowed: true })
     checkTokens(users)
 }, 1 * 60 * 1000)
 

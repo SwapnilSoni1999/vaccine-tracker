@@ -1399,41 +1399,42 @@ async function trackAndInform() {
                 for (const trc of user.tracking) {
                     const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id, dose: trc.dose }
 
-                    const userCenters = available.reduce((results, center) => {
-                        const tmpCenter = { ...center }
-                        if (center.pincode == userdata.pincode) {
-                            const sessions = center.sessions.filter(session => {
-                                if (
-                                    (session.min_age_limit == userdata.age_group)
-                                ) {
-                                    if (userdata.dose != 0) {
-                                        if (
-                                            (userdata.dose == 1) &&
-                                            (session.available_capacity_dose1 > 0) &&
-                                            (user.vaccine !== 'ANY' ? session.vaccine == user.vaccine : true)
-                                        ) {
-                                            return true
-                                        }
-                                        if (
-                                            (userdata.dose == 2) &&
-                                            (session.available_capacity_dose2 > 0) &&
-                                            (user.vaccine !== 'ANY' ? session.vaccine == user.vaccine : true)
-                                        ) {
-                                            return true
-                                        }
+                    const userCenters = (available.reduce((result, center) => {
+                        if (
+                            (center.pincode == t.pincode)
+                        ) {
+                            const filtSessions = center.sessions.filter(session => {
+                                if (t.dose !== 0) {
+                                    if (
+                                        (t.dose == 1) &&
+                                        (session.available_capacity_dose1 > 0) &&
+                                        (session.min_age_limit == t.age_group) &&
+                                        (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
+                                    ) {
+                                        return true
                                     }
-                                    else {
+                                    
+                                    else if (
+                                        (t.dose == 2) &&
+                                        (session.available_capacity_dose2 > 0) &&
+                                        (session.min_age_limit == t.age_group) &&
+                                        (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
+                                    ) {
                                         return true
                                     }
                                 }
+                                else if (session.min_age_limit == t.age_group && (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)) {
+                                    return true
+                                }
                             })
-                            if (sessions.length) {
-                                tmpCenter.sessions = sessions
-                                results.push(tmpCenter)
+                            if (filtSessions.length) {
+                                const dup = { ...center }
+                                dup.sessions = filtSessions
+                                result.push(dup)
                             }
                         }
-                        return results
-                    }, [])
+                        return result
+                    }, []))
                     inform(user, userCenters, userdata)
                 }
             }

@@ -6,6 +6,7 @@ const User = require('./model')
 const fs = require('fs')
 const Token = require('./token')
 const cron = require('node-cron')
+const { spawnSync } = require('child_process')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -19,8 +20,9 @@ const MAX_OTP_PER_DAY = 50
 
 // ========CRON=========
 cron.schedule('2 0 * * *', async () => {
-    await bot.telegram.sendMessage(SWAPNIL, 'Cron Task: Resetting OTP Counts!')
+    await bot.telegram.sendMessage(SWAPNIL, 'Cron Task: Resetting OTP Counts and Flushing pm2 logs!')
     await User.updateMany({ allowed: true }, { $set: { otpCount: 0 } })
+    spawnSync('pm2', ['flush'])
 }, { timezone: 'Asia/Kolkata', scheduled: true })
 
 // =====================
@@ -1211,9 +1213,6 @@ async function inform(user, userCenters, userdata) {
             }
         } catch (err) {
             console.log('Inform errors', err)
-            if (err instanceof TelegramError && err.response.error_code == 429) {
-                await sleep(1000)
-            }
             if (err instanceof TelegramError && err.response.error_code !== 429) {
                 await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
                 await User.deleteOne({ chatId: user.chatId })

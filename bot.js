@@ -1246,6 +1246,13 @@ async function checkTokens(users) {
             // skip the user
             continue
         }
+        if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
+            console.log('Snooze timeout for user!')
+            await User.updateOne({ chatId: user.chatId }, { snoozeTime: null })
+            try {
+                await bot.telegram.sendMessage(user.chatId, 'You\'re now unsnoozed.')
+            } catch(err) { }
+        }
         try {
             const { autobook, token } = await User.findOne({ chatId: user.chatId }).select('autobook token')
             user.autobook = autobook

@@ -1037,7 +1037,7 @@ bot.command('snooze', inviteMiddle, async (ctx) => {
 })
 
 bot.command('unsnooze', inviteMiddle, async (ctx) => {
-    await User.updateOne({ chatId: ctx.chat.id }, { snoozeTime: null })
+    await User.updateOne({ chatId: ctx.chat.id }, { snoozeTime: null, snoozedAt: null })
     return await ctx.reply('Unsoozed! You can /snooze your messages if they\'re annoying.')
 })
 
@@ -1058,7 +1058,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null } })
             user.token = null
         }
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) || 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n\nType /help for more info.`
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)

@@ -45,6 +45,28 @@ function shuffle(array) {
     }
 }
 
+function generateMessages(userCenters) {
+    const alerts = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`)
+    let chunkSize = 0
+    const MAX_MSG_SIZE = 4096 - 50 // 50bytes padding for safer side
+    const messages = []
+    let msg = ''
+    for (const alert of alerts) {
+        chunkSize += alert.length
+        if (chunkSize < MAX_MSG_SIZE) {
+            msg += alert + '\n\n'
+        } else {
+            messages.push(msg)
+            msg = ''
+            msg += alert + '\n\n'
+            chunkSize = 0
+            chunkSize += alert.length
+        }
+    }
+    messages.push(msg)
+    return messages
+}
+
 function calculateSleeptime() {
     const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
     const ipCount = proxies.length
@@ -1192,7 +1214,7 @@ async function bookSlot(user, uCenter, ) {
 async function inform(user, userCenters, userdata) {
     let informedUser = false
     try {
-        const txt = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`).join('\n\n')
+        const txt = generateMessages(userCenters)
         await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
         console.log('Informed user!')
         informedUser = true
@@ -1213,10 +1235,14 @@ async function inform(user, userCenters, userdata) {
             await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
             continue
         }
-        const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
-        user.autobook = autobook
-        if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
-            bookSlot(user, uCenter)
+        try {
+            const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
+            user.autobook = autobook
+            if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
+                bookSlot(user, uCenter)
+            }
+        } catch (err) {
+            await User.deleteOne({ chatId: user.chatId })
         }
     }
     try {

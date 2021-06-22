@@ -1494,7 +1494,7 @@ bot.command('botstat', async (ctx) => {
             }
             return count
         }, 0)
-        const { total: totalSlips } = await User.aggregate([
+        const [{ total: totalSlips }] = await User.aggregate([
             {
                 $unwind: "$beneficiaries"
             },

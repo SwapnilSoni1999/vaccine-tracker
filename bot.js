@@ -1191,34 +1191,32 @@ async function bookSlot(user, uCenter, ) {
 
 async function inform(user, userCenters, userdata) {
     let informedUser = false
+    try {
+        const txt = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`).join('\n\n')
+        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+        console.log('Informed user!')
+        informedUser = true
+    } catch (err) {
+        console.log('Inform errors', err)
+        if (err instanceof TelegramError && err.response.error_code !== 429) {
+            await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
+            await User.deleteOne({ chatId: user.chatId })
+        }
+    }
     for (const uCenter of userCenters) {
-        const txt = `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`
         try {
-            await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-            console.log('Informed user!')
-            informedUser = true
-            try {
-                if (user.autobook && !user.preferredBenef.beneficiary_reference_id) {
-                    await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
-                    continue
-                }
-            } catch (err) {
+            if (user.autobook && !user.preferredBenef.beneficiary_reference_id) {
                 await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
                 continue
             }
-            const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
-            user.autobook = autobook
-            if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
-                bookSlot(user, uCenter)
-            }
         } catch (err) {
-            console.log('Inform errors', err)
-            if (err instanceof TelegramError && err.response.error_code !== 429) {
-                await bot.telegram.sendMessage(SWAPNIL, 'Inform error\n' + err.toString())
-                await User.deleteOne({ chatId: user.chatId })
-            }
-        } finally {
-            await sleep(100)
+            await bot.telegram.sendMessage(user.chatId, 'No preferred beneficiary set. Please set by sending /beneficiaries')
+            continue
+        }
+        const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
+        user.autobook = autobook
+        if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
+            bookSlot(user, uCenter)
         }
     }
     try {

@@ -1214,10 +1214,12 @@ async function bookSlot(user, uCenter, ) {
 async function inform(user, userCenters, userdata) {
     let informedUser = false
     try {
-        const txt = generateMessages(userCenters)
-        await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
-        console.log('Informed user!')
-        informedUser = true
+        const messages = generateMessages(userCenters)
+        for (const txt of messages) {
+            await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
+            console.log('Informed user!')
+            informedUser = true
+        }
     } catch (err) {
         console.log('Inform errors', err)
         if (err instanceof TelegramError && err.response.error_code !== 429) {

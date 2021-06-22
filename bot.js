@@ -45,7 +45,7 @@ function shuffle(array) {
     }
 }
 
-function generateMessages(userCenters) {
+function generateMessages(userCenters, userdata) {
     const alerts = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`)
     let chunkSize = 0
     const MAX_MSG_SIZE = 4096 - 50 // 50bytes padding for safer side
@@ -1214,7 +1214,7 @@ async function bookSlot(user, uCenter, ) {
 async function inform(user, userCenters, userdata) {
     let informedUser = false
     try {
-        const messages = generateMessages(userCenters)
+        const messages = generateMessages(userCenters, userdata)
         for (const txt of messages) {
             await bot.telegram.sendMessage(user.chatId, txt, { parse_mode: 'HTML' })
             console.log('Informed user!')

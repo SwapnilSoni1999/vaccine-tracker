@@ -894,7 +894,7 @@ bot.action(/benef--.*/, async (ctx) => {
 
 bot.command('vaccine', inviteMiddle, async (ctx) => {
     try {
-        const vaccines = ['COVISHIELD', 'COVAXIN', 'ANY']
+        const vaccines = ['COVISHIELD', 'COVAXIN', 'SPUTNIK V', 'ANY']
         const markupButton = [vaccines.map(v => ({ text: v, callback_data: `vaccine--${v}`}))]
         return await ctx.reply(`Choose your preferred vaccine to track.`, { reply_markup: {
             inline_keyboard: markupButton

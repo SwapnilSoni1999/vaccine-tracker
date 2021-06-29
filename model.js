@@ -8,7 +8,7 @@ const TrackingSchema = new Schema({
     id: true,
 })
 
-const UserSchema = new Schema({ 
+const UserSchema = new Schema({
     chatId: { type: Number, required: true },
     allowed: { type: Boolean, default: false },
     mobile: { type: String },
@@ -27,7 +27,8 @@ const UserSchema = new Schema({
     preferredBenef: { type: Object, default: null },
     autobook: { type: Boolean, default: false },
     vaccine: { type: String, default: 'ANY' },
-    otpCount: { type: Number, default: 0 }
+    otpCount: { type: Number, default: 0 },
+    feeType: { type: String, default: 'ANY' }
 })
 
 const User = model('User', UserSchema, 'users')

@@ -911,9 +911,35 @@ bot.action(/vaccine--.*/, async (ctx) => {
     try {
         const vaccine = ctx.update.callback_query.data.split('vaccine--')[1]
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { vaccine } })
-        return await ctx.editMessageText(`You've chosen: <b>${vaccine}</b>\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
+        await ctx.editMessageText(`You've chosen: <b>${vaccine}</b>\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
+        const FEES = [
+            { text: 'Free', callback_data: `fee-type--Free` },
+            { type: 'Paid', callback_data: `fee-type--Paid` },
+            { type: 'Any', callback_data: `fee-type--ANY` }
+        ]
+        return ctx.reply('Choose vaccine Fee Type.', {
+            reply_markup: {
+                inline_keyboard: [
+                    FEES
+                ]
+            }
+        })
     } catch (err) {
         console.log(err)
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+            return
+        }
+    }
+})
+
+bot.action(/fee-type--.*/, async (ctx) => {
+    try {
+        const feeType = ctx.update.callback_query.data.split('fee-type--')[1]
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { feeType } })
+        return ctx.editMessageText(`You've chosen fee type: <b>${feeType}<b>\nYou can check your current status by sending /status`, { parse_mode: 'HTML' })
+    } catch (error) {
+        console.log(error)
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
             return
@@ -1058,7 +1084,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null } })
             user.token = null
         }
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n\nType /help for more info.`
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Center Type</b>: ${user.feeType}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)
@@ -1433,7 +1459,8 @@ async function trackAndInform() {
 
                     const userCenters = (available.reduce((result, center) => {
                         if (
-                            (center.pincode == userdata.pincode)
+                            (center.pincode == userdata.pincode) &&
+                            (user.feeType != 'ANY' ? user.feeType == center.fee_type : true)
                         ) {
                             const filtSessions = center.sessions.filter(session => {
                                 if (userdata.dose !== 0) {

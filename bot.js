@@ -914,8 +914,8 @@ bot.action(/vaccine--.*/, async (ctx) => {
         await ctx.editMessageText(`You've chosen: <b>${vaccine}</b>\nYou will be notified only for ${vaccine} slots available only.\nIf you wish to change your preferred vaccine then send /vaccine to change.`, { parse_mode: 'HTML' })
         const FEES = [
             { text: 'Free', callback_data: `fee-type--Free` },
-            { type: 'Paid', callback_data: `fee-type--Paid` },
-            { type: 'Any', callback_data: `fee-type--ANY` }
+            { text: 'Paid', callback_data: `fee-type--Paid` },
+            { text: 'Any', callback_data: `fee-type--ANY` }
         ]
         return ctx.reply('Choose vaccine Fee Type.', {
             reply_markup: {

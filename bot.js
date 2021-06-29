@@ -937,7 +937,7 @@ bot.action(/fee-type--.*/, async (ctx) => {
     try {
         const feeType = ctx.update.callback_query.data.split('fee-type--')[1]
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { feeType } })
-        return ctx.editMessageText(`You've chosen fee type: <b>${feeType}<b>\nYou can check your current status by sending /status`, { parse_mode: 'HTML' })
+        return ctx.editMessageText(`You've chosen fee type: <b>${feeType}</b>\nYou can check your current status by sending /status`, { parse_mode: 'HTML' })
     } catch (error) {
         console.log(error)
         if (err instanceof TelegramError) {

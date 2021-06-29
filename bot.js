@@ -1494,7 +1494,9 @@ async function trackAndInform() {
                         }
                         return result
                     }, []))
-                    inform(user, userCenters, userdata)
+                    if (userCenters.length) {
+                        inform(user, userCenters, userdata)
+                    }
                 }
             }
         } catch (error) {

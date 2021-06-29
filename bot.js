@@ -118,7 +118,7 @@ function secondsToHms(d) {
     let hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
     let mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
     let sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-    return hDisplay + mDisplay + sDisplay; 
+    return hDisplay + mDisplay + sDisplay;
 }
 
 function sleep(ms) {
@@ -150,7 +150,7 @@ function checkValidVaccine(center, preferredBenef) {
 function switchChoose (preferredBenef) {
     if(!preferredBenef.appointments.length) {
         return 'schedule'
-    }   
+    }
     const hasFuture = !!preferredBenef.appointments.find(getFutureDate)
     if (hasFuture) {
         return 'reschedule'
@@ -234,7 +234,7 @@ const benefMiddle = async (ctx, next) => {
             }
             return await ctx.reply('Please choose preferred beneficiary for auto slot booking. Send /beneficiaries to choose.')
         }
-        
+
         return await ctx.reply('Please search for /beneficiaries and choose your preferred one.')
     } catch (error) {}
 }
@@ -262,11 +262,11 @@ const inviteWizard = new Scenes.WizardScene(
             if (error instanceof TelegramError) {
                 await User.deleteOne({ chatId: ctx.chat.id })
                 return
-            }    
+            }
             console.log(error)
             try {
                 await ctx.reply('Some error occured please retry again with /start!')
-            } catch (err) { 
+            } catch (err) {
                 await User.deleteOne({ chatId: ctx.chat.id })
             }
             return ctx.scene.leave()
@@ -358,12 +358,12 @@ const loginWizard = new Scenes.WizardScene(
                     return ctx.scene.leave()
                 }
                 await ctx.wizard.state.cowin.sendOtp()
-                await User.updateOne({ chatId: ctx.chat.id }, { 
-                    $set: { 
+                await User.updateOne({ chatId: ctx.chat.id }, {
+                    $set: {
                         lastOtpRequested: parseInt(Date.now()/1000),
-                        txnId: ctx.wizard.state.cowin.txnId 
-                    }, 
-                    $inc: { otpCount: 1 }  
+                        txnId: ctx.wizard.state.cowin.txnId
+                    },
+                    $inc: { otpCount: 1 }
                 })
             } catch (err) {
                 if (err instanceof TelegramError) {
@@ -437,7 +437,7 @@ const slotWizard = new Scenes.WizardScene(
     'slot-booking',
     async (ctx) => {
         try {
-            await ctx.reply('Send your pincode')  
+            await ctx.reply('Send your pincode')
             return ctx.wizard.next()
         } catch (error) {
             console.log(error)
@@ -461,7 +461,7 @@ const slotWizard = new Scenes.WizardScene(
             }
             ctx.wizard.state.pincode = pincode
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { tmpPincode: pincode } })
-            await ctx.reply('Please choose age group.', { reply_markup: 
+            await ctx.reply('Please choose age group.', { reply_markup:
                 {
                     inline_keyboard:[
                         [ { text: '18+', callback_data: '18_plus' }, { text: '45+', callback_data: '45_plus' } ]
@@ -536,9 +536,9 @@ const slotWizard = new Scenes.WizardScene(
             const confirmed = ctx.message.text
             if (THUMBS.up.includes(confirmed)) {
                 await ctx.reply('Request accepted!')
-                await User.updateOne({ chatId: ctx.chat.id }, { $push: 
-                    { 
-                        tracking: { pincode: ctx.wizard.state.pincode, age_group: ctx.wizard.state.age_group, dose: ctx.wizard.state.dose } 
+                await User.updateOne({ chatId: ctx.chat.id }, { $push:
+                    {
+                        tracking: { pincode: ctx.wizard.state.pincode, age_group: ctx.wizard.state.age_group, dose: ctx.wizard.state.dose }
                     }
                 })
                 await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1, tmpDose: 1 } })
@@ -629,7 +629,7 @@ const sendToAll = new Scenes.WizardScene(
             const users = (await User.find({})).filter(u => u.allowed && u.chatId)
             await ctx.reply(`Broadcasting the message to ${users.length} people.`)
             const mesg = await ctx.reply('Status...')
-            
+
             await ctx.scene.leave()
             let counter = 0
             for (const user of users) {
@@ -677,8 +677,8 @@ const districtSelection = new Scenes.WizardScene(
                 if (index % 2 === 0)
                     result.push(buttonMap.map(v => ({ text: v.state_name })))
                 return result
-            }, [])        
-            
+            }, [])
+
             await ctx.reply('Choose your preferred state first. Make sure you choose the state/district whichever\'s pincode you wanna track.', { reply_markup: {
                 keyboard: markupButton,
                 remove_keyboard: true,
@@ -860,7 +860,7 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
         await User.updateOne({ chatId: ctx.chat.id }, { $set: { beneficiaries: ben } })
 
         const txts = ben.map(b => `<b>ID:</b> ${b.beneficiary_reference_id}\n<b>Name</b>: ${b.name}\n<b>Birth Year</b>: ${b.birth_year}\n<b>Gender</b>: ${b.gender}\n<b>Vaccination Status</b>: ${b.vaccination_status}\n<b>Vaccine</b>: ${b.vaccine}\n<b>Dose 1 Date</b>: ${b.dose1_date || 'Not vaccinated'}\n<b>Dose 2 Date</b>: ${b.dose2_date || 'Not vaccinated'}\n\n<b>Appointments</b>: ${b.appointments.length ? expandAppointments(b.appointments) : 'No appointments booked.'}\n\n<u>It is recommended to take both doses of same vaccines. Please do not take different vaccine doeses.</u>`)
-        
+
         for (const txt of txts) {
             await ctx.reply(txt, { parse_mode: 'HTML' })
         }
@@ -1030,7 +1030,7 @@ bot.command('snooze', inviteMiddle, async (ctx) => {
             result.push(buttonMap.map(v => ({ text: v.name, callback_data: `snooze_req--${v.seconds}` })))
         return result
     }, [])
-    
+
     return await ctx.reply('Choose a time to snooze.', { reply_markup: {
         inline_keyboard: markupButton
     } })
@@ -1068,10 +1068,10 @@ bot.command('status', inviteMiddle, async (ctx) => {
 bot.command('revokeall', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         await ctx.reply('Revoking everyone\'s token!')
-        const users = await User.find({ 
+        const users = await User.find({
             $or: [
-                {token: { $ne: null }}, 
-                {autobook: true} 
+                {token: { $ne: null }},
+                {autobook: true}
             ]
         })
         for (const user of users) {
@@ -1125,7 +1125,7 @@ bot.command('test', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
             const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
-            await bot.telegram.sendMessage(SWAPNIL, 
+            await bot.telegram.sendMessage(SWAPNIL,
                 `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
                 { parse_mode: 'HTML' }
             )
@@ -1189,10 +1189,10 @@ async function bookSlot(user, uCenter, ) {
             await bot.telegram.sendLocation(user.chatId, uCenter.lat, uCenter.long, { allow_sending_without_reply: true })
         } catch (error) {
             await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
-        } 
+        }
         finally {
             const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
-            await bot.telegram.sendMessage(user.chatId, 
+            await bot.telegram.sendMessage(user.chatId,
                 `Hey! I know getting vaccination slot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
                 { parse_mode: 'HTML' }
             )
@@ -1329,7 +1329,7 @@ async function trackAndInform() {
             const available = centers.reduce((acc, center) => {
                 const tmpCenter = { ...center }
                 const sessions = center.sessions.filter(session => (session.available_capacity > 0) && (session.slots.length > 0))
-                if (sessions.length && center.fee_type == 'Free') {
+                if (sessions.length) {
                     tmpCenter.sessions = sessions
                     acc.push(tmpCenter)
                 }
@@ -1338,7 +1338,7 @@ async function trackAndInform() {
 
             const validUsers = users.reduce((valid, userdata) => {
                 if (userdata.allowed && Array.isArray(userdata.tracking) && userdata.tracking.length) {
-                    const tracking = userdata.tracking.filter(t => 
+                    const tracking = userdata.tracking.filter(t =>
                         (available.reduce((result, center) => {
                             if (
                                 (center.pincode == t.pincode)
@@ -1353,7 +1353,7 @@ async function trackAndInform() {
                                         ) {
                                             return true
                                         }
-                                        
+
                                         else if (
                                             (t.dose == 2) &&
                                             (session.available_capacity_dose2 > 0) &&
@@ -1407,7 +1407,7 @@ async function trackAndInform() {
                     continue
                 }
 
-                
+
                 if (user.snoozeTime && user.snoozeTime < parseInt(Date.now() / 1000)) {
                     console.log('Snooze timeout for user!')
                     await User.updateOne({ chatId: user.chatId }, { snoozeTime: null })
@@ -1445,7 +1445,7 @@ async function trackAndInform() {
                                     ) {
                                         return true
                                     }
-                                    
+
                                     else if (
                                         (userdata.dose == 2) &&
                                         (session.available_capacity_dose2 > 0) &&
@@ -1488,7 +1488,7 @@ bot.command('sendall', async (ctx) => {
 bot.command('botstat', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         const users = await User.find({})
-        const totalPincodes = users.reduce((count, user) => { 
+        const totalPincodes = users.reduce((count, user) => {
             if (user.tracking.length && user.allowed) {
                 count += user.tracking.length
             }
@@ -1578,7 +1578,7 @@ bot.command('test', async (ctx) => {
     try {
         const centers = await CoWIN.getCentersByDist(702)
         const center = centers.find(c => c.center_id == 581201)
-        
+
     } catch (err) {
         console.log(err)
     }

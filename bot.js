@@ -46,7 +46,7 @@ function shuffle(array) {
 }
 
 function generateMessages(userCenters, userdata) {
-    const alerts = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`)
+    const alerts = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}${s?.allow_all_age ? `\n<b><u>Walk-in Available for all Age Groups!</u></b>` : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`)
     let chunkSize = 0
     const MAX_MSG_SIZE = 4096 - 50 // 50bytes padding for safer side
     const messages = []
@@ -1374,7 +1374,7 @@ async function trackAndInform() {
                                         if (
                                             (t.dose == 1) &&
                                             (session.available_capacity_dose1 > 0) &&
-                                            (session.min_age_limit == t.age_group) &&
+                                            (!session?.allow_all_age ? session.min_age_limit == t.age_group : true) &&
                                             (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
                                         ) {
                                             return true
@@ -1467,7 +1467,7 @@ async function trackAndInform() {
                                     if (
                                         (userdata.dose == 1) &&
                                         (session.available_capacity_dose1 > 0) &&
-                                        (session.min_age_limit == userdata.age_group) &&
+                                        (!session?.allow_all_age ? session.min_age_limit == userdata.age_group : true) &&
                                         (user.vaccine != 'ANY' ? session.vaccine == user.vaccine : true)
                                     ) {
                                         return true

@@ -1374,7 +1374,7 @@ async function trackAndInform() {
                                         if (
                                             (t.dose == 1) &&
                                             (session.available_capacity_dose1 > 0) &&
-                                            (!session?.allow_all_age ? session.min_age_limit == t.age_group : true) &&
+                                            (session?.allow_all_age == true ? true : session.min_age_limit == t.age_group) &&
                                             (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
                                         ) {
                                             return true
@@ -1467,7 +1467,7 @@ async function trackAndInform() {
                                     if (
                                         (userdata.dose == 1) &&
                                         (session.available_capacity_dose1 > 0) &&
-                                        (!session?.allow_all_age ? session.min_age_limit == userdata.age_group : true) &&
+                                        (session?.allow_all_age == true ? true : session.min_age_limit == userdata.age_group) &&
                                         (user.vaccine != 'ANY' ? session.vaccine == user.vaccine : true)
                                     ) {
                                         return true
@@ -1476,7 +1476,7 @@ async function trackAndInform() {
                                     else if (
                                         (userdata.dose == 2) &&
                                         (session.available_capacity_dose2 > 0) &&
-                                        (session.min_age_limit == userdata.age_group) &&
+                                        (session?.allow_all_age == true ? true : session.min_age_limit == userdata.age_group) &&
                                         (user.vaccine != 'ANY' ? session.vaccine == user.vaccine : true)
                                     ) {
                                         return true

@@ -11,7 +11,7 @@ const secretKey = "b5cab167-7977-4df1-8027-a63aa144f04e"
 const AES_KEY = "CoWIN@$#&*(!@%^&"
 
 var requestCount = 0
-const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
+const proxies = fs.readFileSync('proxies.txt').toString().split('\n')?.filter(line => !!line)?.map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
 
 const headers = {
     'authority': 'cdn-api.co-vin.in',
@@ -28,6 +28,9 @@ const headers = {
 }
 
 function getRandomAgent() {
+    if (!proxies.length) {
+        return null
+    }
     const agent = httpsOverHttp({ proxy: proxies[Math.floor(Math.random() * proxies.length)] })
     return agent
 }
@@ -288,40 +291,18 @@ class CoWIN {
             if (!token) {
                 throw new Error('No token direct public request.')
             }
-            const agent = httpsOverHttp({ proxy: proxies[requestCount] })
-            console.log('Request Count:', requestCount, 'API: Private')
-            console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
-            const axiosConfig = {
-                method: 'GET',
-                url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict',
-                params,
-                headers: {
-                    ...headers,
-                    authorization: 'Bearer ' + token
-                },
-                httpsAgent: agent
-            }
-            if (requestCount >= proxies.length-1) {
-                delete axiosConfig.httpsAgent
-                requestCount = -1
-            }
-            const res = await axios(axiosConfig)
-            requestCount++
-            return res.data.centers
-        } catch (err) {
-            try {
-                console.log(err?.response?.data)
-                if (requestCount < 0) {
-                    requestCount = 0
-                }
+            if (proxies.length) {
                 const agent = httpsOverHttp({ proxy: proxies[requestCount] })
-                console.log('Request Count:', requestCount, 'API: Public')
+                console.log('Request Count:', requestCount, 'API: Private')
                 console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
                 const axiosConfig = {
                     method: 'GET',
-                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict',
                     params,
-                    headers,
+                    headers: {
+                        ...headers,
+                        authorization: 'Bearer ' + token
+                    },
                     httpsAgent: agent
                 }
                 if (requestCount >= proxies.length-1) {
@@ -331,6 +312,55 @@ class CoWIN {
                 const res = await axios(axiosConfig)
                 requestCount++
                 return res.data.centers
+            } else {
+                const axiosConfig = {
+                    method: 'GET',
+                    url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict',
+                    params,
+                    headers: {
+                        ...headers,
+                        authorization: 'Bearer ' + token
+                    },
+                }
+                const res = await axios(axiosConfig)
+                requestCount++
+                return res.data.centers
+            }
+        } catch (err) {
+            try {
+                console.log(err?.response?.data)
+                if (requestCount < 0) {
+                    requestCount = 0
+                }
+                if (proxies.length) {
+                    const agent = httpsOverHttp({ proxy: proxies[requestCount] })
+                    console.log('Request Count:', requestCount, 'API: Public')
+                    console.log('Proxy:', proxies[requestCount] || 'Using system\'s IP')
+                    const axiosConfig = {
+                        method: 'GET',
+                        url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+                        params,
+                        headers,
+                        httpsAgent: agent
+                    }
+                    if (requestCount >= proxies.length-1) {
+                        delete axiosConfig.httpsAgent
+                        requestCount = -1
+                    }
+                    const res = await axios(axiosConfig)
+                    requestCount++
+                    return res.data.centers
+                } else {
+                    const axiosConfig = {
+                        method: 'GET',
+                        url: 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict',
+                        params,
+                        headers
+                    }
+                    const res = await axios(axiosConfig)
+                    requestCount++
+                    return res.data.centers
+                }
             } catch (err) {
                 console.log(err)
                 if (err.response.status == 403) {

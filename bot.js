@@ -70,6 +70,9 @@ function generateMessages(userCenters, userdata) {
 function calculateSleeptime() {
     const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
     const ipCount = proxies.length
+    if (ipCount == 0) {
+        return 3000
+    }
     const fivMins = 5*60*1000
     const reqPerIp = 100
     const perIpTime = fivMins/ipCount

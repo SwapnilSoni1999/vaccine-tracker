@@ -369,8 +369,9 @@ const loginWizard = new Scenes.WizardScene(
                 const currentTime = parseInt(Date.now() / 1000)
                 const { lastOtpRequested } = await User.findOne({ chatId: ctx.chat.id })
                 if (currentTime - lastOtpRequested < MAX_TIMEOUT_OTP) {
-                    while (currentTime - lastOtpRequested < MAX_TIMEOUT_OTP) {
-                        await ctx.reply(`Please wait ${Math.abs(currentTime - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
+                    const { message_id: waitmsg } = await ctx.reply(`Please wait ${Math.abs(currentTime - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
+                    while (parseInt(Date.now() / 1000) - lastOtpRequested < MAX_TIMEOUT_OTP) {
+                        await bot.telegram.editMessageText(ctx.chat.id, waitmsg, `Please wait ${Math.abs(parseInt(Date.now() / 1000) - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
                         await sleep(1000)
                     }
                     return ctx.scene.leave()

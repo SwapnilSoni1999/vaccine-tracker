@@ -23,6 +23,9 @@ cron.schedule('2 0 * * *', async () => {
     await bot.telegram.sendMessage(SWAPNIL, 'Cron Task: Resetting OTP Counts and Flushing pm2 logs!')
     await User.updateMany({ allowed: true }, { $set: { otpCount: 0 } })
     spawnSync('pm2', ['flush'])
+    spawnSync('mongoexport', ['-d', 'Cowin', '-c', 'users', '--jsonArray', '-o', 'cowin_users.json'])
+    await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream('cowin_users.json'), filename: 'cowin_users.json' })
+    fs.unlinkSync('cowin_users.json')
 }, { timezone: 'Asia/Kolkata', scheduled: true })
 
 // =====================

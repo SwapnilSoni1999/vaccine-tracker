@@ -331,7 +331,9 @@ const loginWizard = new Scenes.WizardScene(
                 reply_markup: {
                     keyboard: [
                         [{ text: mobile }]
-                    ]
+                    ],
+                    remove_keyboard: true,
+                    one_time_keyboard: true
                 }
             })
             return ctx.wizard.next()

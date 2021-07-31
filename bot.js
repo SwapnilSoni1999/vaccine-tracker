@@ -326,7 +326,14 @@ const loginWizard = new Scenes.WizardScene(
     'login',
     async (ctx) => {
         try {
-            await ctx.reply('Send your phone number (10 digits only)')
+            const { mobile } = await User.findOne({ chatId: ctx.chat.id }).select('mobile')
+            await ctx.reply('Send your phone number (10 digits only)', {
+                reply_markup: {
+                    keyboard: [
+                        [{ text: mobile }]
+                    ]
+                }
+            })
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {

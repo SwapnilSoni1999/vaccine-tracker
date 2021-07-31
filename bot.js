@@ -358,7 +358,7 @@ const loginWizard = new Scenes.WizardScene(
             const mobile = ctx.message.text.trim()
             ctx.wizard.state.mobile = mobile
             if (mobile.length != 10) {
-                await ctx.reply('Please send 10 digit mobile number!')
+                await ctx.reply('Please send 10 digit mobile number!', { reply_markup: { remove_keyboard: true } })
                 return ctx.scene.leave()
             }
             const isnum = /^\d+$/.test(mobile)
@@ -1169,11 +1169,13 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 bot.command('test', async (ctx) => {
     if (ctx.chat.id == SWAPNIL) {
         try {
-            const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
-            await bot.telegram.sendMessage(SWAPNIL,
-                `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
-                { parse_mode: 'HTML' }
-            )
+
+
+            // const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
+            // await bot.telegram.sendMessage(SWAPNIL,
+            //     `Hey! I know getting vaccination sot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
+            //     { parse_mode: 'HTML' }
+            // )
         } catch (err) {
             await ctx.reply('Some error:' + err.stack)
         }

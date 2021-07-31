@@ -327,15 +327,19 @@ const loginWizard = new Scenes.WizardScene(
     async (ctx) => {
         try {
             const { mobile } = await User.findOne({ chatId: ctx.chat.id }).select('mobile')
-            await ctx.reply('Send your phone number (10 digits only)', {
-                reply_markup: {
-                    keyboard: [
-                        [{ text: mobile }]
-                    ],
-                    remove_keyboard: true,
-                    one_time_keyboard: true
+            let options = {}
+            if (mobile) {
+                options = {
+                    reply_markup: {
+                        keyboard: [
+                            [{ text: mobile }]
+                        ],
+                        remove_keyboard: true,
+                        one_time_keyboard: true
+                    }
                 }
-            })
+            }
+            await ctx.reply('Send your phone number (10 digits only)', options)
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {
@@ -370,7 +374,7 @@ const loginWizard = new Scenes.WizardScene(
                 const { lastOtpRequested } = await User.findOne({ chatId: ctx.chat.id })
                 if (currentTime - lastOtpRequested < MAX_TIMEOUT_OTP) {
                     await ctx.reply(`Please wait ${Math.abs(currentTime - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
-                    return ctx.scene.leave()
+                    return await ctx.scene.leave()
                 }
                 await ctx.wizard.state.cowin.sendOtp()
                 await User.updateOne({ chatId: ctx.chat.id }, {

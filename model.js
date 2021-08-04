@@ -28,7 +28,8 @@ const UserSchema = new Schema({
     autobook: { type: Boolean, default: false },
     vaccine: { type: String, default: 'ANY' },
     otpCount: { type: Number, default: 0 },
-    feeType: { type: String, default: 'ANY' }
+    feeType: { type: String, default: 'ANY' },
+    centers: [{ type: Number, default: [] }]
 })
 
 const User = model('User', UserSchema, 'users')

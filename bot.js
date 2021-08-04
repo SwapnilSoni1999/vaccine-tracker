@@ -562,7 +562,7 @@ const slotWizard = new Scenes.WizardScene(
                 })
                 await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1, tmpDose: 1 } })
                 await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
-                await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}`)
+                await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}\nYou can choose your preferred vaccine and fee type by sending /vaccine\nAlso you can choose your desired center for autobooking using /center`)
                 return ctx.scene.leave()
             } else {
                 await ctx.reply('Request declined!')
@@ -1161,8 +1161,68 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
-            return ctx.scene.leave()
+            return ctx.reply('Something went wrong!')
         }
+    }
+})
+
+bot.command('center', async (ctx) => {
+    try {
+        return await ctx.reply('Choose one from either to add center or remove from chosen ones.', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: 'Add', callback_data: 'center--add-1' }, { text: 'Remove (WIP)', callback_data: 'center--remove' }]
+                ]
+            }
+        })
+    } catch (error) {
+        if (error instanceof TelegramError) {
+            console.log(error)
+            // await User.deleteOne({ chatId: ctx.chat.id })
+            return ctx.reply('Something went wrong!')
+        }
+    }
+})
+
+bot.action(/center--add-\d+/, async (ctx) => {
+    try {
+        if (ctx.chat.id !== SWAPNIL) {
+            return await ctx.reply('This feature is WIP. Please wait till its available for all users.')
+        }
+        const MAX_PER_PAGE = 7
+        const page = parseInt(ctx.update.callback_query.data.split('center--add-')[1]) || 1
+        await ctx.editMessageText('Fetching please wait...')
+        const { districtId, centers: uCenters } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers')
+        const centers = await CoWIN.getCentersByDist(districtId)
+        // const centersChosen = centers.filter(c => uCenters.find(cid => cid == c.center_id ))
+        const remainingCenters = centers.filter(c => uCenters.find(cid => cid != c.center_id))
+        const remainingButtons = remainingCenters.map(center => {
+            return [{ text: center.name, callback_data: `choose-center--${center.center_id}` }]
+        })
+        const nextBtn = { text: 'Next »', callback_data: `center--add-${page+1}` }
+        const backBtn = { text: '« Back', callback_data: `center--add-${page-1}` }
+
+        const totalPages = Math.ceil(remainingButtons.length / MAX_PER_PAGE)
+        if (page == 1) {
+            remainingButtons.push([nextBtn])
+        } else if (page == totalPages) {
+            remainingButtons.push([backBtn])
+        } else {
+            remainingButtons.push([backBtn, nextBtn])
+        }
+
+        const start = (page - 1) * MAX_PER_PAGE
+        const end = start + MAX_PER_PAGE
+
+        ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
+            reply_markup: {
+                inline_keyboard: [
+                    remaining.slice(start, end)
+                ]
+            }
+        })
+    } catch (error) {
+        console.log(error)
     }
 })
 

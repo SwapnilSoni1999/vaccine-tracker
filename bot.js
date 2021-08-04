@@ -1108,7 +1108,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
             district_name = districts.find(d => d.district_id == districtId).district_name
             if (user.centers.length) {
                 const centers = await CoWIN.getCentersByDist(districtId)
-                const chosenCenters = centers.filter(c => user.centers.find(cid => c.center_id))
+                const chosenCenters = centers.filter(c => user.centers.find(cid => cid == c.center_id))
                 for (const cc of chosenCenters) {
                     center_names.push(cc.name)
                 }

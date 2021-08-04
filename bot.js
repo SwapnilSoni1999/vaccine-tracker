@@ -48,6 +48,13 @@ function shuffle(array) {
     }
 }
 
+function checkCenterToBook(uCenter, userCenters) {
+    if (!userCenters.length) {
+        return true
+    }
+    return !!userCenters.includes(uCenter.center_id)
+}
+
 function generateMessages(userCenters, userdata) {
     const alerts = userCenters.map(uCenter => `✅<b>SLOT AVAILABLE!</b>\n\n<b>Name</b>: ${uCenter.name}\n<b>Pincode</b>: ${uCenter.pincode}\n<b>Age group</b>: ${userdata.age_group}+\n<b>Fee</b>: ${uCenter.fee_type}\n<b>Slots</b>:\n\t${uCenter.sessions.map(s => `<b>Date</b>: ${s.date}\n\t<b>Total Available Slots</b>: ${s.available_capacity}\n\t\t<b>Dose 1 Slots</b>: ${s.available_capacity_dose1}\n\t\t<b>Dose 2 Slots</b>: ${s.available_capacity_dose2}${s.vaccine ? '\n\t<b>Vaccine</b>: ' + s.vaccine : ''}${s?.allow_all_age ? `\n<b><u>Walk-in Available for all Age Groups!</u></b>` : ''}`).join('\n')}\n\n<u>Hurry! Book your slot before someone else does.</u>\nCoWIN Site: https://selfregistration.cowin.gov.in/`)
     let chunkSize = 0
@@ -1168,7 +1175,7 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 
 bot.command('center', async (ctx) => {
     try {
-        return await ctx.reply('Choose one from either to add center or remove from chosen ones.', {
+        return await ctx.reply('Choose one from either to add center or remove from chosen ones.\n\nHow this works?\nWhenever you choose your preferred center for autobooking, then bot will try to book for that specific center only. If you dont have any preferred center in your list, Then ANY open center will be booked by bot.', {
             reply_markup: {
                 inline_keyboard: [
                     [{ text: 'Add', callback_data: 'center--add-1' }, { text: 'Remove', callback_data: 'center--remove-1' }]
@@ -1240,7 +1247,7 @@ bot.action(/center--remove-\d+/, async (ctx) => {
         await ctx.editMessageText('Fetching please wait...')
         const { districtId, centers: uCenters } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers')
         if (!uCenters.length) {
-            return await ctx.reply('You haven\'t selected any preferred center. Please add atleast one preferred center.')
+            return await ctx.editMessageText('You haven\'t selected any preferred center. Please add atleast one preferred center.')
         }
         const MAX_PER_PAGE = 7
         const page = parseInt(ctx.update.callback_query.data.split('center--remove-')[1]) || 1
@@ -1341,7 +1348,7 @@ bot.command('captchatest', async (ctx) => {
     }
 })
 
-async function bookSlot(user, uCenter, ) {
+async function bookSlot(user, uCenter) {
     await bot.telegram.sendMessage(user.chatId, 'Attempting to book slot...')
     try {
         await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
@@ -1428,7 +1435,12 @@ async function inform(user, userCenters, userdata) {
         try {
             const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
             user.autobook = autobook
-            if (user.autobook && Token.isValid(user.token) && checkValidVaccine(uCenter, user.preferredBenef)) {
+            if (
+                user.autobook &&
+                Token.isValid(user.token) &&
+                checkValidVaccine(uCenter, user.preferredBenef) &&
+                checkCenterToBook(uCenter, user.centers)
+            ) {
                 bookSlot(user, uCenter)
             }
         } catch (err) {

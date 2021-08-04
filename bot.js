@@ -1175,6 +1175,10 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 
 bot.command('center', async (ctx) => {
     try {
+        const { districtId } = await User.findOne({ }).select('districtId')
+        if (!districtId) {
+            return await ctx.reply('You haven\'t selected your prefered district. Please select your /district first.')
+        }
         return await ctx.reply('Choose one from either to add center or remove from chosen ones.\n\nHow this works?\nWhenever you choose your preferred center for autobooking, then bot will try to book for that specific center only. If you dont have any preferred center in your list, Then ANY open center will be booked by bot.', {
             reply_markup: {
                 inline_keyboard: [

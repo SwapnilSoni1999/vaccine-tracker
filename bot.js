@@ -1195,7 +1195,7 @@ bot.action(/center--add-\d+/, async (ctx) => {
         const { districtId, centers: uCenters } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers')
         const centers = await CoWIN.getCentersByDist(districtId)
         // const centersChosen = centers.filter(c => uCenters.find(cid => cid == c.center_id ))
-        const remainingCenters = centers.filter(c => uCenters.find(cid => cid != c.center_id))
+        const remainingCenters = centers.filter(c => !uCenters.find(cid => cid == c.center_id))
         const remainingButtons = remainingCenters.map(center => {
             return [{ text: center.name, callback_data: `choose-center--${center.center_id}` }]
         })

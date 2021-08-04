@@ -1102,15 +1102,23 @@ bot.command('status', inviteMiddle, async (ctx) => {
         const user = await User.findOne({ chatId: ctx.chat.id })
         const { stateId, districtId } = user
         let district_name = null
+        const center_names = []
         if (districtId) {
             const districts = await CoWIN.getDistrict(stateId)
             district_name = districts.find(d => d.district_id == districtId).district_name
+            if (user.centers.length) {
+                const centers = await CoWIN.getCentersByDist(districtId)
+                const chosenCenters = centers.filter(c => user.centers.find(cid => c.center_id))
+                for (const cc of chosenCenters) {
+                    center_names.push(cc.name)
+                }
+            }
         }
         if (!Token.isValid(user.token)) {
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null } })
             user.token = null
         }
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Center Type</b>: ${user.feeType}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n\nType /help for more info.`
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Center Type</b>: ${user.feeType}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n<b>Preferred Centers</b>: ${center_names.join('\n\t')}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         console.log(err)
@@ -1175,7 +1183,7 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
 
 bot.command('center', async (ctx) => {
     try {
-        const { districtId } = await User.findOne({ }).select('districtId')
+        const { districtId } = await User.findOne({ chatId: ctx.chat.id }).select('districtId')
         if (!districtId) {
             return await ctx.reply('You haven\'t selected your prefered district. Please select your /district first.')
         }

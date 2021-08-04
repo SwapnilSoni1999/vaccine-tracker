@@ -1199,25 +1199,28 @@ bot.action(/center--add-\d+/, async (ctx) => {
         const remainingButtons = remainingCenters.map(center => {
             return [{ text: center.name, callback_data: `choose-center--${center.center_id}` }]
         })
+
+        const start = (page - 1) * MAX_PER_PAGE
+        const end = start + MAX_PER_PAGE
+
+        const btnlist = remainingButtons.slice(start, end)
+
         const nextBtn = { text: 'Next »', callback_data: `center--add-${page+1}` }
         const backBtn = { text: '« Back', callback_data: `center--add-${page-1}` }
 
         const totalPages = Math.ceil(remainingButtons.length / MAX_PER_PAGE)
         if (page == 1) {
-            remainingButtons.push([nextBtn])
+            btnlist.push([nextBtn])
         } else if (page == totalPages) {
-            remainingButtons.push([backBtn])
+            btnlist.push([backBtn])
         } else {
-            remainingButtons.push([backBtn, nextBtn])
+            btnlist.push([backBtn, nextBtn])
         }
-
-        const start = (page - 1) * MAX_PER_PAGE
-        const end = start + MAX_PER_PAGE
 
         ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
             reply_markup: {
                 inline_keyboard: [
-                    remaining.slice(start, end)
+                    btnlist
                 ]
             }
         })

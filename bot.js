@@ -1171,7 +1171,7 @@ bot.command('center', async (ctx) => {
         return await ctx.reply('Choose one from either to add center or remove from chosen ones.', {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: 'Add', callback_data: 'center--add-1' }, { text: 'Remove (WIP)', callback_data: 'center--remove' }]
+                    [{ text: 'Add', callback_data: 'center--add-1' }, { text: 'Remove', callback_data: 'center--remove-1' }]
                 ]
             }
         })
@@ -1209,19 +1209,99 @@ bot.action(/center--add-\d+/, async (ctx) => {
         const backBtn = { text: '« Back', callback_data: `center--add-${page-1}` }
 
         const totalPages = Math.ceil(remainingButtons.length / MAX_PER_PAGE)
-        if (page == 1) {
-            btnlist.push([nextBtn])
-        } else if (page == totalPages) {
-            btnlist.push([backBtn])
-        } else {
-            btnlist.push([backBtn, nextBtn])
+        if (totalPages > 1) {
+            if (page == 1) {
+                btnlist.push([nextBtn])
+            } else if (page == totalPages) {
+                btnlist.push([backBtn])
+            } else {
+                btnlist.push([backBtn, nextBtn])
+            }
         }
 
-        ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
+        return await ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
             reply_markup: {
                 inline_keyboard: btnlist
             }
         })
+    } catch (error) {
+        console.log(error)
+        // if (error instanceof TelegramError) {
+        //     await User.deleteOne({ chatId: user.chatId })
+        // }
+    }
+})
+
+bot.action(/center--remove-\d+/, async (ctx) => {
+    try {
+        if (ctx.chat.id !== SWAPNIL) {
+            return await ctx.reply('This feature is WIP. Please wait till its available for all users.')
+        }
+        await ctx.editMessageText('Fetching please wait...')
+        const { districtId, centers: uCenters } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers')
+        if (!uCenters.length) {
+            return await ctx.reply('You haven\'t selected any preferred center. Please add atleast one preferred center.')
+        }
+        const MAX_PER_PAGE = 7
+        const page = parseInt(ctx.update.callback_query.data.split('center--remove-')[1]) || 1
+
+        const centers = await CoWIN.getCentersByDist(districtId)
+        const centersChosen = centers.filter(c => uCenters.find(cid => cid == c.center_id ))
+
+        const chosenButtons = centersChosen.map(center => {
+            return [{ text: center.name, callback_data: `remove-center--${center.center_id}` }]
+        })
+        const start = (page - 1) * MAX_PER_PAGE
+        const end = start + MAX_PER_PAGE
+
+        const btnlist = chosenButtons.slice(start, end)
+
+        const nextBtn = { text: 'Next »', callback_data: `center--remove-${page+1}` }
+        const backBtn = { text: '« Back', callback_data: `center--remove-${page-1}` }
+
+        const totalPages = Math.ceil(chosenButtons.length / MAX_PER_PAGE)
+        if (totalPages > 1) {
+            if (page == 1) {
+                btnlist.push([nextBtn])
+            } else if (page == totalPages) {
+                btnlist.push([backBtn])
+            } else {
+                btnlist.push([backBtn, nextBtn])
+            }
+        }
+
+        return await ctx.editMessageText(`Remove your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${centersChosen.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
+            reply_markup: {
+                inline_keyboard: btnlist
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        // if (error instanceof TelegramError) {
+        //     await User.deleteOne({ chatId: user.chatId })
+        // }
+    }
+})
+
+// perform
+bot.action(/choose-center--.*/, async (ctx) => {
+    try {
+        const centerId = ctx.update.callback_query.data.split('choose-center--')[1]
+        const { districtId } = await User.findOneAndUpdate({ chatId: ctx.update.callback_query.from.id }, { $push: { centers: centerId } })
+        const centers = await CoWIN.getCentersByDist(districtId)
+        const center = centers.find(c => c.center_id == centerId)
+        return await ctx.editMessageText(`You\'ve added <b>${center.name}</b> to your preferred centers list.`, { parse_mode: 'HTML' })
+    } catch (error) {
+        console.log(error)
+    }
+})
+bot.action(/remove-center--.*/, async (ctx) => {
+    try {
+        const centerId = ctx.update.callback_query.data.split('remove-center--')[1]
+        const { districtId } = await User.findOneAndUpdate({ chatId: ctx.update.callback_query.from.id }, { $pull: { centers: centerId } })
+        const centers = await CoWIN.getCentersByDist(districtId)
+        const center = centers.find(c => c.center_id == centerId)
+        return await ctx.editMessageText(`You\'ve removed <b>${center.name}</b> from your preferred centers list.`, { parse_mode: 'HTML' })
     } catch (error) {
         console.log(error)
     }

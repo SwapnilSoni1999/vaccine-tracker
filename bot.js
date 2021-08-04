@@ -1219,9 +1219,7 @@ bot.action(/center--add-\d+/, async (ctx) => {
 
         ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
             reply_markup: {
-                inline_keyboard: [
-                    btnlist
-                ]
+                inline_keyboard: btnlist
             }
         })
     } catch (error) {

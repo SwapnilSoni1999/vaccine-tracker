@@ -763,9 +763,9 @@ const districtSelection = new Scenes.WizardScene(
                 await ctx.reply('Sorry invalid selection. Try again /district and Please choose valid district.', { reply_markup: { remove_keyboard: true } })
                 return ctx.scene.leave()
             }
-            await User.updateOne({ chatId: ctx.chat.id }, { $set: { districtId: district_id } })
+            await User.updateOne({ chatId: ctx.chat.id }, { $set: { districtId: district_id, centers: [] } })
             await ctx.reply(`You\'ve selected ${district_name}.`, { reply_markup: { remove_keyboard: true } })
-            await ctx.reply('Now you can /track your desired pincode. You can also change your district whenever you want to by sending /district')
+            await ctx.reply('Now you can /track your desired pincode. You can also change your district whenever you want to by sending /district\nAlso your preferred /center list is also cleared')
             return ctx.scene.leave()
         } catch (error) {
             console.log(error)

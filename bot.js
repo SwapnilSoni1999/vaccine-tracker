@@ -1205,9 +1205,6 @@ bot.command('center', async (ctx) => {
 
 bot.action(/center--add-\d+/, async (ctx) => {
     try {
-        if (ctx.chat.id !== SWAPNIL) {
-            return await ctx.reply('This feature is WIP. Please wait till its available for all users.')
-        }
         const MAX_PER_PAGE = 7
         const page = parseInt(ctx.update.callback_query.data.split('center--add-')[1]) || 1
         await ctx.editMessageText('Fetching please wait...')
@@ -1253,9 +1250,6 @@ bot.action(/center--add-\d+/, async (ctx) => {
 
 bot.action(/center--remove-\d+/, async (ctx) => {
     try {
-        if (ctx.chat.id !== SWAPNIL) {
-            return await ctx.reply('This feature is WIP. Please wait till its available for all users.')
-        }
         await ctx.editMessageText('Fetching please wait...')
         const { districtId, centers: uCenters } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers')
         if (!uCenters.length) {

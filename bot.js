@@ -1733,7 +1733,7 @@ bot.action('yes_booked', async (ctx) => {
 })
 bot.command('donate', async (ctx) => {
     try {
-        return await ctx.reply('Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease consider donating to this project, it took me full nighters to add features and fix bugs to this bot. Thanks <3\n\nupi: swapnil.soni12345@okaxis', { parse_mode: 'HTML' })
+        return await ctx.reply('Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease consider donating to this project, it took me full nighters to add features and fix bugs to this bot. Thanks \<3\n\nupi: swapnil.soni12345@okaxis', { parse_mode: 'HTML' })
     } catch (error) {
     }
 })

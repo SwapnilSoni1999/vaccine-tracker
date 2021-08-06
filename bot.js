@@ -1468,7 +1468,7 @@ async function inform(user, userCenters, userdata) {
 
 async function checkTokens(users) {
     console.log('CHECKING TOKENS....')
-    for (const user of users) {
+    for (let user of users) {
         user = await User.findOne({ chatId: user.chatId })
         if (!user.allowed) {
             continue

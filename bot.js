@@ -1731,7 +1731,7 @@ bot.action('yes_booked', async (ctx) => {
         return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status\n\nPlease consider donating to this project If you wish to :)\nupi: swapnil.soni12345@okaxis', { parse_mode: 'HTML' })
     } catch (err) {}
 })
-bot.command('donate', async () => {
+bot.command('donate', async (ctx) => {
     try {
         return await ctx.reply('Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease consider donating to this project, it took me full nighters to add features and fix bugs to this bot. Thanks <3\n\nupi: swapnil.soni12345@okaxis', { parse_mode: 'HTML' })
     } catch (error) {

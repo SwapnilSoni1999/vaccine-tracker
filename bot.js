@@ -1236,7 +1236,7 @@ bot.action(/center--add-\d+/, async (ctx) => {
             }
         }
 
-        return await ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
+        return await ctx.editMessageText(`Choose your desired center for autobooking.\nNote: Your centers are fetched from your preferred /district and your /track -ed pincodes.\nTotal Centers: ${remainingCenters.length}\nTotal Pages: ${totalPages}\nCurrent Page: ${page}`, {
             reply_markup: {
                 inline_keyboard: btnlist
             }

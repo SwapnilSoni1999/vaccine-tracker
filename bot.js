@@ -1209,10 +1209,10 @@ bot.action(/center--add-\d+/, async (ctx) => {
         const MAX_PER_PAGE = 7
         const page = parseInt(ctx.update.callback_query.data.split('center--add-')[1]) || 1
         await ctx.editMessageText('Fetching please wait...')
-        const { districtId, centers: uCenters } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers')
+        const { districtId, centers: uCenters, tracking } = await User.findOne({ chatId: ctx.chat.id }).select('districtId centers tracking')
         const centers = await CoWIN.getCentersByDist(districtId)
         // const centersChosen = centers.filter(c => uCenters.find(cid => cid == c.center_id ))
-        const remainingCenters = centers.filter(c => !uCenters.find(cid => cid == c.center_id))
+        const remainingCenters = centers.filter(c => !uCenters.find(cid => cid == c.center_id) && tracking.find(t => t.pincode == c.pincode))
         const remainingButtons = remainingCenters.map(center => {
             return [{ text: center.name, callback_data: `choose-center--${center.center_id}` }]
         })

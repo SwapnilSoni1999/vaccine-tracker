@@ -386,6 +386,7 @@ class CoWIN {
                 beneficiary_reference_id
             },
             headers: {
+                ...headers
                 authorization: 'Bearer ' + token
             },
             responseType: 'arraybuffer'

@@ -1152,7 +1152,7 @@ bot.action(/snooze_req--\d+/, async (ctx) => {
     }
 })
 
-bot.command('center', async (ctx) => {
+bot.command('center', inviteMiddle, async (ctx) => {
     try {
         const { districtId } = await User.findOne({ chatId: ctx.chat.id }).select('districtId')
         if (!districtId) {
@@ -1322,6 +1322,14 @@ bot.command('captchatest', async (ctx) => {
         } catch (error) {
             await ctx.reply(error.response.data.error)
         }
+    }
+})
+
+bot.command('certificate', inviteMiddle, async (ctx) => {
+    try {
+
+    } catch (error) {
+
     }
 })
 

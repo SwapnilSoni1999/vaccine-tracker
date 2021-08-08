@@ -1325,11 +1325,38 @@ bot.command('captchatest', async (ctx) => {
     }
 })
 
-bot.command('certificate', inviteMiddle, async (ctx) => {
+bot.command('certificate', inviteMiddle, authMiddle, async (ctx) => {
     try {
+        const { token } = await User.findOne({ chatId: ctx.chat.id }).select('token')
+        const ben = await CoWIN.getBeneficiariesStatic(token)
+        if (!ben.length) {
+            return await ctx.reply('No beneficiaries. Please add beneficiary first from cowin.gov.in')
+        }
+        await User.updateOne({ chatId: ctx.chat.id }, { $set: { beneficiaries: ben } })
 
+        const validbenef = ben.filter(b => b.dose1_date || b.dose2_date)
+        const benefButtons = validbenef.map(b => [{ text: b.name, callback_data: `certificate--${b.beneficiary_reference_id}` }])
+
+        return await ctx.reply(`Choose the beneficiary whom you want to downlaod certificate for.`, {
+            reply_markup: {
+                inline_keyboard: benefButtons
+            }
+        })
     } catch (error) {
+        console.log(error)
+    }
+})
 
+bot.action(/certificate--.*/, async (ctx) => {
+    try {
+        await ctx.editMessageText('Fetching certificate...')
+        const { token } = await User.findOne({ chatId: ctx.chat.id }).select('token')
+        const benefRefId = ctx.update.callback_query.message.text.split('certificate--')[1]
+        const certPath = await CoWIN.downloadCertificate(benefRefId, token, ctx.update.callback_query.from.id)
+        await ctx.editMessageText('Fetched!')
+        return await ctx.replyWithDocument({ source: fs.createReadStream(certPath), filename: 'Certificate.pdf' })
+    } catch (error) {
+        console.log(error)
     }
 })
 

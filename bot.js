@@ -495,89 +495,13 @@ const slotWizard = new Scenes.WizardScene(
                 }
             })
 
-            return ctx.wizard.next()
+            return ctx.wizard.leave()
         } catch(err) {
             if (err instanceof TelegramError && err.response.status == 401) {
                 await ctx.reply('No slots available for this pin!')
                 return ctx.scene.leave()
             }
             console.log(err)
-            try {
-                await ctx.reply('Some error occured please retry!')
-            } catch (err) { }
-            return ctx.scene.leave()
-        }
-    },
-    async (ctx) => {
-        try {
-            ctx.reply('Please choose specific dose you want to track.', { reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: 'Dose 1', callback_data: `dose-selection--${1}` },
-                        { text: 'Dose 2', callback_data: `dose-selection--${2}` },
-                        { text: 'Any Dose', callback_data: `dose-selection--${0}` }
-                    ]
-                ]
-            } })
-            return ctx.wizard.next()
-        } catch (error) {
-            if (err instanceof TelegramError && err.response.status == 401) {
-                await ctx.reply('No slots available for this pin!')
-                return ctx.scene.leave()
-            }
-            console.log(err)
-            try {
-                await ctx.reply('Some error occured please retry!')
-            } catch (err) { }
-            return ctx.scene.leave()
-        }
-    },
-    async (ctx) => {
-        try {
-            const { tmpPincode, tmp_age_group, tmpDose } = await User.findOne({ chatId: ctx.chat.id })
-            ctx.wizard.state.pincode = tmpPincode
-            ctx.wizard.state.age_group = tmp_age_group
-            ctx.wizard.state.dose = tmpDose || 0
-            if (!tmp_age_group || !tmpPincode) {
-                await ctx.reply('Please select valid age group and provide valid pincode and try again.')
-                return ctx.scene.leave()
-            }
-            const userTracking = await User.findOne({ chatId: ctx.chat.id, tracking: { $elemMatch: { pincode: tmpPincode, age_group: tmp_age_group } } }).select('tracking')
-            if (userTracking) {
-                await ctx.reply('You are already tracking this pincode and age group!')
-                return ctx.scene.leave()
-            }
-            await ctx.reply(`Your provided Information.\n<b>Pincode</b>: ${ctx.wizard.state.pincode}\n<b>Age group</b>: ${ctx.wizard.state.age_group}+\n<b>Dose</b>: ${ctx.wizard.state.dose}\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML' })
-            return ctx.wizard.next()
-        } catch (err) {
-            console.log(err)
-            try {
-                await ctx.reply('Some error occured please retry!')
-            } catch (err) { }
-            return ctx.scene.leave()
-        }
-    },
-    async (ctx) => {
-        try {
-            const confirmed = ctx.message.text
-            if (THUMBS.up.includes(confirmed)) {
-                await ctx.reply('Request accepted!')
-                await User.updateOne({ chatId: ctx.chat.id }, { $push:
-                    {
-                        tracking: { pincode: ctx.wizard.state.pincode, age_group: ctx.wizard.state.age_group, dose: ctx.wizard.state.dose }
-                    }
-                })
-                await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1, tmpDose: 1 } })
-                await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
-                await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}\nYou can choose your preferred vaccine and fee type by sending /vaccine\nAlso you can choose your desired center for autobooking using /center`)
-                return ctx.scene.leave()
-            } else {
-                await ctx.reply('Request declined!')
-                await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1, tmpDose: 1 } })
-                return ctx.scene.leave()
-            }
-        } catch (error) {
-            console.log(error)
             try {
                 await ctx.reply('Some error occured please retry!')
             } catch (err) { }
@@ -595,7 +519,15 @@ bot.action('18_plus', async (ctx) => {
     try {
         const chatId = ctx.update.callback_query.from.id
         await User.updateOne({ chatId }, { $set: { tmp_age_group: 18 } })
-        return await ctx.editMessageText('Selected 18+ age group.\nSend any text to continue...')
+        return await ctx.editMessageText('Please choose specific dose you want to track.', { reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: 'Dose 1', callback_data: `dose-selection--${1}` },
+                    { text: 'Dose 2', callback_data: `dose-selection--${2}` },
+                    { text: 'Any Dose', callback_data: `dose-selection--${0}` }
+                ]
+            ]
+        } })
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
@@ -609,7 +541,15 @@ bot.action('45_plus', async (ctx) => {
     try {
         const chatId = ctx.update.callback_query.from.id
         await User.updateOne({ chatId }, { $set: { tmp_age_group: 45 } })
-        return await ctx.editMessageText('Selected 45+ age group.\nSend any text to continue...')
+        return await ctx.editMessageText('Please choose specific dose you want to track.', { reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: 'Dose 1', callback_data: `dose-selection--${1}` },
+                    { text: 'Dose 2', callback_data: `dose-selection--${2}` },
+                    { text: 'Any Dose', callback_data: `dose-selection--${0}` }
+                ]
+            ]
+        } })
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
@@ -624,12 +564,41 @@ bot.action(/dose-selection--.*/, async (ctx) => {
         const chatId = ctx.update.callback_query.from.id
         const dose = parseInt(ctx.update.callback_query.data.split('dose-selection--')[1])
         await User.updateOne({ chatId }, { $set: { tmpDose: dose } })
-        return await ctx.editMessageText(`Selected ${dose ? 'Dose ' + dose : 'Any Dose'}\nSend any text to continue...`)
+        // return await ctx.editMessageText(`Selected ${dose ? 'Dose ' + dose : 'Any Dose'}\nSend any text to continue...`)
+        const { tmpPincode, tmp_age_group } = await User.findOne({ chatId: ctx.chat.id })
+        const userTracking = await User.findOne({ chatId: ctx.chat.id, tracking: { $elemMatch: { pincode: tmpPincode, age_group: tmp_age_group } } }).select('tracking')
+        if (userTracking) {
+            return await ctx.editMessageText('You are already tracking this pincode and age group!')
+        }
+        return await ctx.reply(`Your provided Information.\n<b>Pincode</b>: ${ctx.wizard.state.pincode}\n<b>Age group</b>: ${ctx.wizard.state.age_group}+\n<b>Dose</b>: ${ctx.wizard.state.dose}\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML', reply_markup: {
+            inline_keyboard: [
+                [{ text: '👍', callback_data: `selection-accept` }, { text: '👎', callback_data: `selection-reject` }]
+            ]
+        } })
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
             return
         }
+    }
+})
+
+bot.action('selection-accept', async (ctx) => {
+    try {
+        const txt = ctx.update.callback_query.message.text
+        const entities = ctx.update.callback_query.message.entities
+        await ctx.editMessageText(txt + '\n\nRequest accepted!', { entities })
+        const { tmpPincode, tmp_age_group, tmpDose } = await User.findOne({ chatId: ctx.chat.id })
+        await User.updateOne({ chatId: ctx.chat.id }, { $push:
+            {
+                tracking: { pincode: tmpPincode, age_group: tmp_age_group, dose: tmpDose }
+            }
+        })
+        await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1, tmpDose: 1 } })
+        await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
+        await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}\nYou can choose your preferred vaccine and fee type by sending /vaccine\nAlso you can choose your desired center for autobooking using /center`)
+    } catch (error) {
+
     }
 })
 

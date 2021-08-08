@@ -377,6 +377,23 @@ class CoWIN {
 
         }
     }
+
+    static async downloadCertificate(beneficiary_reference_id, token, chatId) {
+        const res = await axios({
+            method: 'GET',
+            url: 'https://cdn-api.co-vin.in/api/v2/registration/certificate/download',
+            params: {
+                beneficiary_reference_id
+            },
+            headers: {
+                authorization: 'Bearer ' + token
+            },
+            responseType: 'arraybuffer'
+        })
+        const outputPath = `./certificates/Certificate_${chatId}.pdf`
+        fs.writeFileSync(outputPath, res.data, 'binary')
+        return outputPath
+    }
 }
 
 module.exports = { CoWIN, em }

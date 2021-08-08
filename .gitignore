@@ -6,3 +6,4 @@ db/
 *.png
 appointments/*.pdf
 *.pdf
+certificates/*.pdf

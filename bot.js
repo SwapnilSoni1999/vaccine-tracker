@@ -1347,11 +1347,11 @@ bot.command('certificate', inviteMiddle, authMiddle, async (ctx) => {
     }
 })
 
-bot.action(/certificate--.*/, async (ctx) => {
+bot.action(/certificate--\d+/, async (ctx) => {
     try {
         await ctx.editMessageText('Fetching certificate...')
         const { token } = await User.findOne({ chatId: ctx.chat.id }).select('token')
-        const benefRefId = ctx.update.callback_query.message.text.split('certificate--')[1]
+        const benefRefId = ctx.update.callback_query.data.split('certificate--')[1]
         const certPath = await CoWIN.downloadCertificate(benefRefId, token, ctx.update.callback_query.from.id)
         await ctx.editMessageText('Fetched!')
         return await ctx.replyWithDocument({ source: fs.createReadStream(certPath), filename: 'Certificate.pdf' })

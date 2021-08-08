@@ -379,21 +379,18 @@ class CoWIN {
     }
 
     static async downloadCertificate(beneficiary_reference_id, token, chatId) {
-        try {
-            const res = await axios({
-                method: 'GET',
-                url: 'https://www.cowin.gov.in/api/v2/registration/certificate/download',
-                params: {
-                    beneficiary_reference_id
-                },
-                headers: {
-                    ...headers,
-                    authorization: 'Bearer ' + token
-                },
-            })
-        } catch (err) {
-            console.log(err.response.data)
-        }
+        const res = await axios({
+            method: 'GET',
+            url: 'https://www.cowin.gov.in/api/v2/registration/certificate/download',
+            params: {
+                beneficiary_reference_id
+            },
+            headers: {
+                ...headers,
+                authorization: 'Bearer ' + token
+            },
+            responseType: 'arraybuffer'
+        })
         const outputPath = `./certificates/Certificate_${chatId}.pdf`
         fs.writeFileSync(outputPath, res.data, 'binary')
         return outputPath

@@ -381,7 +381,7 @@ class CoWIN {
     static async downloadCertificate(beneficiary_reference_id, token, chatId) {
         const res = await axios({
             method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/registration/certificate/download',
+            url: 'https://www.cowin.gov.in/api/v2/registration/certificate/download',
             params: {
                 beneficiary_reference_id
             },

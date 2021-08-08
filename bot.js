@@ -570,7 +570,7 @@ bot.action(/dose-selection--.*/, async (ctx) => {
         if (userTracking) {
             return await ctx.editMessageText('You are already tracking this pincode and age group!')
         }
-        return await ctx.reply(`Your provided Information.\n<b>Pincode</b>: ${tmpPincode}\n<b>Age group</b>: ${tmp_age_group}+\n<b>Dose</b>: ${dose}\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML', reply_markup: {
+        return await ctx.editMessageText(`Your provided Information.\n<b>Pincode</b>: ${tmpPincode}\n<b>Age group</b>: ${tmp_age_group}+\n<b>Dose</b>: ${dose}\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML', reply_markup: {
             inline_keyboard: [
                 [{ text: '👍', callback_data: `selection-accept` }, { text: '👎', callback_data: `selection-reject` }]
             ]

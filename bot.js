@@ -265,69 +265,6 @@ const botUnderMaintain = async (ctx, next) => {
  * Wizards
  */
 
-const inviteWizard = new Scenes.WizardScene(
-    'invite',
-    async (ctx) => {
-        try {
-            await ctx.reply('Send invitation code to access this bot!\n<b>Why this bot has invite system?</b>\n<b>Ans:</b> It is because I have very limited resources (servers and proxies) to run this bot. So I\'m limiting this bot to certain people only. :)', { parse_mode: 'HTML' })
-            return ctx.wizard.next()
-        } catch (error) {
-            if (error instanceof TelegramError) {
-                await User.deleteOne({ chatId: ctx.chat.id })
-                return
-            }
-            console.log(error)
-            try {
-                await ctx.reply('Some error occured please retry again with /start!')
-            } catch (err) {
-                await User.deleteOne({ chatId: ctx.chat.id })
-            }
-            return ctx.scene.leave()
-        }
-    },
-    async (ctx) => {
-        try {
-            if ('message' in ctx) {
-                if ('text' in ctx.message) {
-                    const code = ctx.message.text
-                    if (!(await User.findOne({ chatId: ctx.chat.id }))) {
-                        await User.create({ chatId: ctx.chat.id })
-                    }
-                    if (code.startsWith('COWi')) {
-                        await ctx.reply('I think you\'ve misspelled the invitation code :/ please read the code once again. The mistake you made is the most common one.')
-                    }
-                    if (code.startsWith('C0Win')) {
-                        await ctx.reply('You\'re making dumb mistakes. Please read the code again. -.-')
-                    }
-                    if (code == INVITE_KEY) {
-                        await User.updateOne({ chatId: ctx.chat.id }, { $set: { allowed: true } })
-                        await ctx.reply('Invitation accepted!')
-                        const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
-                        await ctx.reply(msg, { parse_mode: 'HTML' })
-                        await ctx.reply(`Before you proceed further, Make sure you read the following notes:\n\n - <u>You must have atleast one beneficiary on your registered mobile number.</u>\n - <u>You must use login number which you used to register on cowin portal.</u>\n\nRead previous Bot Changelog here: https://telegra.ph/Cowin-Vaccine-Tracker-Bot-Changelog-06-07`, { parse_mode: 'HTML' })
-                        return ctx.scene.leave()
-                    } else {
-                        await User.updateOne({ chatId: ctx.chat.id }, { $set: { allowed: false } })
-                        await ctx.reply('Wrong invitation code. Please try again with /start if you wish to.')
-                        return ctx.scene.leave()
-                    }
-                }
-            }
-        } catch (error) {
-            if (error instanceof TelegramError) {
-                await User.deleteOne({ chatId: ctx.chat.id })
-                return ctx.scene.leave()
-            }
-            console.log(error)
-            try {
-                await ctx.reply('Some error occured please retry again with /start!')
-            } catch (err) {
-                await User.deleteOne({ chatId: ctx.chat.id })
-            }
-            return ctx.scene.leave()
-        }
-    }
-)
 
 const loginWizard = new Scenes.WizardScene(
     'login',
@@ -747,7 +684,7 @@ const districtSelection = new Scenes.WizardScene(
     }
 )
 
-const stage = new Scenes.Stage([loginWizard, slotWizard, inviteWizard, sendToAll, districtSelection])
+const stage = new Scenes.Stage([loginWizard, slotWizard, sendToAll, districtSelection])
 
 // bot.use(botUnderMaintain)
 bot.use(session())
@@ -780,11 +717,12 @@ bot.help(inviteMiddle, async (ctx) => {
 bot.command('id', async (ctx) => await ctx.reply(`Your chat id is: ${ctx.chat.id}`))
 
 bot.start(async (ctx) => {
-    if (await _isInvited(ctx.chat.id)) {
-        const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
-        return await ctx.reply(msg, { parse_mode: 'HTML' })
+    if (!(await User.findOne({ chatId: ctx.chat.id }))) {
+        await User.create({ chatId: ctx.chat.id, allowed: true })
     }
-    ctx.scene.enter('invite')
+    const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
+    await ctx.reply(msg, { parse_mode: 'HTML' })
+    await ctx.reply(`Before you proceed further, Make sure you read the following notes:\n\n - <u>You must have atleast one beneficiary on your registered mobile number.</u>\n - <u>You must use login number which you used to register on cowin portal.</u>\n\nRead previous Bot Changelog here: https://telegra.ph/Cowin-Vaccine-Tracker-Bot-Changelog-06-07`, { parse_mode: 'HTML' })
 })
 
 bot.command('login', inviteMiddle, async (ctx) => {

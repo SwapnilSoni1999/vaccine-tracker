@@ -576,6 +576,7 @@ bot.action(/dose-selection--.*/, async (ctx) => {
             ]
         } })
     } catch (err) {
+        console.log(err)
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
             return

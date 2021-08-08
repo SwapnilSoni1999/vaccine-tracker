@@ -1441,6 +1441,9 @@ async function checkTokens(users) {
     console.log('CHECKING TOKENS....')
     for (let user of users) {
         user = await User.findOne({ chatId: user.chatId })
+        if (!user) {
+            continue
+        }
         if (!user.allowed) {
             continue
         }

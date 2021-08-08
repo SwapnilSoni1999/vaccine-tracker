@@ -495,7 +495,7 @@ const slotWizard = new Scenes.WizardScene(
                 }
             })
 
-            return ctx.wizard.leave()
+            return ctx.scene.leave()
         } catch(err) {
             if (err instanceof TelegramError && err.response.status == 401) {
                 await ctx.reply('No slots available for this pin!')

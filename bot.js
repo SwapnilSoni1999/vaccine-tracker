@@ -1363,7 +1363,7 @@ async function bookSlot(user, uCenter) {
             await bot.telegram.sendMessage(SWAPNIL, 'Error in sending document!\n' + error.toString())
         }
         finally {
-            const payUrl = "swapnil.soni12345@okaxis" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
+            const payUrl = "<code>swapnil.soni12345@okaxis</code>" // encodeURI("upi://pay?pa=swapnil.soni12345@okaxis&pn=Swapnil&tn=For vaccine bot :)&cu=INR")
             await bot.telegram.sendMessage(user.chatId,
                 `Hey! I know getting vaccination slot is really a tough competition now. :)\nI spent my days and night to maintain this bot. Would you like to buy me a coffee? ^.^\nYou can send me the prize on my UPI if you wish to. Thanks.\n\n${payUrl}`,
                 { parse_mode: 'HTML' }
@@ -1700,12 +1700,12 @@ bot.command('botstat', async (ctx) => {
 
 bot.action('yes_booked', async (ctx) => {
     try {
-        return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status\n\nPlease consider donating to this project If you wish to :)\nupi: swapnil.soni12345@okaxis', { parse_mode: 'HTML' })
+        return await ctx.editMessageText('Congratulations! Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nYou can /untrack your desired pin if you wish to. If you want to track for another dose then /track to add new pin.\n You can also check your tracking stats using /status\n\nPlease consider donating to this project If you wish to :)\nupi: <code>swapnil.soni12345@okaxis</code>', { parse_mode: 'HTML' })
     } catch (err) {}
 })
 bot.command('donate', async (ctx) => {
     try {
-        return await ctx.reply('Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease consider donating to this project, it took me full nighters to add features and fix bugs to this bot. Thanks \n\nupi: swapnil.soni12345@okaxis', { parse_mode: 'HTML' })
+        return await ctx.reply('Thanks for using the bot. Follow me on <a href="https://fb.me/swapnilsoni1999">Facebook</a> if you want to. :)\nPlease consider donating to this project, it took me full nighters to add features and fix bugs to this bot. Thanks \n\nupi: <code>swapnil.soni12345@okaxis</code>', { parse_mode: 'HTML' })
     } catch (error) {
     }
 })

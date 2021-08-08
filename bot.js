@@ -1350,10 +1350,17 @@ bot.command('certificate', inviteMiddle, authMiddle, async (ctx) => {
 bot.action(/certificate--\d+/, async (ctx) => {
     try {
         await ctx.editMessageText('Fetching certificate...')
-        const { token } = await User.findOne({ chatId: ctx.chat.id }).select('token')
+        const { token, beneficiaries } = await User.findOne({ chatId: ctx.chat.id }).select('token beneficiaries')
         const benefRefId = ctx.update.callback_query.data.split('certificate--')[1]
         const certPath = await CoWIN.downloadCertificate(benefRefId, token, ctx.update.callback_query.from.id)
-        await ctx.editMessageText('Fetched!')
+        const benef = beneficiaries.find(b => b.beneficiary_reference_id == benefRefId)
+        const benefInfo = [
+            `<b>Name</b>: ${benef.name}`,
+            `<b>Vaccination Status</b>: ${benef.vaccination_status}`,
+            `<b>Vaccine</b>: ${benef.vaccine}`,
+            `<b>Ref ID</b>: ${benefRefId}`
+        ]
+        await ctx.editMessageText('Fetched!\n' + benefInfo.join('\n'), { parse_mode: 'HTML' })
         return await ctx.replyWithDocument({ source: fs.createReadStream(certPath), filename: 'Certificate.pdf' })
     } catch (error) {
         console.log(error)

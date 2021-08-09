@@ -1378,7 +1378,7 @@ bot.action(/certificate--\d+/, async (ctx) => {
 })
 
 bot.command('walkthrough', async (ctx) => {
-    await User.findOne({ chatId: ctx.chat.id }, { $set: { walkthrough: true } })
+    await User.updateOne({ chatId: ctx.chat.id }, { $set: { walkthrough: true } })
     return ctx.reply('walkthrough: true')
 })
 

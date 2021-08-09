@@ -741,13 +741,17 @@ bot.help(inviteMiddle, async (ctx) => {
 bot.command('id', async (ctx) => await ctx.reply(`Your chat id is: ${ctx.chat.id}`))
 
 bot.start(async (ctx) => {
+    let isNewUser = false
     if (!(await User.findOne({ chatId: ctx.chat.id }))) {
+        isNewUser = true
         await User.create({ chatId: ctx.chat.id, allowed: true, walkthrough: true })
     }
     const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
     await ctx.reply(msg, { parse_mode: 'HTML' })
     await ctx.reply(`Before you proceed further, Make sure you read the following notes:\n\n - <u>You must have atleast one beneficiary on your registered mobile number.</u>\n - <u>You must use login number which you used to register on cowin portal.</u>\n\nRead previous Bot Changelog here: https://telegra.ph/Cowin-Vaccine-Tracker-Bot-Changelog-06-07`, { parse_mode: 'HTML' })
-    return ctx.scene.enter('walkthrough')
+    if (isNewUser) {
+        return ctx.scene.enter('walkthrough')
+    }
 })
 
 bot.command('login', inviteMiddle, async (ctx) => {
@@ -1371,6 +1375,11 @@ bot.action(/certificate--\d+/, async (ctx) => {
     } catch (error) {
         console.log(error)
     }
+})
+
+bot.command('walkthrough', async (ctx) => {
+    await User.findOne({ chatId: ctx.chat.id }, { $set: { walkthrough: true } })
+    return ctx.reply('walkthrough: true')
 })
 
 async function bookSlot(user, uCenter) {

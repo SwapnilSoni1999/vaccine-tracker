@@ -541,9 +541,7 @@ bot.action('selection-accept', async (ctx) => {
         await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
         await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}\nYou can choose your preferred vaccine and fee type by sending /vaccine\nAlso you can choose your desired center for autobooking using /center`)
         if (walkthrough) {
-            await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { walkthrough: false } })
-            return await ctx.reply('Awesome! You\'re now all set-up :)\nYou can send /status to check your configuration status. You can send /help to know about all the commands. :)\nThats all for setup. Stay safe. <3')
-
+            await ctx.reply('Awesome! Now we\'re all set up! Now you can Turn ON <b>Autobook</b> Feature. :)\nJust select \"Turn ON\" button from next Message.', { parse_mode: 'HTML' })
         }
     } catch (error) {
         console.log(error)
@@ -1001,12 +999,21 @@ bot.command('district', inviteMiddle, async (ctx) => {
     }
 })
 
-bot.command('autobook', inviteMiddle, switchMiddle, benefMiddle, pinCheckMiddle, async (ctx) => {
+const autoBookCommand = async (ctx) => {
     try {
+        const onBtn = { text: 'Turn ON ✔️', callback_data: 'turn_on' }
+        const offBtn = { text: 'Turn OFF ✖️', callback_data: 'turn_off' }
+        const keyboard = []
+        const { autobook } = await User.findOne({ chatId: ctx.chat.id }).select('autobook')
+        if (autobook) {
+            keyboard.push(offBtn)
+        } else {
+            keyboard.push(onBtn)
+        }
         return await ctx.reply('Choose switch for autobook.\n<b>What is this?</b>\nIts a feature to book an available slot in youre desired pincode if your token is valid within the given time.\n\n<b>Note</b>: <u>Once you login. You will be auto logged out from cowin by itself after 15minutes. So you will get an alert message to login again if you\'ve turned autobook switch ON. So use this feature only when you need.</u>\n\n<b>How it works?</b>\nThe bot will work normally like informing you for available slots. But with autobook it will also try to book a slot to any available center in your desired pincode.', {
             reply_markup: {
                 inline_keyboard: [
-                    [ { text: 'Turn ON ✔️', callback_data: 'turn_on' }, { text: 'Turn OFF ✖️', callback_data: 'turn_off' } ]
+                    keyboard
                 ]
             },
             parse_mode: 'HTML'
@@ -1018,13 +1025,18 @@ bot.command('autobook', inviteMiddle, switchMiddle, benefMiddle, pinCheckMiddle,
             return
         }
     }
-})
+}
+
+bot.command('autobook', inviteMiddle, switchMiddle, benefMiddle, pinCheckMiddle, autoBookCommand)
 
 bot.action('turn_on', async (ctx) => {
     try {
-        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: true } })
-        const { preferredBenef } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('preferredBenef')
-        return await ctx.editMessageText(`Autobook is now turned <b>ON</b>\nYour preferred beneficiary: ${preferredBenef.name}`, { parse_mode: 'HTML' })
+        const { walkthrough, preferredBenef } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('walkthrough preferredBenef')
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: true, walkthrough: false } })
+        await ctx.editMessageText(`Autobook is now turned <b>ON</b>\nYour preferred beneficiary: ${preferredBenef.name}`, { parse_mode: 'HTML' })
+        if (walkthrough) {
+            return await ctx.reply('Congrats! You\'re now all set-up :)\nYou can send /status to check your configuration status. You can send /help to know about all the commands. :)\nThats all for setup. Stay safe. <3')
+        }
     } catch (error) {
         console.log(error)
     }

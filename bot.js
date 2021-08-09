@@ -379,7 +379,7 @@ const loginWizard = new Scenes.WizardScene(
                 if (!walkthrough) {
                     await ctx.reply('Send /help to know further commands.')
                 } else {
-                    await ctx.reply('Alright! Now choose your beneficiary from whom you want to book for.')
+                    await ctx.reply('Alright! Now choose your beneficiary for whom you want to book.')
                     beneficiaryCommand(ctx)
                 }
                 return ctx.scene.leave()

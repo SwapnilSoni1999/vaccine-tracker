@@ -341,14 +341,14 @@ const loginWizard = new Scenes.WizardScene(
                     return ctx.scene.leave()
                 }
                 console.log(err)
-                await ctx.reply('Error while sending otp!\nPlease try again!')
+                await ctx.reply('Error while sending OTP!\nPlease try again!')
                 return ctx.scene.leave()
             }
             const { otpCount, walkthrough } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount walkthrough')
             if (!walkthrough) {
-                await ctx.reply(`You\'ve requested otp for ${otpCount} time${otpCount > 1 ? 's': ''} today. You can check your otp counts by sending /status`)
+                await ctx.reply(`You\'ve requested OTP for ${otpCount} time${otpCount > 1 ? 's': ''} today. You can check your otp counts by sending /status`)
             }
-            await ctx.reply('Enter your otp')
+            await ctx.reply('Send your OTP')
             return ctx.wizard.next()
         } catch (error) {
             if (error instanceof TelegramError) {
@@ -389,7 +389,7 @@ const loginWizard = new Scenes.WizardScene(
                     return ctx.scene.leave()
                 }
                 console.log(err)
-                await ctx.reply('Invalid otp!\nYou can try again with /otp <your-otp>')
+                await ctx.reply('Invalid OTP!\nYou can try again with /otp <your-OTP>')
                 return ctx.scene.leave()
             }
         } catch (error) {
@@ -736,7 +736,7 @@ bot.help(inviteMiddle, async (ctx) => {
         if (_isAuth(ctx.chat.id)) {
             commands += `/logout = logout from the bot/portal\n`
         }
-        commands += `/beneficiaries = to list beneficiaries\n/donate = Please do :)\n/certificate - to download certificate\n/vaccine = To choose your preferred vaccine while tracking\n/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-otp> = during auth if your otp is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.\n/locations = Usage: /locations <State Name> -> to get number of users in your state/area who are active on this bot.\n/center - Choose preferred center for autobooking.\n/autobook - for autobooking on tracking pincode with available slots`
+        commands += `/beneficiaries = to list beneficiaries\n/donate = Please do :)\n/certificate - to download certificate\n/vaccine = To choose your preferred vaccine while tracking\n/snooze = To pause messages for several given time\n/unsnooze = remove message pause and get message on every ~1min interval\n/login = To login with your number!\n/track = to track available slot with given pincode.\n/untrack = untrack your current pincode\n/otp <your-OTP> = during auth if your OTP is wrong then you can try again with /otp command\n/status = check your status\n/district = to set your prefered district for tracking pincodes.\n/locations = Usage: /locations <State Name> -> to get number of users in your state/area who are active on this bot.\n/center - Choose preferred center for autobooking.\n/autobook - for autobooking on tracking pincode with available slots`
         if (ctx.chat.id == SWAPNIL) {
             commands += `\nAdmin commands:\n/sleeptime | /sleeptime <ms>\n/sendall\n/botstat\n/revokeall\n/captchainfo\n/captchatest`
         }
@@ -773,7 +773,7 @@ bot.command('login', inviteMiddle, async (ctx) => {
     }
 
     if (user.otpCount > MAX_OTP_PER_DAY) {
-        return await ctx.reply(`Sorry! you've reached max otp request limit for today! Try tomorrow.\nAlso do not login on CoWIN portal else your account will be banned for 24 hours.`)
+        return await ctx.reply(`Sorry! you've reached max OTP request limit for today! Try tomorrow.\nAlso do not login on CoWIN portal else your account will be banned for 24 hours.`)
     }
     ctx.scene.enter('login')
 })
@@ -794,7 +794,7 @@ bot.command('otp', inviteMiddle, async (ctx) => {
         return await ctx.reply('Login successful!')
     } catch (err) {
         console.log(err)
-        return await ctx.reply('Wrong otp! Please try again with /otp <your-otp>')
+        return await ctx.reply('Wrong OTP! Please try again with /otp <your-OTP>')
     }
 })
 
@@ -1108,7 +1108,7 @@ bot.command('status', inviteMiddle, async (ctx) => {
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: null } })
             user.token = null
         }
-        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Center Type</b>: ${user.feeType}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>Otp Requested Today</b>: ${user.otpCount}\n<b>Preferred Centers</b>: ${center_names.length ? center_names.join('\n\t') : 'ANY'}\n\nType /help for more info.`
+        const txt = `<b>ChatId</b>: ${user.chatId}\n<b>SnoozeTime</b>: ${user.snoozeTime ? secondsToHms(Math.abs(parseInt(Date.now()/1000) - user.snoozeTime)) : 'Not snoozed'}\n<b>Tracking Pincode</b>: ${Array.isArray(user.tracking) && user.tracking.length ? '\n' + expandTracking(user.tracking) : 'No pincode'}\n<b>Logged in?</b>: ${user.token ? 'Yes' : 'No'}\n<b>Prefered District</b>: ${district_name || 'None'}\n<b>Preferred Vaccine</b>: ${user.vaccine}\n<b>Preferred Center Type</b>: ${user.feeType}\n<b>Preferred Beneficiary</b>: ${user.preferredBenef && user.preferredBenef.name || 'No Beneficiary chosen'}\n<b>Autobook</b>: ${user.autobook ? 'ON' : 'OFF'}\n<b>OTP Requested Today</b>: ${user.otpCount}\n<b>Preferred Centers</b>: ${center_names.length ? center_names.join('\n\t') : 'ANY'}\n\nType /help for more info.`
         return await ctx.reply(txt, { parse_mode: 'HTML' })
     } catch (err) {
         await ctx.reply('Something went wrong! Please try again!')

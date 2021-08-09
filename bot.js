@@ -265,7 +265,6 @@ const botUnderMaintain = async (ctx, next) => {
  * Wizards
  */
 
-
 const loginWizard = new Scenes.WizardScene(
     'login',
     async (ctx) => {
@@ -303,12 +302,12 @@ const loginWizard = new Scenes.WizardScene(
             ctx.wizard.state.mobile = mobile
             if (mobile.length != 10) {
                 await ctx.reply('Please send 10 digit mobile number!', { reply_markup: { remove_keyboard: true } })
-                return ctx.scene.leave()
+                return ctx.scene.reenter()
             }
             const isnum = /^\d+$/.test(mobile)
             if (!isnum) {
                 await ctx.reply('Please provide numbers only!')
-                return ctx.scene.leave()
+                return ctx.scene.reenter()
             }
             try {
                 const cowin = new CoWIN(mobile)
@@ -359,14 +358,20 @@ const loginWizard = new Scenes.WizardScene(
             const isnum = /^\d+$/.test(otp)
             if (!isnum) {
                 await ctx.reply('Please provide numbers only!')
-                return ctx.scene.leave()
+                return
             }
             try {
                 await ctx.wizard.state.cowin.verifyOtp(otp)
                 await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: ctx.wizard.state.cowin.token } })
                 await ctx.reply('Login successful!')
                 await User.updateOne({ chatId: ctx.chat.id }, { $set: { mobile: ctx.wizard.state.mobile } })
-                await ctx.reply('Send /help to know further commands.')
+                const { walkthrough } = await User.findOne({ chatId: ctx.chat.id })
+                if (!walkthrough) {
+                    await ctx.reply('Send /help to know further commands.')
+                } else {
+                    await ctx.reply('Alright! Now choose your beneficiary from whom you want to book for.')
+                    beneficiaryCommand(ctx)
+                }
                 return ctx.scene.leave()
             } catch (err) {
                 if (err instanceof TelegramError) {
@@ -415,12 +420,12 @@ const slotWizard = new Scenes.WizardScene(
             const pincode = ctx.message.text.trim()
             if (pincode.length !== 6) {
                 await ctx.reply('Please provide valid pincode!')
-                return ctx.scene.leave()
+                return ctx.scene.reenter()
             }
             const isnum = /^\d+$/.test(pincode)
             if (!isnum) {
                 await ctx.reply('Please provide numbers only!')
-                return ctx.scene.leave()
+                return ctx.scene.reenter()
             }
             ctx.wizard.state.pincode = pincode
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { tmpPincode: pincode } })
@@ -526,7 +531,7 @@ bot.action('selection-accept', async (ctx) => {
         const txt = ctx.update.callback_query.message.text
         const entities = ctx.update.callback_query.message.entities
         await ctx.editMessageText(txt + '\n\nRequest accepted!', { entities })
-        const { tmpPincode, tmp_age_group, tmpDose } = await User.findOne({ chatId: ctx.chat.id })
+        const { tmpPincode, tmp_age_group, tmpDose, walkthrough } = await User.findOne({ chatId: ctx.chat.id })
         await User.updateOne({ chatId: ctx.chat.id }, { $push:
             {
                 tracking: { pincode: tmpPincode, age_group: tmp_age_group, dose: tmpDose }
@@ -535,8 +540,23 @@ bot.action('selection-accept', async (ctx) => {
         await User.updateOne({ chatId: ctx.chat.id }, { $unset: { tmpPincode: 1, tmp_age_group: 1, tmpDose: 1 } })
         await ctx.reply('Now, You\'ll be notified as soon as the vaccine will be available in your desired pincode. Please take a note that this bot is in experimental mode. You may or may not receive messages. So please check the portal by yourself as well. Also if you find some issues then please let me know @SoniSins')
         await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}\nYou can choose your preferred vaccine and fee type by sending /vaccine\nAlso you can choose your desired center for autobooking using /center`)
-    } catch (error) {
+        if (walkthrough) {
+            await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { walkthrough: false } })
+            return await ctx.reply('Awesome! You\'re now all set-up :)\nYou can send /status to check your configuration status. You can send /help to know about all the commands. :)\nThats all for setup. Stay safe. <3')
 
+        }
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+bot.action('selection-reject', async (ctx) => {
+    try {
+        const txt = ctx.update.callback_query.message.text
+        const entities = ctx.update.callback_query.message.entities
+        return ctx.editMessageText(txt + '\nRequest Rejected!', { entities })
+    } catch (error) {
+        console.log(error)
     }
 })
 
@@ -671,8 +691,14 @@ const districtSelection = new Scenes.WizardScene(
                 return ctx.scene.leave()
             }
             await User.updateOne({ chatId: ctx.chat.id }, { $set: { districtId: district_id, centers: [] } })
+            const { walkthrough } = await User.findOne({ chatId: ctx.chat.id }).select('walkthrough')
             await ctx.reply(`You\'ve selected ${district_name}.`, { reply_markup: { remove_keyboard: true } })
-            await ctx.reply('Now you can /track your desired pincode. You can also change your district whenever you want to by sending /district\nAlso your preferred /center list is also cleared')
+            if (walkthrough) {
+                await ctx.reply('Amazing! One final step...\nNow lets choose the pincodes you wanna track.')
+                return ctx.scene.enter('slot-booking')
+            } else {
+                await ctx.reply('Now you can /track your desired pincode. You can also change your district whenever you want to by sending /district\nAlso your preferred /center list is also cleared')
+            }
             return ctx.scene.leave()
         } catch (error) {
             console.log(error)
@@ -718,11 +744,12 @@ bot.command('id', async (ctx) => await ctx.reply(`Your chat id is: ${ctx.chat.id
 
 bot.start(async (ctx) => {
     if (!(await User.findOne({ chatId: ctx.chat.id }))) {
-        await User.create({ chatId: ctx.chat.id, allowed: true })
+        await User.create({ chatId: ctx.chat.id, allowed: true, walkthrough: true })
     }
     const msg = `Hi, This bot can operate on selfregistration.cowin.gov.in.\nYou can send /help to know instructions about how to use this bot.\nDeveloped by <a href="https://github.com/SwapnilSoni1999">Swapnil Soni</a>`
     await ctx.reply(msg, { parse_mode: 'HTML' })
     await ctx.reply(`Before you proceed further, Make sure you read the following notes:\n\n - <u>You must have atleast one beneficiary on your registered mobile number.</u>\n - <u>You must use login number which you used to register on cowin portal.</u>\n\nRead previous Bot Changelog here: https://telegra.ph/Cowin-Vaccine-Tracker-Bot-Changelog-06-07`, { parse_mode: 'HTML' })
+    return ctx.scene.enter('walkthrough')
 })
 
 bot.command('login', inviteMiddle, async (ctx) => {
@@ -783,13 +810,12 @@ function expandAppointments(appointments) {
     return appintmentMap.join("\n")
 }
 
-
-bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
+const beneficiaryCommand = async (ctx) => {
     const { token } = await User.findOne({ chatId: ctx.chat.id })
     try {
         const ben = await CoWIN.getBeneficiariesStatic(token)
         if (!ben.length) {
-            return await ctx.reply('No beneficiaries. Please add beneficiary first from cowin.gov.in')
+            return await ctx.reply('No beneficiaries. Please add beneficiary first from cowin.gov.in and send /beneficiaries again.')
         }
         await User.updateOne({ chatId: ctx.chat.id }, { $set: { beneficiaries: ben } })
 
@@ -809,15 +835,37 @@ bot.command('beneficiaries', inviteMiddle, authMiddle, async (ctx) => {
         await User.updateOne({ chatId: ctx.chat.id }, { token: null, txnId: null })
         return await ctx.reply('Token expired! Please /login again. Or maybe you haven\'t added any beneficiary on cowin portal. Please consider adding atleast one from selfregistration.cowin.gov.in')
     }
-})
+}
+bot.command('beneficiaries', inviteMiddle, authMiddle, beneficiaryCommand)
 
 bot.action(/benef--.*/, async (ctx) => {
     try {
         const benefId = ctx.update.callback_query.data.split('benef--')[1]
-        const { beneficiaries } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('beneficiaries')
+        const { beneficiaries, walkthrough } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('beneficiaries walkthrough')
         const matched = beneficiaries.find(b => b.beneficiary_reference_id == benefId)
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { preferredBenef: matched } })
-        return await ctx.reply(`<b>ID:</b> ${matched.beneficiary_reference_id}\n<b>Name</b>: ${matched.name}\n<b>Birth Year</b>: ${matched.birth_year}\n<b>Gender</b>: ${matched.gender}\n\n\nNow you can use /autobook feature.`, { parse_mode: 'HTML' })
+        await ctx.reply(`<b>ID:</b> ${matched.beneficiary_reference_id}\n<b>Name</b>: ${matched.name}\n<b>Birth Year</b>: ${matched.birth_year}\n<b>Gender</b>: ${matched.gender}\n\n\nNow you can use /autobook feature.`, { parse_mode: 'HTML' })
+        if (walkthrough) {
+            if (matched.dose1_date) {
+                await ctx.reply(`Great! The beneficiary has taken ${matched.vaccine}. So setting default tracking to ${matched.vaccine}. You can change your vaccine tracking by sending /vaccine anytime.`)
+                await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { vaccine: matched.vaccine } })
+                const FEES = [
+                    { text: 'Free', callback_data: `fee-type--Free` },
+                    { text: 'Paid', callback_data: `fee-type--Paid` },
+                    { text: 'Any', callback_data: `fee-type--ANY` }
+                ]
+                return ctx.reply('Choose vaccine Fee Type.', {
+                    reply_markup: {
+                        inline_keyboard: [
+                            FEES
+                        ]
+                    }
+                })
+            } else {
+                await ctx.reply(`It seems like the beneficiary hasn't been vaccinated. So choose the vaccine type you want to track first.`)
+                return vaccineCommand(ctx)
+            }
+        }
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
@@ -826,7 +874,7 @@ bot.action(/benef--.*/, async (ctx) => {
     }
 })
 
-bot.command('vaccine', inviteMiddle, async (ctx) => {
+const vaccineCommand = async (ctx) => {
     try {
         const vaccines = ['COVISHIELD', 'COVAXIN', 'SPUTNIK V', 'ANY']
         const markupButton = [vaccines.map(v => ({ text: v, callback_data: `vaccine--${v}`}))]
@@ -839,9 +887,11 @@ bot.command('vaccine', inviteMiddle, async (ctx) => {
             return
         }
     }
-})
+}
 
-bot.action(/vaccine--.*/, async (ctx) => {
+bot.command('vaccine', inviteMiddle, vaccineCommand)
+
+const vaccineAction = async (ctx) => {
     try {
         const vaccine = ctx.update.callback_query.data.split('vaccine--')[1]
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { vaccine } })
@@ -865,13 +915,19 @@ bot.action(/vaccine--.*/, async (ctx) => {
             return
         }
     }
-})
+}
+bot.action(/vaccine--.*/, vaccineAction)
 
 bot.action(/fee-type--.*/, async (ctx) => {
     try {
         const feeType = ctx.update.callback_query.data.split('fee-type--')[1]
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { feeType } })
-        return ctx.editMessageText(`You've chosen fee type: <b>${feeType}</b>\nYou can check your current status by sending /status`, { parse_mode: 'HTML' })
+        await ctx.editMessageText(`You've chosen fee type: <b>${feeType}</b>\nYou can check your current status by sending /status`, { parse_mode: 'HTML' })
+        const { walkthrough } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('walkthrough')
+        if (walkthrough) {
+            await ctx.reply('We\'re almost there! Now lets choose the district!')
+            return ctx.scene.enter('district')
+        }
     } catch (error) {
         console.log(error)
         if (err instanceof TelegramError) {

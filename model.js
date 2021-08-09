@@ -29,7 +29,8 @@ const UserSchema = new Schema({
     vaccine: { type: String, default: 'ANY' },
     otpCount: { type: Number, default: 0 },
     feeType: { type: String, default: 'ANY' },
-    centers: [{ type: Number, default: [] }]
+    centers: [{ type: Number, default: [] }],
+    walkthrough: { type: Boolean, default: false }
 })
 
 const User = model('User', UserSchema, 'users')

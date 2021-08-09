@@ -1541,7 +1541,7 @@ async function checkTokens(users) {
                 if (expireCount >= 5) {
                     console.log('Reached expire count!')
                     await bot.telegram.sendMessage(user.chatId, 'Since you haven\'t logged in from last 5minutes. I\'ve turned off autobooking for you. You can turn it on again anytime you want by sending /autobook')
-                    await User.updateOne({ chatId: user.chatId }, { $set: { expireCount: 0 } })
+                    await User.updateOne({ chatId: user.chatId }, { $set: { expireCount: 0, autobook: false } })
                     continue
                 }
                 console.log('Notifying expired token...')

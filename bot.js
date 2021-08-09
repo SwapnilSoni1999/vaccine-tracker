@@ -344,8 +344,10 @@ const loginWizard = new Scenes.WizardScene(
                 await ctx.reply('Error while sending otp!\nPlease try again!')
                 return ctx.scene.leave()
             }
-            const { otpCount } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount')
-            await ctx.reply(`You\'ve requested otp for ${otpCount} time${otpCount > 1 ? 's': ''} today. You can check your otp counts by sending /status`)
+            const { otpCount, walkthrough } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount walkthrough')
+            if (!walkthrough) {
+                await ctx.reply(`You\'ve requested otp for ${otpCount} time${otpCount > 1 ? 's': ''} today. You can check your otp counts by sending /status`)
+            }
             await ctx.reply('Enter your otp')
             return ctx.wizard.next()
         } catch (error) {
@@ -520,7 +522,7 @@ bot.action(/dose-selection--.*/, async (ctx) => {
         if (userTracking) {
             return await ctx.editMessageText('You are already tracking this pincode and age group!')
         }
-        return await ctx.editMessageText(`Your provided Information.\n<b>Pincode</b>: ${tmpPincode}\n<b>Age group</b>: ${tmp_age_group}+\n<b>Dose</b>: ${dose}\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML', reply_markup: {
+        return await ctx.editMessageText(`Your provided Information.\n<b>Pincode</b>: ${tmpPincode}\n<b>Age group</b>: ${tmp_age_group}+\n<b>Dose</b>: ${dose === 0 ? 'ANY' : dose}\nIf it is correct then send 👍 else 👎`, { parse_mode: 'HTML', reply_markup: {
             inline_keyboard: [
                 [{ text: '👍', callback_data: `selection-accept` }, { text: '👎', callback_data: `selection-reject` }]
             ]
@@ -550,6 +552,7 @@ bot.action('selection-accept', async (ctx) => {
         await ctx.reply(`You can track multiple pins. Max tracking pin limit is ${MAX_TRACKING_ALLOWED}\nYou can choose your preferred vaccine and fee type by sending /vaccine\nAlso you can choose your desired center for autobooking using /center`)
         if (walkthrough) {
             await ctx.reply('Awesome! Now we\'re all set up! Now you can Turn ON <b>Autobook</b> Feature. :)\nJust select \"Turn ON\" button from next Message.', { parse_mode: 'HTML' })
+            autoBookCommand(ctx)
         }
     } catch (error) {
         console.log(error)
@@ -872,7 +875,7 @@ bot.action(/benef--.*/, async (ctx) => {
                     }
                 })
             } else {
-                await ctx.reply(`It seems like the beneficiary hasn't been vaccinated. So choose the vaccine type you want to track first.`)
+                await ctx.reply(`It seems like the beneficiary hasn't been vaccinated OR fully vaccinated already. So choose the vaccine type you want to track first.`)
                 return vaccineCommand(ctx)
             }
         }

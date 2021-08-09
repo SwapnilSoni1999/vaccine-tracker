@@ -1675,18 +1675,6 @@ async function trackAndInform() {
                     } catch(err) { }
                 }
 
-                const { token: dbToken } = await User.findOne({ chatId: user.chatId }).select('token')
-                user.token = dbToken
-                if (user.autobook && !Token.isValid(user.token)) {
-                    try {
-                        await bot.telegram.sendMessage(user.chatId, 'Token expired... Please re /login\nIf you wish to stop autobooking then switch off from /autobook')
-                        await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
-                    } catch (err) {
-                        if (err instanceof TelegramError) {
-                            await User.deleteOne({ chatId: user.chatId })
-                        }
-                    }
-                }
                 for (const trc of user.tracking) {
                     const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id, dose: trc.dose }
 

@@ -1518,9 +1518,16 @@ async function checkTokens(users) {
         }
         if (user.autobook && (!(Token.isValid(user.token)) || !(user.token) )) {
             try {
+                const { expireCount } = await User.findOne({ chatId: user.chatId }).select('expireCount')
+                if (expireCount > 5) {
+                    console.log('Reached expire count!')
+                    await bot.telegram.sendMessage(user.chatId, 'Since you haven\'t logged in from last 5minutes. I\'ve turned off autobooking for you. You can turn it on again anytime you want by sending /autobook')
+                    await User.updateOne({ chatId: user.chatId }, { $set: { expireCount: 0 } })
+                    continue
+                }
                 console.log('Notifying expired token...')
                 await bot.telegram.sendMessage(user.chatId, 'Token expired! Please /login again.\nYou will be notified every 15min after session gets expired. If you wish to stop this session expire alerts, please consider turning off /autobook')
-                await User.updateOne({ chatId: user.chatId }, { $set: { token: null } })
+                await User.updateOne({ chatId: user.chatId }, { $set: { token: null }, $inc: { expireCount: 1 } })
                 await sleep(100)
             } catch (err) {
                 console.log(err)

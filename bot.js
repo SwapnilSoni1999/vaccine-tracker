@@ -265,6 +265,14 @@ const botUnderMaintain = async (ctx, next) => {
  * Wizards
  */
 
+const walkthrough = new Scenes.WizardScene(
+    'walkthrough',
+    async (ctx) => {
+        await ctx.reply('Welcome to the bot! Let\'s get started with a simple walkthrough :)\nFirstly login using the bot.')
+        return ctx.scene.enter('login')
+    }
+)
+
 const loginWizard = new Scenes.WizardScene(
     'login',
     async (ctx) => {
@@ -708,7 +716,7 @@ const districtSelection = new Scenes.WizardScene(
     }
 )
 
-const stage = new Scenes.Stage([loginWizard, slotWizard, sendToAll, districtSelection])
+const stage = new Scenes.Stage([loginWizard, slotWizard, sendToAll, districtSelection, walkthrough])
 
 // bot.use(botUnderMaintain)
 bot.use(session())

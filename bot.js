@@ -1621,7 +1621,7 @@ async function trackAndInform() {
                                         else if (
                                             (t.dose == 2) &&
                                             (session.available_capacity_dose2 > 0) &&
-                                            (session.min_age_limit == t.age_group) &&
+                                            (session?.allow_all_age == true ? true : session.min_age_limit == t.age_group) &&
                                             (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
                                         ) {
                                             return true
@@ -1654,6 +1654,7 @@ async function trackAndInform() {
                 return valid
             }, [])
 
+            // TODO: add 90 users to inform on each chunk to avoid tg rate limit
             shuffle(validUsers)
             for (const user of validUsers) {
                 //double check

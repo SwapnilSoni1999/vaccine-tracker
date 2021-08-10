@@ -28,11 +28,6 @@ cron.schedule('2 0 * * *', async () => {
     fs.unlinkSync('cowin_users.json')
 }, { timezone: 'Asia/Kolkata', scheduled: true })
 
-cron.schedule('0 */2 * * *', async () => {
-    await bot.telegram.sendMessage(SWAPNIL, 'Restarting bot...')
-    spawnSync('pm2', ['restart', '0'])
-}, { timezone: 'Asia/Kolkata', scheduled: true })
-
 // =====================
 
 
@@ -1882,4 +1877,3 @@ setInterval(async () => {
 }, 1 * 60 * 1000)
 
 bot.launch()
-bot.telegram.sendMessage(SWAPNIL, 'Bot Launched!')

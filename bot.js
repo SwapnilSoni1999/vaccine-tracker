@@ -1627,8 +1627,14 @@ async function trackAndInform() {
                                             return true
                                         }
                                     }
-                                    else if (session.min_age_limit == t.age_group && (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)) {
-                                        return true
+                                    else {
+                                        if (
+                                            (session.available_capacity > 0) &&
+                                            (session?.allow_all_age == true ? true : session.min_age_limit == t.age_group) &&
+                                            (userdata.vaccine != 'ANY' ? session.vaccine == userdata.vaccine : true)
+                                        ) {
+                                            return true
+                                        }
                                     }
                                 })
                                 if (filtSessions.length) {

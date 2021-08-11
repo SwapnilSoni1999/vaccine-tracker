@@ -132,7 +132,7 @@ class CoWIN {
     async sendOtp() {
         const postData = {
             mobile: this.mobile,
-            secret: "U2FsdGVkX19gg1fHCWvmS/3a8YterUFO8gpnXGCile+XwRAIcUa6UsxGPxrc4KE6g4Ne4ewcvKYhs+1ObNBTPQ=="
+            secret: "U2FsdGVkX18BUM3xhsRAs3GJT2PpZV1UFSdrdLzmgEKxiTmyTvBCvRjEPJT6w+mL7Tu9EneKydezRLPWDXGFdw=="
         }
         const res = await axios({
             method: 'POST',

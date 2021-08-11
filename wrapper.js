@@ -138,8 +138,7 @@ class CoWIN {
             method: 'POST',
             url: 'https://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
             data: postData,
-            headers,
-            httpsAgent: getRandomAgent()
+            headers
         })
         console.log(res.data)
         this.txnId = res.data.txnId

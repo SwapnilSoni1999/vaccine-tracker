@@ -341,7 +341,7 @@ const loginWizard = new Scenes.WizardScene(
                     return ctx.scene.leave()
                 }
                 console.log(err)
-                await ctx.reply('Error while sending OTP!\nPlease try again!')
+                await ctx.reply('Error while sending OTP!\nPlease try again after some time!')
                 return ctx.scene.leave()
             }
             const { otpCount, walkthrough } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount walkthrough')

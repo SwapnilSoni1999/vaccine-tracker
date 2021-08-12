@@ -818,8 +818,21 @@ bot.command('logout', inviteMiddle, async (ctx) => {
 
 function expandAppointments(appointments) {
     // seperated by \n at end \t at begining
-    const appintmentMap = appointments.map(ap => `There ${appointments.length > 1 ? 'are': 'is'} ${appointments.length} appointment${appointments.length>1? 's': ''} Booked.\n\t<b>Center Name</b>: ${ap.name}\n\t${ap.district ? '<b>District</b>: ' + ap.district + '\n' : ''}\t<b>Block</b>: ${ap.block_name}\n\t<b>Center Timings</b>:\n\t\t<u><b>From</b></u>: ${ap.from}\n\t\t<u><b>To</b></u>: ${ap.to}\n\t<b>Dose</b>: ${ap.dose}\n\t<b>Date</b>: ${ap.date}\n\t<u><b>Your time Slot</b></u>: <u>${ap.slot}</u>`)
-    return appintmentMap.join("\n")
+    let msg = `There ${appointments.length > 1 ? 'are' : 'is'} ${appointments.length} appointment${appointments.length > 1 ? 's' : ''} Booked.\n`
+    const appointmentMap = appointments.map(ap => [
+        `<b>Center Name</b>: ${ap.name || 'Unavailable'}`,
+        `${ap.district ? '<b>District</b>: ' + ap.district : ''}`,
+        `<b>Block</b>: ${ap.block_name}`,
+        `<b>Center Timings</b>: ${[
+            `<u><b>From</b></u>: ${ap.from}`,
+            `<u><b>To</b></u>: ${ap.to}`,
+            `<b>Dose</b>: ${ap.dose}`,
+            `<b>Date</b>: ${ap.date}`,
+            `<u><b>Your time Slot</b></u>: <u>${ap.slot}</u>`
+        ].join('\n\t\t')}`
+    ].join('\n\t'))
+    msg += appointmentMap.join("\n")
+    return msg
 }
 
 const beneficiaryCommand = async (ctx) => {

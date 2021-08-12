@@ -825,14 +825,14 @@ function expandAppointments(appointments) {
         `${ap.district ? '<b>District</b>: ' + ap.district : ''}`,
         `<b>Block</b>: ${ap.block_name}`,
         `${ap.state_name ? '<b>State</b>: ' + ap.state_name : ''}`,
-        `<b>Center Timings</b>: ${[
+        `<b>Center Timings</b>\n: ${[
             `<u><b>From</b></u>: ${ap.from}`,
             `<u><b>To</b></u>: ${ap.to}`,
             `<b>Dose</b>: ${ap.dose}`,
             `<b>Date</b>: ${ap.date}`,
             `<u><b>Your time Slot</b></u>: <u>${ap.slot}</u>`
         ].join('\n\t\t')}`
-    ].filter(v => !!v).join('\n\t'))
+    ].filter(v => !!v).join('\n'))
     msg += appointmentMap.join("\n")
     return msg
 }

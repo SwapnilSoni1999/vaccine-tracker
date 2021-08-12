@@ -1425,6 +1425,7 @@ async function bookSlot(user, uCenter) {
             payload.appointment_id = getFutureAppointment(user.preferredBenef.appointments)
         }
         const appointmentId = await CoWIN.schedule(user.token, payload, _schedule)
+        await sleep(800)
         const beneficiaries = await CoWIN.getBeneficiariesStatic(user.token)
         await User.updateOne({ chatId: user.chatId }, { $set: { beneficiaries: beneficiaries } })
         const bookedOne = beneficiaries.find(b => b.beneficiary_reference_id == user.preferredBenef.beneficiary_reference_id)

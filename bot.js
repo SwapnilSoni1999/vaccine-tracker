@@ -1459,8 +1459,10 @@ async function bookSlot(user, uCenter) {
             // await bot.telegram.sendMessage(SWAPNIL, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
             await bot.telegram.sendMessage(user.chatId, `Reason: ${err.response.data.errorCode}: ${err.response.data.error}`)
         } else {
-            await bot.telegram.sendMessage(SWAPNIL, 'Somethings wrong\n' + err.toString() + '\n' + err.stack)
-            fs.writeFileSync('wrong.txt', err.toString() + '\n=======', { flag: 'a' })
+            if (!(err instanceof TypeError)) {
+                await bot.telegram.sendMessage(SWAPNIL, 'Somethings wrong\n' + err.toString() + '\n' + err.stack)
+                fs.writeFileSync('wrong.txt', err.toString() + '\n=======', { flag: 'a' })
+            }
         }
     }
 }

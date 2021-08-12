@@ -830,7 +830,7 @@ function expandAppointments(appointments) {
             `<b>Date</b>: ${ap.date}`,
             `<u><b>Your time Slot</b></u>: <u>${ap.slot}</u>`
         ].join('\n\t\t')}`
-    ].join('\n\t'))
+    ].filter(v => !!v).join('\n\t'))
     msg += appointmentMap.join("\n")
     return msg
 }

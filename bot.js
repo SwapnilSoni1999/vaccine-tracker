@@ -817,12 +817,14 @@ bot.command('logout', inviteMiddle, async (ctx) => {
 })
 
 function expandAppointments(appointments) {
+    console.log('Expanding appointments', appointments)
     // seperated by \n at end \t at begining
     let msg = `There ${appointments.length > 1 ? 'are' : 'is'} ${appointments.length} appointment${appointments.length > 1 ? 's' : ''} Booked.\n`
     const appointmentMap = appointments.map(ap => [
         `<b>Center Name</b>: ${ap.name || 'Unavailable'}`,
         `${ap.district ? '<b>District</b>: ' + ap.district : ''}`,
         `<b>Block</b>: ${ap.block_name}`,
+        `${ap.state_name ? '<b>State</b>: ' + ap.state_name : ''}`,
         `<b>Center Timings</b>: ${[
             `<u><b>From</b></u>: ${ap.from}`,
             `<u><b>To</b></u>: ${ap.to}`,

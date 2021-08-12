@@ -1668,6 +1668,7 @@ async function trackAndInform() {
 
             // TODO: add 90 users to inform on each chunk to avoid tg rate limit
             shuffle(validUsers)
+            TRACKER_ALIVE = true
             for (const user of validUsers) {
                 //double check
                 if (!user.allowed) {
@@ -1701,7 +1702,7 @@ async function trackAndInform() {
 
                 for (const trc of user.tracking) {
                     const userdata = { pincode: trc.pincode, age_group: trc.age_group, trackingId: trc.id, dose: trc.dose }
-
+                    TRACKER_ALIVE = true
                     const userCenters = (available.reduce((result, center) => {
                         if (
                             (center.pincode == userdata.pincode) &&
@@ -1744,6 +1745,7 @@ async function trackAndInform() {
                         return result
                     }, []))
                     if (userCenters.length) {
+                        TRACKER_ALIVE = true
                         inform(user, userCenters, userdata)
                     }
                 }
@@ -1875,17 +1877,21 @@ setInterval(() => {
 }, 6 * 60 * 1000)
 setInterval(() => {
     if (!TRACKER_ALIVE) {
-        bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
         setTimeout(() => {
             if (!TRACKER_ALIVE) {
-                console.log('Starting tracker again...')
-                bot.telegram.sendMessage(SWAPNIL, 'Starting tracker again...')
-                trackAndInform()
-            } else {
-                console.log('Tracker got started again by itself. No need to recall')
-                bot.telegram.sendMessage(SWAPNIL, 'Tracker got started again by itself. No need to recall')
+                bot.telegram.sendMessage(SWAPNIL, 'ALERT: Tracker dead!')
+                setTimeout(() => {
+                    if (!TRACKER_ALIVE) {
+                        console.log('Starting tracker again...')
+                        bot.telegram.sendMessage(SWAPNIL, 'Starting tracker again...')
+                        trackAndInform()
+                    } else {
+                        console.log('Tracker got started again by itself. No need to recall')
+                        bot.telegram.sendMessage(SWAPNIL, 'Tracker got started again by itself. No need to recall')
+                    }
+                }, 4 * 60 * 1000)
             }
-        }, 4 * 60 * 1000)
+        }, 10 * 1000)
     }
 }, 10 * 60 * 1000)
 setInterval(async () => {

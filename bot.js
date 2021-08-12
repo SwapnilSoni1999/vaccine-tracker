@@ -483,7 +483,6 @@ bot.action('18_plus', async (ctx) => {
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
-            return ctx.scene.leave()
         }
     }
     // return ctx.scene.enter('track-pt2')
@@ -1494,6 +1493,7 @@ async function inform(user, userCenters, userdata) {
         try {
             const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
             user.autobook = autobook
+            console.log('BookSlot:', user.autobook, Token.isValid(user.token), checkValidVaccine(uCenter, user.preferredBenef), checkCenterToBook(uCenter, user.centers))
             if (
                 user.autobook &&
                 Token.isValid(user.token) &&

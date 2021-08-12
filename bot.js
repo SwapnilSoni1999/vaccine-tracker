@@ -483,7 +483,6 @@ bot.action('18_plus', async (ctx) => {
     } catch (err) {
         if (err instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
-            return ctx.scene.leave()
         }
     }
     // return ctx.scene.enter('track-pt2')
@@ -957,7 +956,7 @@ bot.action(/fee-type--.*/, async (ctx) => {
         }
     } catch (error) {
         console.log(error)
-        if (err instanceof TelegramError) {
+        if (error instanceof TelegramError) {
             await User.deleteOne({ chatId: ctx.chat.id })
             return
         }

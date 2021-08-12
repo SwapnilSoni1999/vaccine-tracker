@@ -1493,10 +1493,7 @@ async function inform(user, userCenters, userdata) {
         try {
             const { autobook } = await User.findOne({ chatId: user.chatId }).select('autobook')
             user.autobook = autobook
-            if (user.chatId == SWAPNIL) {
-                console.log('BookSlot:', user.autobook, Token.isValid(user.token), checkValidVaccine(uCenter, user.preferredBenef), checkCenterToBook(uCenter, user.centers))
-                await bot.telegram.sendMessage(`Autobook: ${user.autobook}\nToken Valid: ${Token.isValid(user.token)}\nValid Vaccine?: ${checkValidVaccine(uCenter, user.preferredBenef)}\nCheckCenter: ${checkCenterToBook(uCenter, user.centers)}`)
-            }
+            console.log('BookSlot:', user.autobook, Token.isValid(user.token), checkValidVaccine(uCenter, user.preferredBenef), checkCenterToBook(uCenter, user.centers))
             if (
                 user.autobook &&
                 Token.isValid(user.token) &&

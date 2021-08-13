@@ -7,6 +7,7 @@ const fs = require('fs')
 const Token = require('./token')
 const cron = require('node-cron')
 const { spawnSync } = require('child_process')
+const { Location } = require('locationModel')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -26,6 +27,9 @@ cron.schedule('2 0 * * *', async () => {
     spawnSync('mongoexport', ['-d', 'Cowin', '-c', 'users', '--jsonArray', '-o', 'cowin_users.json'])
     await bot.telegram.sendDocument(SWAPNIL, { source: fs.createReadStream('cowin_users.json'), filename: 'cowin_users.json' })
     fs.unlinkSync('cowin_users.json')
+    fs.unlinkSync('states.json')
+    await Location.deleteMany({})
+    await bot.telegram.sendMessage(SWAPNIL, 'Deleted states.json and cleared Districts db!')
 }, { timezone: 'Asia/Kolkata', scheduled: true })
 
 // =====================
@@ -81,7 +85,7 @@ function calculateSleeptime() {
     const proxies = fs.readFileSync('proxies.txt').toString().split('\n').filter(line => !!line).map(line => ({ host: line.split(':')[0], port: line.split(':')[1] }))
     const ipCount = proxies.length
     if (ipCount == 0) {
-        return 100
+        return 250
     }
     const fivMins = 5*60*1000
     const reqPerIp = 100

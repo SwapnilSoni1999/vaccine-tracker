@@ -7,7 +7,7 @@ const fs = require('fs')
 const Token = require('./token')
 const cron = require('node-cron')
 const { spawnSync } = require('child_process')
-const { Location } = require('locationModel')
+const { Location } = require('./locationModel')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))

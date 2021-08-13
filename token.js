@@ -25,4 +25,9 @@ const getAnyValidToken = async () => {
     }
 }
 
-module.exports = { isValid, getAnyValidToken }
+const getExpirationTime = (token) => {
+    const { exp } = jwt.decode(token)
+    return Math.floor(Math.abs(Date.now() - (exp*1000))/1000)
+}
+
+module.exports = { isValid, getAnyValidToken, getExpirationTime }

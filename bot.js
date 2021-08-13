@@ -1563,7 +1563,8 @@ async function checkTokens(users) {
                 }
                 console.log('Notifying expired token...')
                 if (expireCount > 1) {
-                    await bot.telegram.sendMessage(user.chatId, 'Token expired! Please /login again.\nI\'m reminding you to login in order to book vaccine slots automatically. I\'ll keep reminding you every minute for next 5minutes if you don\'t login.')
+                    const remainingMinutes = 5 - expireCount
+                    await bot.telegram.sendMessage(user.chatId, `Token expired! Please /login again.\nI\'m reminding you to login in order to book vaccine slots automatically. I\'ll keep reminding you every minute for next ${remainingMinutes}minute${remainingMinutes > 1 ? 's' : ''} if you don\'t login.`)
                 } else {
                     await bot.telegram.sendMessage(user.chatId, 'Token expired! Please /login again.\nYou will be notified every 15min after session gets expired. If you wish to stop this session expire alerts, please consider turning off /autobook')
                 }

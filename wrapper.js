@@ -4,6 +4,7 @@ const { EventEmitter } = require('events')
 const { httpsOverHttp } = require('tunnel')
 const fs = require('fs')
 const tools = require('./tools')
+const { Location } = require('./locationModel')
 
 const em = new EventEmitter()
 
@@ -163,21 +164,35 @@ class CoWIN {
     }
 
     static async getStates() {
+        if (fs.existsSync('states.json')) {
+            const localStates = JSON.parse(fs.readFileSync('states.json')).states
+            if (localStates.length) {
+                return localStates
+            }
+        }
         const res = await axios({
             method: 'GET',
             url: 'https://cdn-api.co-vin.in/api/v2/admin/location/states',
             headers,
             httpsAgent: getRandomAgent()
         })
+        fs.writeFileSync('states.json', JSON.stringify(res.data.states, null, '\t'))
         return res.data.states
     }
 
     static async getDistrict(stateId) {
+        const { districts } = await Location.findOne({ stateId })
+        if (districts.length) {
+            return districts
+        }
         const res = await axios({
             method: 'GET',
             url: 'https://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
             headers,
             httpAgent: getRandomAgent()
+        })
+        await Location.create({
+            stateId, districts: res.data.districts
         })
         return res.data.districts
     }

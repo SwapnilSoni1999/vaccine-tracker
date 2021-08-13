@@ -181,20 +181,23 @@ class CoWIN {
     }
 
     static async getDistrict(stateId) {
-        const { districts } = await Location.findOne({ stateId })
-        if (districts.length) {
-            return districts
+        try {
+            const { districts } = await Location.findOne({ stateId })
+            if (districts.length) {
+                return districts
+            }
+        } catch (err) {
+            const res = await axios({
+                method: 'GET',
+                url: 'https://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
+                headers,
+                httpAgent: getRandomAgent()
+            })
+            await Location.create({
+                stateId, districts: res.data.districts
+            })
+            return res.data.districts
         }
-        const res = await axios({
-            method: 'GET',
-            url: 'https://cdn-api.co-vin.in/api/v2/admin/location/districts/' + stateId,
-            headers,
-            httpAgent: getRandomAgent()
-        })
-        await Location.create({
-            stateId, districts: res.data.districts
-        })
-        return res.data.districts
     }
 
     /**

@@ -1737,12 +1737,14 @@ async function trackAndInform() {
                                         return true
                                     }
                                 }
-                                else if (
-                                    (session.available_capacity > 0) &&
-                                    (session?.allow_all_age == true ? true : session.min_age_limit == userdata.age_group) &&
-                                    (user.vaccine != 'ANY' ? session.vaccine == user.vaccine : true)
-                                ) {
-                                    return true
+                                else {
+                                    if (
+                                        (session.available_capacity > 0) &&
+                                        (session?.allow_all_age == true ? true : session.min_age_limit == userdata.age_group) &&
+                                        (user.vaccine != 'ANY' ? session.vaccine == user.vaccine : true)
+                                    ) {
+                                        return true
+                                    }
                                 }
                             })
                             if (filtSessions.length) {

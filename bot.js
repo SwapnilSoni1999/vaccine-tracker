@@ -874,7 +874,7 @@ bot.action(/benef--.*/, async (ctx) => {
         const { beneficiaries, walkthrough } = await User.findOne({ chatId: ctx.update.callback_query.from.id }).select('beneficiaries walkthrough')
         const matched = beneficiaries.find(b => b.beneficiary_reference_id == benefId)
         await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { preferredBenef: matched } })
-        await ctx.reply(`<b>ID:</b> ${matched.beneficiary_reference_id}\n<b>Name</b>: ${matched.name}\n<b>Birth Year</b>: ${matched.birth_year}\n<b>Gender</b>: ${matched.gender}\n\n\nNow you can use /autobook feature.`, { parse_mode: 'HTML' })
+        await ctx.editMessageText(`<b>ID:</b> ${matched.beneficiary_reference_id}\n<b>Name</b>: ${matched.name}\n<b>Birth Year</b>: ${matched.birth_year}\n<b>Gender</b>: ${matched.gender}\n\n\nNow you can use /autobook feature.`, { parse_mode: 'HTML' })
         if (walkthrough) {
             if (matched.dose1_date) {
                 await ctx.reply(`Great! The beneficiary has taken ${matched.vaccine}. So setting default tracking to ${matched.vaccine}. You can change your vaccine tracking by sending /vaccine anytime.`)

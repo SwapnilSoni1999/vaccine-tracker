@@ -1375,7 +1375,7 @@ bot.command('certificate', inviteMiddle, authMiddle, async (ctx) => {
         const validbenef = ben.filter(b => ((b.dose1_date ? true : false) || (b.dose2_date ? true : false)))
         const benefButtons = validbenef.map(b => [{ text: b.name, callback_data: `certificate--${b.beneficiary_reference_id}` }])
 
-        if (benefButtons.length) {
+        if (validbenef.length) {
             return await ctx.reply('None of the beneficiary is vaccinated.')
         }
 

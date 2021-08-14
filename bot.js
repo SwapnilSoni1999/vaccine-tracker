@@ -1372,7 +1372,7 @@ bot.command('certificate', inviteMiddle, authMiddle, async (ctx) => {
         }
         await User.updateOne({ chatId: ctx.chat.id }, { $set: { beneficiaries: ben } })
 
-        const validbenef = ben.filter(b => ((b.dose1_date ? false : true) || (b.dose2_date ? false : true)))
+        const validbenef = ben.filter(b => ((b.dose1_date ? true : false) || (b.dose2_date ? true : false)))
         const benefButtons = validbenef.map(b => [{ text: b.name, callback_data: `certificate--${b.beneficiary_reference_id}` }])
 
         if (benefButtons.length) {

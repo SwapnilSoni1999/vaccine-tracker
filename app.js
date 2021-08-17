@@ -53,10 +53,13 @@ app.post('/api/cowin/token', async (req, res, next) => {
         return res.status(400).json({ message: "`token` is required!" })
     }
     try {
-        const { chatId } = jwt.verify(appToken, JWT_SECRET)
-        const { source } = jwt.decode(token)
+        const { chatId, mobile } = jwt.verify(appToken, JWT_SECRET)
+        const { source, mobile_number } = jwt.decode(token)
         if (source !== 'cowin') {
             return res.status(400).json({ message: "`token` is not from cowin!" })
+        }
+        if (mobile_number !== mobile) {
+            return res.status(400).json({ message: "`token` is not from same user!" })
         }
         await User.updateOne({ chatId }, { token })
         await User.updateOne({ chatId: user.chatId }, { $inc: { otpCount: 1 } })

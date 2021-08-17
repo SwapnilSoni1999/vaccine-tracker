@@ -59,7 +59,7 @@ app.post('/api/cowin/token', async (req, res, next) => {
             return res.status(400).json({ message: "`token` is not from cowin!" })
         }
         if (mobile_number !== mobile) {
-            return res.status(400).json({ message: "`token` is not from same user!" })
+            return res.status(402).json({ message: "`token` is not from same user!" })
         }
         await User.updateOne({ chatId }, { token })
         await User.updateOne({ chatId: user.chatId }, { $inc: { otpCount: 1 } })

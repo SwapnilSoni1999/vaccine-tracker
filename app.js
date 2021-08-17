@@ -40,6 +40,7 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
     }
     const token = jwt.sign({ chatId: user.chatId, mobile: user.mobile }, JWT_SECRET)
     res.status(200).json({ message: "Login successful!", token })
+    await User.updateOne({ chatId: user.chatId }, { $inc: { otpCount: 1 } })
     return await bot.telegram.sendMessage(user.chatId, 'Hi! Welcome to autologin app. The app will automatically will log you in whenever you logout! So this saves time and extra efforts. :)')
 })
 

@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
+const morgan = require('morgan')
 
 const User = require('./model')
 const bot = require('./bot')
@@ -9,6 +10,7 @@ const app = express()
 const JWT_SECRET = 'C0WiNGOVBOT'
 
 app.use(cors())
+app.use(morgan('tiny'))
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
@@ -21,7 +23,7 @@ app.post('/api/bot/login', async (req, res, next) => {
     const appOtp = Math.floor(100000 + Math.random() * 900000)
     const { chatId } = await User.findOneAndUpdate({ mobile }, { $set: { appOtp } })
     res.status(200).json({ message: "OTP Sent!" })
-    return await bot.telegram.sendMessage(chatId, `Your OTP for app login is: <b>${appOtp}</b>`)
+    return await bot.telegram.sendMessage(chatId, `Your OTP for app login is: <b>${appOtp}</b>`, { parse_mode: 'HTML' })
 })
 
 app.post('/api/bot/verifyOtp', async (req, res, next) => {

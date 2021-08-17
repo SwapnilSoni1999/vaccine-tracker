@@ -40,7 +40,6 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
     }
     const token = jwt.sign({ chatId: user.chatId, mobile: user.mobile }, JWT_SECRET)
     res.status(200).json({ message: "Login successful!", token })
-    await User.updateOne({ chatId: user.chatId }, { $inc: { otpCount: 1 } })
     return await bot.telegram.sendMessage(user.chatId, 'Hi! Welcome to autologin app. The app will automatically will log you in whenever you logout! So this saves time and extra efforts. :)')
 })
 
@@ -60,6 +59,7 @@ app.post('/api/cowin/token', async (req, res, next) => {
             return res.status(400).json({ message: "`token` is not from cowin!" })
         }
         await User.updateOne({ chatId }, { token })
+        await User.updateOne({ chatId: user.chatId }, { $inc: { otpCount: 1 } })
         return res.status(200).json({ message: "Handshaked cowin token!" })
     } catch (err) {
         return res.status(401).json({ message: "Unauthorized!" })

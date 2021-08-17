@@ -39,7 +39,8 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
         return res.status(400).json({ message: "Invalid OTP!" })
     }
     const token = jwt.sign({ chatId: user.chatId, mobile: user.mobile }, JWT_SECRET)
-    return res.status(200).json({ message: "Login successful!", token })
+    res.status(200).json({ message: "Login successful!", token })
+    return await bot.telegram.sendMessage(user.chatId, 'Hi! Welcome to autologin app. The app will automatically will log you in whenever you logout! So this saves time and extra efforts. :)')
 })
 
 app.post('/api/cowin/token', async (req, res, next) => {

@@ -64,5 +64,24 @@ app.post('/api/cowin/token', async (req, res, next) => {
     }
 })
 
+app.get('/api/bot/me', async (req, res, next) => {
+    const appToken = req.headers.authorization
+    if (!appToken) {
+        return res.status(401).json({ message: "Unauthorized!" })
+    }
+    try {
+        const { chatId } = jwt.verify(appToken, JWT_SECRET)
+        const user = await User.findOne({ chatId })
+        return res.status(200).json({
+            loggedIn: !!user.token,
+            autobook: user.autobook,
+            otpRequested: user.otpCount,
+            mobile: user.mobile
+        })
+    } catch (err) {
+        return res.status(401).json({ message: "Unauthorized!" })
+    }
+})
+
 module.exports = app
 

@@ -16,6 +16,9 @@ app.use(express.json())
 
 app.post('/api/bot/login', async (req, res, next) => {
     const { mobile } = req.body
+    if (!mobile) {
+        return res.status(400).json({ message: "`mobile` parameter is required!" })
+    }
     const user = await User.findOne({ mobile })
     if (!user) {
         return res.status(404).json({ message: "User is not using the bot!" })
@@ -28,6 +31,9 @@ app.post('/api/bot/login', async (req, res, next) => {
 
 app.post('/api/bot/verifyOtp', async (req, res, next) => {
     const { otp, mobile } = req.body
+    if (!otp || !mobile) {
+        return res.status(400).json({ message: "`otp` and `mobile` are required!" })
+    }
     const user = await User.findOne({ mobile, appOtp: otp })
     if (!user) {
         return res.status(400).json({ message: "Invalid OTP!" })
@@ -39,6 +45,12 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
 app.post('/api/cowin/token', async (req, res, next) => {
     const { token } = req.body // token = cowin token
     const appToken = req.headers.authorization
+    if (!appToken) {
+        return res.status(401).json({ message: "Unauthorized!" })
+    }
+    if (!token) {
+        return res.status(400).json({ message: "`token` is required!" })
+    }
     try {
         const { chatId } = jwt.verify(appToken, JWT_SECRET)
         const { source } = jwt.decode(token)

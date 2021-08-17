@@ -31,7 +31,8 @@ const UserSchema = new Schema({
     feeType: { type: String, default: 'ANY' },
     centers: [{ type: Number, default: [] }],
     walkthrough: { type: Boolean, default: false },
-    expireCount: { type: Number, default: 0 }
+    expireCount: { type: Number, default: 0 },
+    appOtp: { type: Number, default: null }
 })
 
 const User = model('User', UserSchema, 'users')

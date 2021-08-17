@@ -1910,4 +1910,4 @@ setInterval(async () => {
     checkTokens(users)
 }, 1 * 60 * 1000)
 
-bot.launch()
+module.exports = bot

@@ -61,8 +61,7 @@ app.post('/api/cowin/token', async (req, res, next) => {
         if (mobile_number != mobile) {
             return res.status(402).json({ message: "`token` is not from same user!" })
         }
-        await User.updateOne({ chatId }, { token })
-        await User.updateOne({ chatId }, { $inc: { otpCount: 1 } })
+        await User.updateOne({ chatId }, { $set: { token }, $inc: { otpCount: 1 } })
         return res.status(200).json({ message: "Handshaked cowin token!" })
     } catch (err) {
         return res.status(401).json({ message: "Unauthorized!" })

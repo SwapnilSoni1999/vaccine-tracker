@@ -44,8 +44,7 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
 })
 
 app.post('/api/cowin/token', async (req, res, next) => {
-    const { token } = req.body // token = cowin token
-    const appToken = req.headers.authorization
+    const { token, tgToken: appToken } = req.body // token = cowin token
     if (!appToken) {
         return res.status(401).json({ message: "Unauthorized!" })
     }

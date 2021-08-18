@@ -55,10 +55,10 @@ app.post('/api/cowin/token', async (req, res, next) => {
     try {
         const { chatId, mobile } = jwt.verify(appToken, JWT_SECRET)
         const { source, mobile_number } = jwt.decode(token)
-        if (source !== 'cowin') {
+        if (source != 'cowin') {
             return res.status(400).json({ message: "`token` is not from cowin!" })
         }
-        if (mobile_number !== mobile) {
+        if (mobile_number != mobile) {
             return res.status(402).json({ message: "`token` is not from same user!" })
         }
         await User.updateOne({ chatId }, { token })

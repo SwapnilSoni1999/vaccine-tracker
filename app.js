@@ -76,9 +76,9 @@ app.post('/api/bot/me', async (req, res, next) => {
         const { chatId } = jwt.verify(appToken, JWT_SECRET)
         const user = await User.findOne({ chatId })
         return res.status(200).json({
-            loggedIn: !!user.token,
-            autobook: user.autobook,
-            otpRequested: user.otpCount,
+            loggedIn: String(!!user.token),
+            autobook: String(user.autobook),
+            otpRequested: String(user.otpCount),
             mobile: user.mobile
         })
     } catch (err) {

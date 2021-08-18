@@ -68,7 +68,7 @@ app.post('/api/cowin/token', async (req, res, next) => {
 })
 
 app.get('/api/bot/me', async (req, res, next) => {
-    const appToken = req.headers.authorization
+    const appToken = req.body.tgToken
     if (!appToken) {
         return res.status(401).json({ message: "Unauthorized!" })
     }

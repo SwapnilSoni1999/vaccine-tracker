@@ -378,7 +378,7 @@ const loginWizard = new Scenes.WizardScene(
                 await ctx.wizard.state.cowin.verifyOtp(otp)
                 await User.updateOne({ chatId: ctx.chat.id }, { $set: { token: ctx.wizard.state.cowin.token } })
                 await ctx.reply('Login successful!')
-                await User.updateOne({ chatId: ctx.chat.id }, { $set: { mobile: ctx.wizard.state.mobile } })
+                await User.updateOne({ chatId: ctx.chat.id }, { $set: { mobile: ctx.wizard.state.mobile, expireCount: 0 } })
                 const { walkthrough } = await User.findOne({ chatId: ctx.chat.id })
                 if (!walkthrough) {
                     await ctx.reply('Send /help to know further commands.')

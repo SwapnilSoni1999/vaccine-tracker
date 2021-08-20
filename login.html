@@ -11,12 +11,12 @@
 <body>
     <div class="w-full bg-gray-200 h-screen flex flex-col p-10 items-center justify-center">
         <h1 id="loading">Loading...</h1>
-        <div id="sendOtp" style="display: none;" class="w-4/5 flex items-center flex-col shadow-lg bg-white p-12 rounded-lg">
+        <div id="sendOtp" style="display: none;" class="w-4/5 flex flex-col space-y-5 items-center shadow-lg bg-white p-12 rounded-lg">
             <h1 class="text-lg text-center font-semibold">
                 Cowin Vaccine Tracker Login
             </h1>
-            <span id="yourNumber">Your Number:</span>
-            <button onclick="sendOtp()" class="p-3 text-white rounded-md bg-blue-600">
+            <span id="yourNumber" class="block text-center">Your Number:</span>
+            <button onclick="sendOtp()" class="p-3 text-center w-full text-white rounded-md bg-blue-600">
                 Send OTP
             </button>
         </div>
@@ -59,6 +59,7 @@
         console.log(res.data)
         txnId = res.data.txnId
         document.getElementById('sendOtp').style.display = 'none'
+        document.getElementById('verifyOtp').style.display = 'block'
     }
 
     async function sha256(message) {

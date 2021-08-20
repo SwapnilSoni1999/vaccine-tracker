@@ -15,6 +15,7 @@ app.use(morgan('tiny'))
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 app.use('/axios', express.static(path.join(__dirname, 'node_modules', 'axios', 'dist')))
+app.use('/public', express.static(path.join(__dirname, 'public')))
 
 app.post('/api/bot/login', async (req, res, next) => {
     const { mobile } = req.body

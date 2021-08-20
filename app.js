@@ -63,7 +63,7 @@ app.post('/api/cowin/token', async (req, res, next) => {
         if (mobile_number != mobile) {
             return res.status(402).json({ message: "`token` is not from same user!" })
         }
-        await User.updateOne({ chatId }, { $set: { token }, $inc: { otpCount: 1 } })
+        await User.updateOne({ chatId }, { $set: { token, expireCount: 0 }, $inc: { otpCount: 1 } })
         return res.status(200).json({ message: "Handshaked cowin token!" })
     } catch (err) {
         return res.status(401).json({ message: "Unauthorized!" })
@@ -83,7 +83,7 @@ app.post('/api/bot/handshake', async (req, res) => {
     if (user.mobile != mobile_number) {
         return res.status(401).json({ message: "Not today satan! :)" })
     }
-    await User.updateOne({ chatId }, { $set: { token }, $inc: { otpCount: 1 } })
+    await User.updateOne({ chatId }, { $set: { token, expireCount: 0 }, $inc: { otpCount: 1 } })
     await bot.telegram.sendMessage(chatId, "Login successful!")
     return res.status(200).end()
 })

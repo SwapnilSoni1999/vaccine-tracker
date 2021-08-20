@@ -20,15 +20,19 @@
                 Send OTP
             </button>
         </div>
-        <div id="verifyOtp" style="display: none;" class="w-52 flex items-center flex-col shadow-lg bg-white p-12 rounded-lg">
+        <div id="verifyOtp" style="display: none;" class="w-4/5 flex items-center space-y-5 flex-col shadow-lg bg-white p-12 rounded-lg">
             <h1 class="text-lg text-center font-semibold">
                 Cowin Vaccine Tracker Login
             </h1>
             <span class="text-sm">Enter OTP:</span>
-            <input type="text" id="otpBox">
+            <input class="border border-2 border-block p-2 rounded-md" type="text" id="otpBox" required>
+            <h5 id="wrongOtp" class="text-sm text-red-600">Wrong OTP! Please try again!</h5>
             <button onclick="verifyOtp()" class="p-3 text-white rounded-md bg-blue-600">
                 Verify OTP
             </button>
+        </div>
+        <div id="success" style="display: none;" class="w-4/5 flex items-center space-y-5 flex-col shadow-lg bg-white p-12 rounded-lg">
+            <span>Successfully logged in! Close this window and check your status by sending /status to bot.</span>
         </div>
     </div>
 </body>
@@ -78,27 +82,40 @@
     }
 
     async function verifyOtp() {
-        const otp = document.getElementById('')
+        document.getElementById('wrongOtp').style.display = 'none'
+        const otp = document.getElementById('otpBox').value
         const postData = {
             txnId,
             otp: await sha256()
         }
-        const res = await axios({
-            url: 'https://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
-            method: 'POST',
-            data: postData
-        })
+        try {
+            const res = await axios({
+                url: 'https://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
+                method: 'POST',
+                data: postData
+            })
+        } catch (err) {
+            document.getElementById('otpBox').value = ""
+            document.getElementById('wrongOtp').style.display = 'block'
+        }
         const token = res.data.token
-        await axios({
-            url: '/api/cowin/token',
-            method: 'POST',
-            data: {
-                token
-            },
-            headers: {
-                'x-sauce': 'true'
-            }
-        })
+        try {
+            await axios({
+                url: '/api/cowin/token',
+                method: 'POST',
+                data: {
+                    token
+                },
+                headers: {
+                    'x-sauce': 'true'
+                }
+            })
+            document.getElementById('verifyOtp').style.display = 'none'
+            document.getElementById('success').style.display = 'block'
+        } catch (err) {
+            document.getElementById('verifyOtp').style.display = 'none'
+            loader.innerText = "Unable to handshake with Bot! Please try again by refreshing the page!"
+        }
     }
 </script>
 </html>

@@ -26,8 +26,8 @@
             </h1>
             <span class="text-sm">Enter OTP:</span>
             <input class="border border-2 border-block p-2 rounded-md" type="text" id="otpBox" required>
-            <h5 id="wrongOtp" class="text-sm text-red-600">Wrong OTP! Please try again!</h5>
-            <button onclick="verifyOtp()" class="p-3 text-white rounded-md bg-blue-600">
+            <h5 id="wrongOtp" style="display: none;" class="text-sm text-red-600">Wrong OTP! Please try again!</h5>
+            <button onclick="verifyOtp()" class="text-center w-full p-3 text-white rounded-md bg-blue-600">
                 Verify OTP
             </button>
         </div>
@@ -36,6 +36,7 @@
         </div>
     </div>
 </body>
+<script src="https://raw.githubusercontent.com/emn178/js-sha256/master/build/sha256.min.js"></script>
 <script src="/axios/axios.min.js"></script>
 <script>
     const urlSearchParams = new URLSearchParams(window.location.search);
@@ -66,27 +67,12 @@
         document.getElementById('verifyOtp').style.display = 'block'
     }
 
-    async function sha256(message) {
-        // encode as UTF-8
-        const msgBuffer = new TextEncoder().encode(message);
-
-        // hash the message
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-
-        // convert ArrayBuffer to Array
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-        // convert bytes to hex string
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
-    }
-
     async function verifyOtp() {
         document.getElementById('wrongOtp').style.display = 'none'
         const otp = document.getElementById('otpBox').value
         const postData = {
             txnId,
-            otp: await sha256()
+            otp: await sha256(otp)
         }
         try {
             const res = await axios({

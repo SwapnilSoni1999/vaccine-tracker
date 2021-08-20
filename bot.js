@@ -346,6 +346,13 @@ const loginWizard = new Scenes.WizardScene(
                 }
                 console.log(err)
                 await ctx.reply('Error while sending OTP!\nPlease try again after some time!')
+                await ctx.reply('Instead bot, You can now login from the bot\'s site. Click on the button below to login. Once you finish the process check back here on bot. :)', {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: 'Login!', url: `http://20.193.247.116/login?mobile=${mobile}&chatId=${ctx.chat.id}` }]
+                        ]
+                    }
+                })
                 return ctx.scene.leave()
             }
             const { otpCount, walkthrough } = await User.findOne({ chatId: ctx.chat.id }).select('otpCount walkthrough')

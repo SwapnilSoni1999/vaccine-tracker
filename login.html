@@ -102,6 +102,7 @@
             document.getElementById('success').style.display = 'block'
         } catch (err) {
             document.getElementById('verifyOtp').style.display = 'none'
+            loader.style.display = 'none'
             loader.innerText = "Unable to handshake with Bot! Please try again by refreshing the page!"
         }
     }

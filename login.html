@@ -45,6 +45,7 @@
     const chatId = params.chatId
     const loader = document.getElementById('loading')
     var txnId = null
+    var token = null
     if (!chatId || !params.mobile) {
         loader.innerText = "ERROR: No number/ChatId provided"
     } else {
@@ -80,11 +81,11 @@
                 method: 'POST',
                 data: postData
             })
+            token = res.data.token
         } catch (err) {
             document.getElementById('otpBox').value = ""
             document.getElementById('wrongOtp').style.display = 'block'
         }
-        const token = res.data.token
         try {
             await axios({
                 url: '/api/cowin/token',

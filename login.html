@@ -88,9 +88,10 @@
         }
         try {
             await axios({
-                url: '/api/cowin/token',
+                url: '/api/bot/handshake',
                 method: 'POST',
                 data: {
+                    chatId,
                     token
                 },
                 headers: {

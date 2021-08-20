@@ -48,8 +48,7 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
 
 app.post('/api/cowin/token', async (req, res, next) => {
     const { token, tgToken: appToken } = req.body // token = cowin token
-    const isSite = req.headers['x-sauce']
-    if (!appToken && !isSite) {
+    if (!appToken) {
         return res.status(401).json({ message: "Unauthorized!" })
     }
     if (!token) {
@@ -69,6 +68,24 @@ app.post('/api/cowin/token', async (req, res, next) => {
     } catch (err) {
         return res.status(401).json({ message: "Unauthorized!" })
     }
+})
+
+app.post('/api/bot/handshake', async (req, res) => {
+    const { chatId, token } = req.body
+    if (!chatId || !token) {
+        return res.status(400).json({ message: "Bad request!" })
+    }
+    const user = await User.findOne({ chatId })
+    if (!user) {
+        return res.status(400).json({ message: "User doesnt exist!" })
+    }
+    const { mobile_number } = jwt.decode(token)
+    if (user.mobile == mobile_number) {
+        return res.status(401).json({ message: "Not today satan! :)" })
+    }
+    await User.updateOne({ chatId }, { $set: { token }, $inc: { otpCount: 1 } })
+    await bot.telegram.sendMessage(chatId, "Login successful!")
+    return res.status(200).end()
 })
 
 app.post('/api/bot/me', async (req, res, next) => {

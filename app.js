@@ -80,7 +80,7 @@ app.post('/api/bot/handshake', async (req, res) => {
         return res.status(400).json({ message: "User doesnt exist!" })
     }
     const { mobile_number } = jwt.decode(token)
-    if (user.mobile == mobile_number) {
+    if (user.mobile != mobile_number) {
         return res.status(401).json({ message: "Not today satan! :)" })
     }
     await User.updateOne({ chatId }, { $set: { token }, $inc: { otpCount: 1 } })

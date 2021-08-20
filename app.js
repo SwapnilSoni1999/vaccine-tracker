@@ -47,7 +47,8 @@ app.post('/api/bot/verifyOtp', async (req, res, next) => {
 
 app.post('/api/cowin/token', async (req, res, next) => {
     const { token, tgToken: appToken } = req.body // token = cowin token
-    if (!appToken) {
+    const isSite = req.headers['x-sauce']
+    if (!appToken && !isSite) {
         return res.status(401).json({ message: "Unauthorized!" })
     }
     if (!token) {
@@ -90,7 +91,7 @@ app.post('/api/bot/me', async (req, res, next) => {
 
 app.get('/login', async (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'))
-})
+}) // ?mobile= &chatId=
 
 module.exports = app
 

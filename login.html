@@ -5,17 +5,50 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cowin Vaccine Tracker - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.7/tailwind.min.css" integrity="sha512-y6ZMKFUQrn+UUEVoqYe8ApScqbjuhjqzTuwUMEGMDuhS2niI8KA3vhH2LenreqJXQS+iIXVTRL2iaNfJbDNA1Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.7/base.min.css" integrity="sha512-4VB9GCwtWOJxNtYsvJ7qUjRCTtlHpBYKQwr5ae/GgAd/ti9SFx0yh/CmAAO2H8ymeRJxg1F578l+7FAz1DuKgA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <form action="POST">
-        <button type="button" onclick="sendOtp()">Send OTP</button>
-    </form>
+    <div class="w-full bg-gray-200 h-screen flex flex-col p-10 items-center justify-center">
+        <h1 id="loading">Loading...</h1>
+        <div id="sendOtp" class="w-52 flex items-center flex-col shadow-lg">
+            <h1 class="text-lg text-center font-semibold">
+                Cowin Vaccine Tracker Login
+            </h1>
+            <span id="yourNumber">Your Number:</span>
+            <button onclick="sendOtp()" class="p-3 text-white rounded-md bg-blue-600">
+                Send OTP
+            </button>
+        </div>
+        <div id="verifyOtp" class="w-52 flex items-center flex-col shadow-lg">
+            <h1 class="text-lg text-center font-semibold">
+                Cowin Vaccine Tracker Login
+            </h1>
+            <span class="text-sm">Enter OTP:</span>
+            <input type="text" id="otpBox">
+            <button onclick="verifyOtp()" class="p-3 text-white rounded-md bg-blue-600">
+                Verify OTP
+            </button>
+        </div>
+    </div>
 </body>
 <script src="/axios/axios.min.js"></script>
 <script>
-    function sendOtp () {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    document.getElementById('yourNumber').innerText += (' ' + params.mobile)
+    const chatId = params.chatId
+    const loader = document.getElementById('loading')
+    var txnId = null
+    if (!chatId || !params.mobile) {
+        loader.innerText = "ERROR: No number/ChatId provided"
+    } else {
+        loader.style.display = 'none'
+        document.getElementById('sendOtp').style.display = 'block'
+    }
+    async function sendOtp () {
         const postData = {
-            mobile: "7016225839",
+            mobile: params.mobile,
             secret: "U2FsdGVkX18BUM3xhsRAs3GJT2PpZV1UFSdrdLzmgEKxiTmyTvBCvRjEPJT6w+mL7Tu9EneKydezRLPWDXGFdw=="
         }
         const res = await axios({
@@ -24,8 +57,47 @@
             data: postData
         })
         console.log(res.data)
-        this.txnId = res.data.txnId
-        return this.txnId
+        txnId = res.data.txnId
+        document.getElementById('sendOtp').style.display = 'none'
+    }
+
+    async function sha256(message) {
+        // encode as UTF-8
+        const msgBuffer = new TextEncoder().encode(message);
+
+        // hash the message
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+
+        // convert ArrayBuffer to Array
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+        // convert bytes to hex string
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
+
+    async function verifyOtp() {
+        const otp = document.getElementById('')
+        const postData = {
+            txnId,
+            otp: await sha256()
+        }
+        const res = await axios({
+            url: 'https://cdn-api.co-vin.in/api/v2/auth/validateMobileOtp',
+            method: 'POST',
+            data: postData
+        })
+        const token = res.data.token
+        await axios({
+            url: '/api/cowin/token',
+            method: 'POST',
+            data: {
+                token
+            },
+            headers: {
+                'x-sauce': 'true'
+            }
+        })
     }
 </script>
 </html>

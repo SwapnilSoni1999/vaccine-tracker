@@ -2,17 +2,19 @@ const express = require('express')
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
 const morgan = require('morgan')
+const path = require('path')
 
 const User = require('./model')
 const bot = require('./bot')
 
 const app = express()
-const JWT_SECRET = 'C0WiNGOVBOT'
+const JWT_SECRET = 'C0WiNGOVBOT_SWAPNIL'
 
 app.use(cors())
 app.use(morgan('tiny'))
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
+app.use('/axios', express.static(path.join(__dirname, 'node_modules', 'axios', 'dist')))
 
 app.post('/api/bot/login', async (req, res, next) => {
     const { mobile } = req.body
@@ -84,6 +86,10 @@ app.post('/api/bot/me', async (req, res, next) => {
     } catch (err) {
         return res.status(401).json({ message: "Unauthorized!" })
     }
+})
+
+app.get('/login', async (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'))
 })
 
 module.exports = app

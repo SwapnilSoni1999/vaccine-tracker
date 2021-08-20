@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cowin Vaccine Tracker - Login</title>
+</head>
+<body>
+    <form action="POST">
+        <button onclick="">Send OTP</button>
+    </form>
+</body>
+<script src="/axios/axios.min.js"></script>
+<script>
+    function sendOtp () {
+        const postData = {
+            mobile: "7016225839",
+            secret: "U2FsdGVkX18BUM3xhsRAs3GJT2PpZV1UFSdrdLzmgEKxiTmyTvBCvRjEPJT6w+mL7Tu9EneKydezRLPWDXGFdw=="
+        }
+        const res = await axios({
+            method: 'POST',
+            url: 'https://cdn-api.co-vin.in/api/v2/auth/generateMobileOTP',
+            data: postData
+        })
+        console.log(res.data)
+        this.txnId = res.data.txnId
+        return this.txnId
+    }
+</script>
+</html>

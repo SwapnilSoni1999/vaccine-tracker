@@ -8,6 +8,7 @@ const Token = require('./token')
 const cron = require('node-cron')
 const { spawnSync } = require('child_process')
 const { Location } = require('./locationModel')
+const moment = require('moment-timezone')
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -331,14 +332,27 @@ const loginWizard = new Scenes.WizardScene(
                     await ctx.reply(`Please wait ${Math.abs(currentTime - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
                     return await ctx.scene.leave()
                 }
-                await ctx.wizard.state.cowin.sendOtp()
-                await User.updateOne({ chatId: ctx.chat.id }, {
-                    $set: {
-                        lastOtpRequested: parseInt(Date.now()/1000),
-                        txnId: ctx.wizard.state.cowin.txnId
-                    },
-                    $inc: { otpCount: 1 }
-                })
+
+                const hour = moment().tz('Asia/Kolkata').get('hour')
+                if (hour >= 16 && hour <= 20) {
+                    await ctx.reply('Instead bot, You can now login from the bot\'s site. Click on the button below to login. Once you finish the process check back here on bot. :)', {
+                        reply_markup: {
+                            inline_keyboard: [
+                                [{ text: 'Login!', url: `http://20.193.247.116/login?mobile=${mobile}&chatId=${ctx.chat.id}` }]
+                            ]
+                        }
+                    })
+                    return ctx.scene.leave()
+                } else {
+                    await ctx.wizard.state.cowin.sendOtp()
+                    await User.updateOne({ chatId: ctx.chat.id }, {
+                        $set: {
+                            lastOtpRequested: parseInt(Date.now()/1000),
+                            txnId: ctx.wizard.state.cowin.txnId
+                        },
+                        $inc: { otpCount: 1 }
+                    })
+                }
             } catch (err) {
                 if (err instanceof TelegramError) {
                     await User.deleteOne({ chatId: ctx.chat.id })

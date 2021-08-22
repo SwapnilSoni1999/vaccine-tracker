@@ -85,6 +85,7 @@
         } catch (err) {
             document.getElementById('otpBox').value = ""
             document.getElementById('wrongOtp').style.display = 'block'
+            return
         }
         try {
             await axios({
@@ -102,7 +103,7 @@
             document.getElementById('success').style.display = 'block'
         } catch (err) {
             document.getElementById('verifyOtp').style.display = 'none'
-            loader.style.display = 'none'
+            loader.style.display = 'block'
             loader.innerText = "Unable to handshake with Bot! Please try again by refreshing the page!"
         }
     }

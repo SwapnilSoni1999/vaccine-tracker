@@ -327,7 +327,7 @@ const loginWizard = new Scenes.WizardScene(
                 ctx.wizard.state.cowin = cowin
                 const MAX_TIMEOUT_OTP = 180 //sec
                 const currentTime = parseInt(Date.now() / 1000)
-                const { lastOtpRequested } = await User.findOne({ chatId: ctx.chat.id })
+                const { lastOtpRequested } = await User.findOneAndUpdate({ chatId: ctx.chat.id }, { $set: { mobile } })
                 if (currentTime - lastOtpRequested < MAX_TIMEOUT_OTP) {
                     await ctx.reply(`Please wait ${Math.abs(currentTime - (lastOtpRequested + MAX_TIMEOUT_OTP))} seconds before requesting for new otp.`)
                     return await ctx.scene.leave()

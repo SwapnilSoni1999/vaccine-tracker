@@ -108,9 +108,9 @@ const _getBeneficiaries = async (token) => {
 
 const getToday = () => {
     const dateObj = new Date()
-    const seperators = [ '-', '/', '=', '+', '&', '$', '' ]
+    const seperators = [ '-', '/', '=', '+', '&', '$' ]
     // choose random seperator
-    const seperator = seperators[Math.floor(Math.random() * seperators.length)] + String().padStart(Math.floor(Math.random() * seperators.length))
+    const seperator = seperators[Math.floor(Math.random() * seperators.length)]
     const pad = Math.floor(Math.random() * 100) % 2 === 0 ? 1 : 2
     const day = String(dateObj.getDate()).padStart(pad, '0')
     const month = String(dateObj.getMonth()+1).padStart(pad, '0')

@@ -146,15 +146,9 @@ function sleep(ms) {
 }
 
 function getFutureDate(appointment) {
-    const [day, month, year] = appointment.date.split('-')
-    const today = new Date()
-    if (+year >= today.getFullYear()) {
-        if (+month >= today.getMonth()+1) {
-            if (+day >= today.getDate()) {
-                return true
-            }
-        }
-    }
+    const appointmentDate = moment(appointment.date, 'DD-MM-YYYY').tz('Asia/Kolkata')
+    const today = moment(moment().tz('Asia/Kolkata').format('DD-MM-YYYY'), 'DD-MM-YYYY')
+    return today <= appointmentDate
 }
 
 function checkValidVaccine(center, preferredBenef) {

@@ -1434,7 +1434,7 @@ async function bookSlot(user, uCenter) {
     try {
         await User.updateOne({ chatId: user.chatId }, { $set: { autobook: false } })
         const captchaResult = await CoWIN.getCaptcha(user.token, user.chatId)
-        const sess = uCenter.sessions[Math.floor(Math.random() * uCenter.sessions.length)]
+        const sess = uCenter.sessions.find(s => s.available_capacity > 0)
         const _schedule = switchChoose(user.preferredBenef)
         const payload = {
             beneficiaries: [user.preferredBenef.beneficiary_reference_id],

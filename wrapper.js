@@ -165,7 +165,7 @@ class CoWIN {
 
     static async getStates() {
         if (fs.existsSync('states.json')) {
-            const localStates = JSON.parse(fs.readFileSync('states.json')).states
+            const localStates = JSON.parse(fs.readFileSync('states.json'))
             if (localStates?.length) {
                 return localStates
             }

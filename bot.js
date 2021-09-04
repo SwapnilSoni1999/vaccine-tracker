@@ -1085,6 +1085,8 @@ bot.action('turn_on', async (ctx) => {
             return await ctx.reply('Congrats! You\'re now all set-up :)\nYou can send /status to check your configuration status. You can send /help to know about all the commands. :)\nThats all for setup. Stay safe. <3')
         }
     } catch (error) {
+        await User.updateOne({ chatId: ctx.update.callback_query.from.id }, { $set: { autobook: false, beneficiaries: [] } })
+        await ctx.reply('Something went wrong! Please choose your /beneficiaries again and try to turn on /autobook again.')
         console.log(error)
     }
 })

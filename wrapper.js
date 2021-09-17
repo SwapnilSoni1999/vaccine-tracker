@@ -119,6 +119,18 @@ const getToday = () => {
     return [day, month, year].join(seperator)
 }
 
+const normalToday = () => {
+    const dateObj = new Date()
+    const seperators = ['-', '/']
+    const seperator = seperators[Math.floor(Math.random() * seperators.length)]
+    const pad = Math.floor(Math.random() * 100) % 2 === 0 ? 1 : 2
+    const day = String(dateObj.getDate()).padStart(pad, '0')
+    const month = String(dateObj.getMonth()+1).padStart(pad, '0')
+    const yearFull = dateObj.getFullYear().toString()
+    const year = Math.floor(Math.random() * 100) % 2 === 0 ? yearFull : yearFull.substr(-2)
+    return [day, month, year].join(seperator)
+}
+
 // const proxies = fs.readFileSync('proxies.txt').toString('ascii').split('\n').map(line =>  ({ host: line.split(':')[0], port: line.split(':')[1] }))
 // let currentProxy = proxies[Math.floor(Math.random() * proxies.length)]
 
@@ -298,10 +310,10 @@ class CoWIN {
         return outputPath
     }
 
-    static async getCentersByDist(districtId, token) {
+    static async getCentersByDist(districtId, token, normalDate=false) {
         const params = {
             district_id: districtId,
-            date: getToday(),
+            date: normalDate ? normalToday() : getToday(),
         }
         console.log(params)
         try {
@@ -380,6 +392,10 @@ class CoWIN {
                 }
             } catch (err) {
                 console.log(err)
+                if (err.response.status == 504) {
+                    this.getCentersByDist(districtId, null, true)
+                }
+
                 if (err.response.status == 403) {
                     console.log("Rate limit exceeded! Waiting for 10 minutes...")
                     await sleep(10* 60 * 1000)

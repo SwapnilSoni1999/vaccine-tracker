@@ -327,26 +327,26 @@ const loginWizard = new Scenes.WizardScene(
                     return await ctx.scene.leave()
                 }
 
-                const hour = moment().tz('Asia/Kolkata').get('hour')
-                if (hour >= 16 && hour <= 20) {
-                    await ctx.reply('Instead bot, You can now login from the bot\'s site. Click on the button below to login. Once you finish the process check back here on bot. :)', {
-                        reply_markup: {
-                            inline_keyboard: [
-                                [{ text: 'Login!', url: `http://20.193.247.116/login?mobile=${mobile}&chatId=${ctx.chat.id}` }]
-                            ]
-                        }
-                    })
-                    return ctx.scene.leave()
-                } else {
-                    await ctx.wizard.state.cowin.sendOtp()
-                    await User.updateOne({ chatId: ctx.chat.id }, {
-                        $set: {
-                            lastOtpRequested: parseInt(Date.now()/1000),
-                            txnId: ctx.wizard.state.cowin.txnId
-                        },
-                        $inc: { otpCount: 1 }
-                    })
-                }
+                // const hour = moment().tz('Asia/Kolkata').get('hour')
+                // if (hour >= 16 && hour <= 20) {
+                //     await ctx.reply('Instead bot, You can now login from the bot\'s site. Click on the button below to login. Once you finish the process check back here on bot. :)', {
+                //         reply_markup: {
+                //             inline_keyboard: [
+                //                 [{ text: 'Login!', url: `http://20.193.247.116/login?mobile=${mobile}&chatId=${ctx.chat.id}` }]
+                //             ]
+                //         }
+                //     })
+                //     return ctx.scene.leave()
+                // } else {
+                await ctx.wizard.state.cowin.sendOtp()
+                await User.updateOne({ chatId: ctx.chat.id }, {
+                    $set: {
+                        lastOtpRequested: parseInt(Date.now()/1000),
+                        txnId: ctx.wizard.state.cowin.txnId
+                    },
+                    $inc: { otpCount: 1 }
+                })
+                // }
             } catch (err) {
                 if (err instanceof TelegramError) {
                     await User.deleteOne({ chatId: ctx.chat.id })

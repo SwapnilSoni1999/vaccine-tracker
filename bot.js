@@ -1,5 +1,6 @@
 'use strict';
-const { Telegraf, Scenes, session, TelegramError, Markup } = require('telegraf')
+require('dotenv')
+const { Telegraf, Scenes, session, TelegramError } = require('telegraf')
 const { CoWIN, em } = require('./wrapper')
 const mongoose = require('mongoose')
 const User = require('./model')
@@ -14,10 +15,9 @@ mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, use
 .then(() => console.log('Connected to Database!'))
 .catch((err) => console.log(err))
 
-const BOT_TOKEN = '1707560756:AAGklCxSVVtfEtPBYEmOCZW6of4nEzffhx0'
+const BOT_TOKEN = process.env.BOT_TOKEN
 const bot = new Telegraf(BOT_TOKEN)
-const INVITE_KEY = "C0WiNbotSwapnil"
-const SWAPNIL = 317890515
+const SWAPNIL = parseInt(process.env.OWNER_TG_ID)
 const MAX_OTP_PER_DAY = 50
 
 // ========CRON=========
@@ -88,6 +88,7 @@ function calculateSleeptime() {
     if (ipCount == 0) {
         return 180
     }
+    // deprecated: No proxy usage from now on
     const fivMins = 5*60*1000
     const reqPerIp = 100
     const perIpTime = fivMins/ipCount
@@ -112,6 +113,9 @@ const SNOOZE_LITERALS = [
     { name: '18hr', seconds: 18 * 60 * 60 }
 ]
 
+/**
+ * @deprecated no thumbs usage
+ */
 const THUMBS = {
     up: ['👍', '👍🏻', '👍🏼', '👍🏽', '👍🏾', '👍🏿'],
     down: ['👎', '👎🏻', '👎🏼', '👎🏽', '👎🏾', '👎🏿']

@@ -2,10 +2,10 @@
 const crypto = require('crypto')
 
 //https://github.com/brix/crypto-js/issues/274
-function CryptJsWordArrayToUint8Array(wordArray) {                                                                                       
-    const l = wordArray.sigBytes;                                                                                                        
-    const words = wordArray.words;                                                                                                       
-    const result = new Uint8Array(l);                                                                                                    
+function CryptJsWordArrayToUint8Array(wordArray) {
+    const l = wordArray.sigBytes;
+    const words = wordArray.words;
+    const result = new Uint8Array(l);
     var i=0 /*dst*/, j=0 /*src*/;
     while(true) {
         // here i is a multiple of 4
@@ -15,13 +15,13 @@ function CryptJsWordArrayToUint8Array(wordArray) {
         result[i++] = (w & 0xff000000) >>> 24;
         if (i==l)
             break;
-        result[i++] = (w & 0x00ff0000) >>> 16;                                                                                            
-        if (i==l)                                                                                                                        
-            break;                                                                                                                       
+        result[i++] = (w & 0x00ff0000) >>> 16;
+        if (i==l)
+            break;
         result[i++] = (w & 0x0000ff00) >>> 8;
         if (i==l)
             break;
-        result[i++] = (w & 0x000000ff);                                                                                                  
+        result[i++] = (w & 0x000000ff);
     }
     return result;
 }
@@ -37,7 +37,7 @@ function Utf8ArrayToStr(array) {
     while(i < len) {
     c = array[i++];
     switch(c >> 4)
-    { 
+    {
       case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
         // 0xxxxxxx
         out += String.fromCharCode(c);
@@ -73,10 +73,10 @@ exports.AESencrypt = (data, key) => {
     ])
     return encrypted.toString('base64')
 }
- 
+
 exports.AESdecrypt = (data, key) => {
     const decipher = crypto.createDecipheriv('aes-128-ctr', key, iv)
-    const decrypted = Buffer.concat([ 
+    const decrypted = Buffer.concat([
         decipher.update(data, 'base64'),
         decipher.final()
     ])

@@ -1,3 +1,7 @@
+/**
+ * A script to push new updates to existing database
+ */
+
 const fs = require('fs')
 const users = JSON.parse(fs.readFileSync('db.json')).users
 const { Types: { ObjectId } } = require('mongoose')

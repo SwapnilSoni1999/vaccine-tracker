@@ -9,9 +9,6 @@ const cron = require('node-cron')
 const { spawnSync } = require('child_process')
 const { Location } = require('./locationModel')
 const moment = require('moment-timezone')
-const workerpool = require('workerpool')
-
-const pool = workerpool.pool({ maxWorkers: 2 })
 
 mongoose.connect('mongodb://localhost:27017/Cowin', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(() => console.log('Connected to Database!'))
@@ -1901,7 +1898,7 @@ bot.command('test', async (ctx) => {
     }
 })
 
-pool.exec(trackAndInform)
+trackAndInform()
 // set false and wait for 5mins if tracker updates the flag or not
 setInterval(() => {
     TRACKER_ALIVE = false
@@ -1925,14 +1922,9 @@ setInterval(() => {
         }, 10 * 1000)
     }
 }, 10 * 60 * 1000)
-
-function tokenChecker () {
-    setInterval(async () => {
-        const users = await User.find({ allowed: true })
-        checkTokens(users)
-    }, 1 * 60 * 1000)
-}
-
-pool.exec(tokenChecker)
+setInterval(async () => {
+    const users = await User.find({ allowed: true })
+    checkTokens(users)
+}, 1 * 60 * 1000)
 
 module.exports = bot

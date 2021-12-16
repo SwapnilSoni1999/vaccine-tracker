@@ -55,6 +55,10 @@ But after all... I built this within a month, Moreover I released this bot in ju
 - Appreciation certificate from Jain University Bangalore. [link](https://imgur.com/a/iA0zVsb)
 - Immense support from XDA-OFF TOPIC Group (Facebook.)
 
+<hr>
+Thanks for using and supporting. ❤️ This will remain my bestest work so far. 
+<hr>
+
 # License
 &copy; Swapnil Soni (MIT)
 (If you plan to copy the code then link the credits in your bot with a link to my github repo.)

@@ -1,5 +1,5 @@
 'use strict';
-require('dotenv')
+require('dotenv').config()
 const { Telegraf, Scenes, session, TelegramError } = require('telegraf')
 const { CoWIN, em } = require('./wrapper')
 const mongoose = require('mongoose')

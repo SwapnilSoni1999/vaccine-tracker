@@ -1,5 +1,4 @@
 'use strict';
-require('dotenv')
 const { Telegraf, Scenes, session, TelegramError } = require('telegraf')
 const { CoWIN, em } = require('./wrapper')
 const mongoose = require('mongoose')
@@ -465,7 +464,11 @@ const slotWizard = new Scenes.WizardScene(
             await ctx.reply('Please choose age group.', { reply_markup:
                 {
                     inline_keyboard:[
-                        [ { text: '18+', callback_data: '18_plus' }, { text: '45+', callback_data: '45_plus' } ]
+                        [
+                            { text: '15+', callback_data: '15_plus' },
+                            { text: '18+', callback_data: '18_plus' },
+                            { text: '45+', callback_data: '45_plus' },
+                        ]
                     ]
                 }
             })
@@ -488,6 +491,26 @@ const slotWizard = new Scenes.WizardScene(
 slotWizard.command('cancel', async (ctx) => {
     await ctx.scene.leave()
     return await ctx.reply('Operation cancelled!')
+})
+
+bot.action('15_plus', async (ctx) => {
+    try {
+        const chatId = ctx.update.callback_query.from.id
+        await User.updateOne({ chatId }, { $set: { tmp_age_group: 15 } })
+        return await ctx.editMessageText('Please choose specific dose you want to track.', { reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: 'Dose 1', callback_data: `dose-selection--${1}` },
+                    { text: 'Dose 2', callback_data: `dose-selection--${2}` },
+                    { text: 'Any Dose', callback_data: `dose-selection--${0}` }
+                ]
+            ]
+        } })
+    } catch (error) {
+        if (err instanceof TelegramError) {
+            await User.deleteOne({ chatId: ctx.chat.id })
+        }
+    }
 })
 
 bot.action('18_plus', async (ctx) => {

@@ -1,3 +1,4 @@
+require('dotenv').config()
 const bot = require('./bot')
 const app = require('./app')
 

@@ -54,6 +54,7 @@ But after all... I built this within a month, Moreover I released this bot in ju
 - Reel from vivekartiste (Vivek Rajput) (15k+ insta followers): https://www.instagram.com/p/CSZbr_AJ-9D/
 - Appreciation certificate from Jain University Bangalore. [link](https://imgur.com/a/iA0zVsb)
 - Immense support from XDA-OFF TOPIC Group (Facebook.)
+- **14k+ users on bot and 11k+ autobookings using the bot <3** 
 
 <hr>
 Thanks for using and supporting. ❤️ This will remain my bestest work so far. 
